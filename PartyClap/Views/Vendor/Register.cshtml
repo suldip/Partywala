@@ -1,0 +1,723 @@
+@model PartyClap.Models.Vendor
+
+@{
+    ViewData["Title"] = "Vendor Registration";
+    Layout = null; // We are defining the full layout here for the fixed header
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="base-path" content="@Url.Content("~/")" />
+    <title>@ViewData["Title"] - PartyClap</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/premium.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body class="bg-light">
+
+    <!-- Fixed Header -->
+    <header class="vendor-registration-header">
+        <div class="container">
+            <div class="d-flex align-items-center gap-3">
+                <a href="@Url.Action("Index", "Home")" class="text-dark text-decoration-none">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <a href="@Url.Action("Index", "Home")" class="logo">
+                    <span class="logo-icon">🎉</span>
+                    <span class="logo-text">privateparty wala</span>
+                </a>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <a href="@Url.Action("Login", "Account")" class="btn btn-sm btn-outline-dark-custom border-0">Already have an account?</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Fixed Progress Indicator -->
+    <div class="wizard-progress-fixed">
+        <div class="wizard-progress-wrapper">
+            <div class="wizard-progress-header">
+                <h2 class="wizard-progress-title">Registration Progress</h2>
+                <span class="wizard-progress-counter">Step <span id="current-step-num">1</span> of 5</span>
+            </div>
+
+            <div class="wizard-progress-content">
+                <div class="wizard-steps-container">
+                    <!-- Connection Line -->
+                    <div class="wizard-step-connector">
+                        <div class="wizard-step-connector-fill" id="wizard-connector-fill"></div>
+                    </div>
+
+                    <!-- Steps -->
+                    <div class="wizard-step active" data-step="1">
+                        <div class="wizard-step-icon">👤</div>
+                        <div class="wizard-step-label">
+                            <span class="d-sm-none">Info</span>
+                            <span class="d-none d-sm-inline">Personal Info</span>
+                        </div>
+                    </div>
+                    <div class="wizard-step" data-step="2">
+                        <div class="wizard-step-icon">🎯</div>
+                        <div class="wizard-step-label">
+                            <span class="d-sm-none">Category</span>
+                            <span class="d-none d-sm-inline">Service Category</span>
+                        </div>
+                    </div>
+                    <div class="wizard-step" data-step="3">
+                        <div class="wizard-step-icon">📁</div>
+                        <div class="wizard-step-label">
+                            <span class="d-sm-none">Portfolio</span>
+                            <span class="d-none d-sm-inline">Upload Portfolio</span>
+                        </div>
+                    </div>
+                    <div class="wizard-step" data-step="4">
+                        <div class="wizard-step-icon">💰</div>
+                        <div class="wizard-step-label">
+                            <span class="d-sm-none">Pricing</span>
+                            <span class="d-none d-sm-inline">Set Pricing</span>
+                        </div>
+                    </div>
+                    <div class="wizard-step" data-step="5">
+                        <div class="wizard-step-icon">🏦</div>
+                        <div class="wizard-step-label">
+                            <span class="d-sm-none">Account</span>
+                            <span class="d-none d-sm-inline">Payment Setup</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step Description -->
+                <div class="wizard-step-description">
+                    <p class="wizard-step-description-text mb-0" id="step-description">
+                        👤 Enter your personal details and address information
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spacer for fixed elements -->
+    <div class="wizard-content-spacer"></div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-8">
+                
+                <!-- Header Section -->
+                <div class="text-center mb-5">
+                    <span class="badge bg-secondary mb-3">💼 Join as Party Professional</span>
+                    <h1 class="fw-bold mb-3">Start Your Party Business</h1>
+                    <p class="text-muted">Register for free and start earning from your party skills</p>
+                </div>
+
+                <!-- Benefits Cards -->
+                <div class="row g-3 mb-5">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm text-center p-3">
+                            <div class="mb-2 text-warning display-6">₹</div>
+                            <div class="fw-bold">Flexible Pricing</div>
+                            <div class="small text-muted">Set your own rates</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm text-center p-3">
+                            <div class="mb-2 text-danger display-6">⭐</div>
+                            <div class="fw-bold">Build Reputation</div>
+                            <div class="small text-muted">Get customer reviews</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm text-center p-3">
+                            <div class="mb-2 text-success display-6">🛡️</div>
+                            <div class="fw-bold">Verified Badge</div>
+                            <div class="small text-muted">Trusted by customers</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Form Card -->
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-header bg-white border-bottom p-4">
+                        <h4 class="card-title fw-bold mb-1" id="card-title">Personal Information</h4>
+                        <p class="card-text text-muted small mb-0" id="card-description">Provide your contact details and address information</p>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        <form asp-action="Register" method="post" id="vendor-registration-form" enctype="multipart/form-data">
+                            
+                            <!-- STEP 1: Personal Information -->
+                            <div id="step-1" class="step-content active">
+                                <!-- Personal Info -->
+                                <div class="mb-5">
+                                    <h5 class="fw-bold mb-3">Personal Information</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="vendor-form-label">First Name</label>
+                                            <input asp-for="Name" class="form-control vendor-form-input" placeholder="Enter your first name" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="vendor-form-label">Last Name</label>
+                                            <input type="text" class="form-control vendor-form-input" placeholder="Enter your last name">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="vendor-form-label">Email</label>
+                                            <input asp-for="Email" type="email" class="form-control vendor-form-input" placeholder="you@example.com" required>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="vendor-form-label">Phone Number</label>
+                                            <input asp-for="Phone" class="form-control vendor-form-input" placeholder="+91 98765-43210" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="mb-5">
+                                    <h5 class="fw-bold mb-3">Your Address</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="vendor-form-label">State</label>
+                                            <select class="form-select vendor-form-input" data-cascade="state">
+                                                <option value="">Select your state</option>
+                                                <option value="Maharashtra">Maharashtra</option>
+                                                <option value="Delhi">Delhi</option>
+                                                <option value="Karnataka">Karnataka</option>
+                                                <option value="Tamil Nadu">Tamil Nadu</option>
+                                                <option value="Gujarat">Gujarat</option>
+                                                <option value="Rajasthan">Rajasthan</option>
+                                                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                                <option value="West Bengal">West Bengal</option>
+                                                <option value="Telangana">Telangana</option>
+                                                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                                <option value="Kerala">Kerala</option>
+                                                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                                <option value="Punjab">Punjab</option>
+                                                <option value="Haryana">Haryana</option>
+                                                <option value="Bihar">Bihar</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="vendor-form-label">City</label>
+                                            <select class="form-select vendor-form-input" data-cascade="city" disabled>
+                                                <option value="">Select your city</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="vendor-form-label">Pin Code</label>
+                                            <div class="position-relative">
+                                                <input asp-for="PinCode" id="main-pincode-input" class="form-control vendor-form-input" placeholder="Search pin code or area (e.g., 110001)" autocomplete="off" required>
+                                                <div id="pincode-autocomplete" class="pincode-autocomplete-dropdown" style="display: none;"></div>
+                                                <small class="text-muted mt-1 d-block">Start typing to search from 1000+ pin codes across India or enter 6-digit pin code directly</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="vendor-form-label">Street Address</label>
+                                            <textarea asp-for="Address" class="form-control vendor-form-input" rows="2" placeholder="Enter your street address"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Experience -->
+                                <div class="mb-5">
+                                    <h5 class="fw-bold mb-3">About Your Services</h5>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="vendor-form-label">Years of Experience</label>
+                                            <select class="form-select vendor-form-input">
+                                                <option value="">Select your experience</option>
+                                                <option value="0-1">Less than 1 year</option>
+                                                <option value="1-3">1-3 years</option>
+                                                <option value="3-5">3-5 years</option>
+                                                <option value="5+">5+ years</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="vendor-form-label">Service Description</label>
+                                            <textarea class="form-control vendor-form-input" rows="4" placeholder="Describe what services, specialties, and other details you'll include..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Servicing Locations -->
+                                <div class="mb-5">
+                                    <h5 class="fw-bold mb-3">Servicing Locations</h5>
+                                    <p class="small text-muted mb-3">Select the cities where you provide your services.</p>
+                                    
+                                    <div class="card border bg-light">
+                                        <div class="card-body p-4">
+                                            <h6 class="fw-semibold mb-3">Add Servicing City</h6>
+                                            <div id="locations-container">
+                                                <div class="row g-3 location-row">
+                                                    <div class="col-md-4">
+                                                        <label class="vendor-form-label">State</label>
+                                                        <select class="form-select vendor-form-input" data-cascade="state">
+                                                            <option value="">Select state</option>
+                                                            <option value="Maharashtra">Maharashtra</option>
+                                                            <option value="Delhi">Delhi</option>
+                                                            <option value="Karnataka">Karnataka</option>
+                                                            <option value="Tamil Nadu">Tamil Nadu</option>
+                                                            <option value="Gujarat">Gujarat</option>
+                                                            <option value="Rajasthan">Rajasthan</option>
+                                                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                                            <option value="West Bengal">West Bengal</option>
+                                                            <option value="Telangana">Telangana</option>
+                                                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                                            <option value="Kerala">Kerala</option>
+                                                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                                                            <option value="Punjab">Punjab</option>
+                                                            <option value="Haryana">Haryana</option>
+                                                            <option value="Bihar">Bihar</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="vendor-form-label">City</label>
+                                                        <select class="form-select vendor-form-input" data-cascade="city" disabled>
+                                                            <option value="">Select city</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="vendor-form-label">Pin Code <span class="text-muted fw-normal">(Optional)</span></label>
+                                                        <div class="position-relative">
+                                                            <input type="text" class="form-control vendor-form-input" id="location-pincode" placeholder="Search pin code..." autocomplete="off">
+                                                            <div id="location-pincode-autocomplete" class="pincode-autocomplete-dropdown" style="display: none;"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button type="button" id="btn-add-location" class="btn btn-outline-primary w-100 mt-3 rounded-3">
+                                                + Add Servicing Location
+                                            </button>
+                                            
+                                            <!-- Added Locations Display -->
+                                            <div id="added-locations-list" class="mt-4" style="display: none;">
+                                                <h6 class="fw-semibold mb-3">📍 Your Servicing Areas:</h6>
+                                                <div id="locations-display" class="d-flex flex-wrap gap-2">
+                                                    <!-- Location badges will be added here -->
+                                                </div>
+                                                <p class="small text-muted mt-2">Customers in these areas will be able to find and book your services</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 2: Service Category -->
+                            <div id="step-2" class="step-content">
+                                <div class="text-center mb-4">
+                                    <h5 class="fw-bold mb-2">Service Category</h5>
+                                    <p class="text-muted small mb-3">Choose your main service category and specializations</p>
+                                    
+                                    <div class="alert alert-primary d-inline-block text-start mb-4" style="max-width: 600px;">
+                                        <p class="mb-0 small text-primary">
+                                            <strong>📁 Next Step:</strong> After selecting your category, you'll upload your portfolio.<br>
+                                            <strong>🎵 Singers:</strong> Prepare your voice samples!<br>
+                                            <strong>📸 Chefs & Decorators:</strong> Prepare your work photos!
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h6 class="fw-bold mb-3">Main Category</h6>
+                                    <p class="text-muted small mb-3">Select the primary service category that best describes your business</p>
+                                </div>
+                                
+                                <div class="row g-3 g-md-4" id="category-grid">
+                                    <!-- Categories rendered by JS -->
+                                </div>
+
+                                <div id="subcategory-wrapper" style="display: none;" class="mt-5">
+                                    <h5 class="fw-bold mb-3">Your Specializations</h5>
+                                    <p class="text-muted small mb-3">Select the specific areas you specialize in</p>
+                                    <div class="row g-3" id="subcategory-container">
+                                        <!-- Subcategories rendered by JS -->
+                                    </div>
+                                    
+                                    <div class="mt-4" id="custom-fields-container">
+                                        <!-- Custom fields rendered by JS -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 3: Portfolio -->
+                            <div id="step-3" class="step-content">
+                                <div class="text-center mb-4">
+                                    <h5 class="fw-bold">Build Your Portfolio</h5>
+                                    <p class="text-muted small">Showcase your work to attract more customers</p>
+                                </div>
+
+                                <div class="row g-4">
+                                    <!-- Photos Upload Card -->
+                                    <div class="col-md-6">
+                                        <div class="upload-card border-2 border-dashed rounded-3 p-4 text-center" id="photo-upload-card">
+                                            <div class="mb-3">
+                                                <i class="fas fa-images fa-3x text-primary"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">Upload Photos</h6>
+                                            <p class="text-muted small mb-3">Drag and drop photos here or click to browse</p>
+                                            <input type="file" class="d-none" id="photo-upload" name="PhotoFiles" accept="image/*" multiple>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('photo-upload').click()">
+                                                <i class="fas fa-upload me-2"></i>Browse Photos
+                                            </button>
+                                            <div id="photo-preview" class="mt-3" style="display: none;">
+                                                <div class="d-flex flex-wrap gap-2" id="photo-preview-container"></div>
+                                                <small class="text-muted d-block mt-2"><span id="photo-count">0</span> photo(s) selected</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Videos Upload Card -->
+                                    <div class="col-md-6">
+                                        <div class="upload-card border-2 border-dashed rounded-3 p-4 text-center" id="video-upload-card">
+                                            <div class="mb-3">
+                                                <i class="fas fa-video fa-3x text-danger"></i>
+                                            </div>
+                                            <h6 class="fw-bold mb-2">Upload Videos</h6>
+                                            <p class="text-muted small mb-3">Drag and drop videos here or click to browse</p>
+                                            <input type="file" class="d-none" id="video-upload" name="VideoFiles" accept="video/*" multiple>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="document.getElementById('video-upload').click()">
+                                                <i class="fas fa-upload me-2"></i>Browse Videos
+                                            </button>
+                                            <div id="video-preview" class="mt-3" style="display: none;">
+                                                <div class="d-flex flex-wrap gap-2" id="video-preview-container"></div>
+                                                <small class="text-muted d-block mt-2"><span id="video-count">0</span> video(s) selected</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info mt-4">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Tips:</strong> Upload high-quality photos and videos of your work. Maximum 10 files per type. Photos should be JPG/PNG, Videos should be MP4/MOV.
+                                </div>
+                            </div>
+
+                            <!-- STEP 4: Pricing -->
+                            <div id="step-4" class="step-content">
+                                <div class="text-center mb-4">
+                                    <h5 class="fw-bold">Set Your Pricing</h5>
+                                    <p class="text-muted small">Choose how you want to charge for your services</p>
+                                </div>
+
+                                <h5 class="fw-bold mb-3">Pricing Model</h5>
+                                <div class="row g-3 mb-4" id="pricing-model-container">
+                                    <!-- Pricing models rendered by JS -->
+                                </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label class="vendor-form-label">Base Price (₹)</label>
+                                        <input type="number" class="form-control vendor-form-input" id="base-price" name="BasePrice" placeholder="Enter amount">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="vendor-form-label">Discounted Price (Optional)</label>
+                                        <input type="number" class="form-control vendor-form-input" id="discount-price" name="DiscountPrice" placeholder="Special offer price">
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Pricing Section -->
+                                <div class="mt-4">
+                                    <div class="card border bg-light">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                                <div>
+                                                    <h5 class="mb-1">💰 Dynamic Pricing</h5>
+                                                    <p class="text-muted small mb-0">Set different rates for weekdays, weekends, and festivals</p>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="enable-dynamic-pricing" style="cursor: pointer; width: 3rem; height: 1.5rem;">
+                                                </div>
+                                            </div>
+
+                                            <div id="dynamic-pricing-content" style="display: none;">
+                                                <div class="alert alert-info small mb-3">
+                                                    <strong>💡 Tip:</strong> Weekend and festival rates are typically 20-50% higher than weekdays.
+                                                </div>
+
+                                                <!-- Weekday Pricing -->
+                                                <div class="card mb-3 border-primary border-2">
+                                                    <div class="card-header bg-primary text-white">
+                                                        <strong>📅 Weekday Pricing (Monday - Thursday)</strong>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <label class="vendor-form-label">Base Rate (₹) <span class="text-danger">*</span></label>
+                                                                <input type="number" class="form-control vendor-form-input" id="weekday-base" name="WeekdayBase">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="vendor-form-label">Discounted Rate (₹)</label>
+                                                                <input type="number" class="form-control vendor-form-input" id="weekday-discount" name="WeekdayDiscount">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Weekend Pricing -->
+                                                <div class="card mb-3 border-success border-2">
+                                                    <div class="card-header bg-success text-white">
+                                                        <strong>🎉 Weekend Pricing (Friday - Sunday)</strong>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row g-3">
+                                                            <div class="col-md-6">
+                                                                <label class="vendor-form-label">Base Rate (₹) <span class="text-danger">*</span></label>
+                                                                <input type="number" class="form-control vendor-form-input" id="weekend-base" name="WeekendBase">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="vendor-form-label">Discounted Rate (₹)</label>
+                                                                <input type="number" class="form-control vendor-form-input" id="weekend-discount" name="WeekendDiscount">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Festival Pricing -->
+                                                <div class="card mb-3 border-warning border-2">
+                                                    <div class="card-header bg-warning text-dark">
+                                                        <strong>🎊 Festival Pricing</strong>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="row g-3 mb-3">
+                                                            <div class="col-md-6">
+                                                                <label class="vendor-form-label">Base Rate (₹) <span class="text-danger">*</span></label>
+                                                                <input type="number" class="form-control vendor-form-input" id="festival-base" name="FestivalBase">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <label class="vendor-form-label">Discounted Rate (₹)</label>
+                                                                <input type="number" class="form-control vendor-form-input" id="festival-discount" name="FestivalDiscount">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <label class="vendor-form-label mb-2">📝 Select Applicable Festivals:</label>
+                                                        <div class="row g-2" id="festival-checkboxes">
+                                                            <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input festival-checkbox" type="checkbox" value="diwali" id="fest-diwali"><label class="form-check-label small" for="fest-diwali">🪔 Diwali</label></div></div>
+                                                            <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input festival-checkbox" type="checkbox" value="holi" id="fest-holi"><label class="form-check-label small" for="fest-holi">🎨 Holi</label></div></div>
+                                                            <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input festival-checkbox" type="checkbox" value="christmas" id="fest-christmas"><label class="form-check-label small" for="fest-christmas">🎄 Christmas</label></div></div>
+                                                            <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input festival-checkbox" type="checkbox" value="new-year" id="fest-new-year"><label class="form-check-label small" for="fest-new-year">🎆 New Year</label></div></div>
+                                                            <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input festival-checkbox" type="checkbox" value="eid" id="fest-eid"><label class="form-check-label small" for="fest-eid">🌙 Eid</label></div></div>
+                                                            <div class="col-6 col-md-4"><div class="form-check"><input class="form-check-input festival-checkbox" type="checkbox" value="navratri" id="fest-navratri"><label class="form-check-label small" for="fest-navratri">🕉️ Navratri</label></div></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card bg-success bg-opacity-10 border-success mt-4">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="fw-bold text-success mb-0">Free Registration 🎉</h6>
+                                                <small class="text-success">Join our verified vendor network at no cost</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="fw-bold text-success h4 mb-0">Free</div>
+                                                <small class="text-success">No charges</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STEP 5: Account Setup -->
+                            <div id="step-5" class="step-content">
+                                <div class="text-center mb-4">
+                                    <h5 class="fw-bold">Payment Account Setup</h5>
+                                    <p class="text-muted small">Add your bank accounts and UPI details for receiving payments</p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h5 class="fw-bold mb-3">Bank Details</h5>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="vendor-form-label">Account Holder Name</label>
+                                            <input type="text" class="form-control vendor-form-input" id="account-holder" name="AccountHolderName" placeholder="As per bank records">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="vendor-form-label">Account Number</label>
+                                            <input type="text" class="form-control vendor-form-input" id="account-number" name="AccountNumber" placeholder="Enter account number">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="vendor-form-label">IFSC Code</label>
+                                            <input type="text" class="form-control vendor-form-input" id="ifsc-code" name="IfscCode" placeholder="e.g., HDFC0001234">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h5 class="fw-bold mb-3">UPI Details</h5>
+                                    <div class="col-12">
+                                        <label class="vendor-form-label">UPI ID (Optional)</label>
+                                        <input type="text" class="form-control vendor-form-input" id="upi-id" name="UpiId" placeholder="e.g., mobile@upi">
+                                    </div>
+                                </div>
+
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label small text-muted" for="terms">
+                                        I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>.
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="d-flex gap-3 mt-5 pt-3 border-top">
+                                <button type="button" class="btn btn-outline-secondary flex-fill" id="btn-prev" style="display: none; border-radius: 12px; padding: 12px;">
+                                    ← Previous Step
+                                </button>
+                                <button type="button" class="btn btn-primary-gradient flex-fill text-white fw-bold" id="btn-next" style="border: none; border-radius: 12px; padding: 12px;">
+                                    Next Step →
+                                </button>
+                                <button type="submit" class="btn btn-success flex-fill text-white fw-bold" id="btn-submit" style="display: none; border-radius: 12px; padding: 12px;">
+                                    Complete Registration 🎉
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Photo Upload Handler
+        document.getElementById('photo-upload').addEventListener('change', function(e) {
+            handleFileUpload(e.target.files, 'photo');
+        });
+
+        // Video Upload Handler
+        document.getElementById('video-upload').addEventListener('change', function(e) {
+            handleFileUpload(e.target.files, 'video');
+        });
+
+        // Drag and Drop for Photos
+        const photoCard = document.getElementById('photo-upload-card');
+        photoCard.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            photoCard.classList.add('border-primary', 'bg-light');
+        });
+        photoCard.addEventListener('dragleave', () => {
+            photoCard.classList.remove('border-primary', 'bg-light');
+        });
+        photoCard.addEventListener('drop', (e) => {
+            e.preventDefault();
+            photoCard.classList.remove('border-primary', 'bg-light');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) {
+                document.getElementById('photo-upload').files = createFileList(files);
+                handleFileUpload(files, 'photo');
+            }
+        });
+
+        // Drag and Drop for Videos
+        const videoCard = document.getElementById('video-upload-card');
+        videoCard.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            videoCard.classList.add('border-danger', 'bg-light');
+        });
+        videoCard.addEventListener('dragleave', () => {
+            videoCard.classList.remove('border-danger', 'bg-light');
+        });
+        videoCard.addEventListener('drop', (e) => {
+            e.preventDefault();
+            videoCard.classList.remove('border-danger', 'bg-light');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+            if (files.length > 0) {
+                document.getElementById('video-upload').files = createFileList(files);
+                handleFileUpload(files, 'video');
+            }
+        });
+
+        function handleFileUpload(files, type) {
+            const maxFiles = 10;
+            const fileArray = Array.from(files).slice(0, maxFiles);
+            
+            const previewContainer = document.getElementById(`${type}-preview-container`);
+            const previewSection = document.getElementById(`${type}-preview`);
+            const countSpan = document.getElementById(`${type}-count`);
+            
+            previewContainer.innerHTML = '';
+            
+            if (fileArray.length > 0) {
+                previewSection.style.display = 'block';
+                countSpan.textContent = fileArray.length;
+                
+                fileArray.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-preview-item position-relative';
+                    fileItem.style.cssText = 'width: 80px; height: 80px;';
+                    
+                    if (type === 'photo') {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            fileItem.innerHTML = `
+                                <img src="${e.target.result}" class="w-100 h-100 object-fit-cover rounded" alt="Preview">
+                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle" 
+                                        style="width: 24px; height: 24px; padding: 0; font-size: 12px;"
+                                        onclick="removeFile('photo', ${index})">×</button>
+                            `;
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        fileItem.innerHTML = `
+                            <div class="w-100 h-100 bg-light rounded d-flex flex-column align-items-center justify-content-center">
+                                <i class="fas fa-video text-danger mb-1"></i>
+                                <small class="text-muted" style="font-size: 10px;">${file.name.substring(0, 10)}...</small>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded-circle" 
+                                    style="width: 24px; height: 24px; padding: 0; font-size: 12px;"
+                                    onclick="removeFile('video', ${index})">×</button>
+                        `;
+                    }
+                    
+                    previewContainer.appendChild(fileItem);
+                });
+            } else {
+                previewSection.style.display = 'none';
+            }
+        }
+
+        function removeFile(type, index) {
+            const input = document.getElementById(`${type}-upload`);
+            const dt = new DataTransfer();
+            const files = Array.from(input.files);
+            
+            files.forEach((file, i) => {
+                if (i !== index) dt.items.add(file);
+            });
+            
+            input.files = dt.files;
+            handleFileUpload(input.files, type);
+        }
+
+        function createFileList(files) {
+            const dt = new DataTransfer();
+            files.forEach(file => dt.items.add(file));
+            return dt.files;
+        }
+    </script>
+    <script>
+        // Initialize basePath for vendor registration page (must be before vendor-registration.js)
+        (function() {
+            const basePathMeta = document.querySelector('meta[name="base-path"]');
+            if (basePathMeta) {
+                var basePath = basePathMeta.content;
+                window.basePath = basePath.endsWith('/') ? basePath : basePath + '/';
+            } else {
+                // Fallback: detect from URL
+                const path = window.location.pathname;
+                window.basePath = path.startsWith('/PartyClap') ? '/PartyClap/' : '/';
+            }
+            console.log('Base path initialized to:', window.basePath);
+        })();
+    </script>
+    <script src="~/js/vendor-registration.js"></script>
+</body>
+</html>

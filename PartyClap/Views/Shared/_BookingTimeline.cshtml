@@ -1,0 +1,28 @@
+@model string
+@{
+    var steps = new List<string> { "Requested", "Approved", "Advance Paid", "Confirmed", "Completed" };
+    var currentStepIndex = steps.IndexOf(Model);
+    if (currentStepIndex == -1) currentStepIndex = 0; // Default to first step if unknown
+}
+
+<div class="booking-timeline mb-4">
+    <div class="d-flex justify-content-between position-relative">
+        <div class="position-absolute top-50 start-0 w-100 translate-middle-y bg-light" style="height: 4px; z-index: 0;"></div>
+        <div class="position-absolute top-50 start-0 translate-middle-y bg-success" style="height: 4px; width: @(currentStepIndex * 25)%; z-index: 0; transition: width 0.5s;"></div>
+        
+        @for (int i = 0; i < steps.Count; i++)
+        {
+            var step = steps[i];
+            var isCompleted = i <= currentStepIndex;
+            var isActive = i == currentStepIndex;
+            
+            <div class="text-center position-relative" style="z-index: 1; width: 20%;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2 @(isCompleted ? "bg-success text-white" : "bg-light text-muted border")" 
+                     style="width: 30px; height: 30px; font-weight: bold;">
+                    @(isCompleted ? "✓" : (i + 1).ToString())
+                </div>
+                <small class="@(isActive ? "fw-bold text-success" : "text-muted")">@step</small>
+            </div>
+        }
+    </div>
+</div>

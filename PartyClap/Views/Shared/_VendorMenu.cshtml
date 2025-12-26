@@ -1,0 +1,54 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<div class="smart-menu-container animate__animated animate__fadeIn">
+    <ul class="smart-menu">
+        <li class="smart-menu-item">
+            <a href="@Url.Action("Dashboard", "Vendor")" class="smart-menu-link @(currentAction == "Dashboard" ? "active" : "")">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li class="smart-menu-item">
+            <a href="@Url.Action("Profile", "Vendor")" class="smart-menu-link @(currentAction == "Profile" ? "active" : "")">
+                <i class="bi bi-person-gear"></i>
+                <span>Edit Profile</span>
+            </a>
+        </li>
+        <li class="smart-menu-item">
+            <a href="@Url.Action("AddService", "Vendor")" class="smart-menu-link @(currentAction == "AddService" ? "active" : "")">
+                <i class="bi bi-grid"></i>
+                <span>My Services</span>
+            </a>
+        </li>
+        <li class="smart-menu-item">
+            <a href="@Url.Action("Portfolio", "Vendor")" class="smart-menu-link @(currentAction == "Portfolio" ? "active" : "")">
+                <i class="bi bi-images"></i>
+                <span>Portfolio</span>
+            </a>
+        </li>
+        <li class="smart-menu-item">
+            <a href="@Url.Action("Insurance", "Vendor")" class="smart-menu-link @(currentAction == "Insurance" ? "active" : "")">
+                <i class="bi bi-shield-check"></i>
+                <span>Insurance</span>
+            </a>
+        </li>
+        <li class="smart-menu-item">
+            <a href="@Url.Action("TrustCenter", "Home")" class="smart-menu-link">
+                <i class="bi bi-shield-lock"></i>
+                <span>Legal Support</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const activeItem = document.querySelector('.smart-menu-link.active');
+        if (activeItem) {
+            activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    });
+</script>
+

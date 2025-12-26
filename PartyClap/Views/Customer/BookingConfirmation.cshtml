@@ -1,0 +1,52 @@
+@model IEnumerable<PartyClap.Models.Booking>
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <div class="display-1 text-success mb-3">🎉</div>
+        <h2 class="mb-4">Booking Confirmed!</h2>
+        <p class="lead">You have successfully booked the following services.</p>
+        
+        <!-- Global Timeline (assuming all are at same stage for now) -->
+        <div class="w-75 mx-auto">
+            <partial name="_BookingTimeline" model="@("Advance Paid")" />
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        @foreach (var booking in Model)
+        {
+            <div class="col-md-8 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">Booking ID: @booking.Id</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Service ID:</strong> @booking.ServiceId</p>
+                                <p><strong>Event Date:</strong> @booking.EventDate.ToShortDateString()</p>
+                                <p><strong>Status:</strong> <span class="badge bg-success">@booking.Status</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-success mb-2">
+                                    <strong>Advance Paid:</strong> ₹@booking.AdvancePaid
+                                </div>
+                                <p class="mb-1">Total Cost: ₹@booking.CustomerTotalCost</p>
+                                <p>Balance: <strong class="text-danger">₹@booking.BalanceAmount</strong></p>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="text-muted small">
+                            <p class="mb-1"><strong>Vendor Contact:</strong> (Vendor details would be fetched here)</p>
+                            <p class="mb-0">Please pay the balance directly to the vendor after the event.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <div class="text-center mt-4 mb-5">
+        <a asp-controller="Customer" asp-action="Explore" class="btn btn-primary btn-lg">Book Another Service</a>
+    </div>
+</div>

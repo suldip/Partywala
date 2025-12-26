@@ -1,0 +1,316 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PrivateParty Wala</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/PartyClap.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/premium.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/notifications.css" asp-append-version="true" />
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <script>
+        // Global handler for server-side messages
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (TempData["SuccessMessage"] != null) {
+                <text>window.SmartPop.toast('@TempData["SuccessMessage"]', 'success');</text>
+            }
+            @if (TempData["ErrorMessage"] != null) {
+                <text>window.SmartPop.error('Oops!', '@TempData["ErrorMessage"]');</text>
+            }
+            @if (TempData["InfoMessage"] != null) {
+                <text>window.SmartPop.toast('@TempData["InfoMessage"]', 'info');</text>
+            }
+        });
+
+        window.isUserLoggedIn = @((!string.IsNullOrEmpty(HttpContextAccessor.HttpContext.Session.GetString("UserRole"))).ToString().ToLower());
+        // Base path for API calls and navigation - ensure trailing slash
+        var basePath = '@Url.Content("~/")';
+        window.basePath = basePath.endsWith('/') ? basePath : basePath + '/';
+    </script>
+    <!-- Navbar -->
+    @{
+        var role = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
+    }
+    <nav class="navbar navbar-expand-lg sticky-top py-2 shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- Brand -->
+            <a class="navbar-brand me-2 d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="me-2 flex-shrink-0">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#8B5CF6"/>
+                    <path d="M2 17L12 22L22 17" stroke="#8B5CF6" stroke-width="2"/>
+                    <path d="M2 12L12 17L22 12" stroke="#8B5CF6" stroke-width="2"/>
+                </svg>
+                <span class="brand-text">
+                    <span style="color: #111827;">PrivateParty</span> <span style="color: #8B5CF6;">Wala</span>
+                </span>
+            </a>
+
+            <!-- Mobile: Quick Actions & Toggler -->
+            <div class="d-flex align-items-center gap-1 d-lg-none">
+                <!-- Legal Support Always Visible on Mobile -->
+                <a class="nav-link p-2 text-primary border-0" asp-controller="Home" asp-action="TrustCenter" title="Legal Support">
+                    <i class="bi bi-shield-lock fs-5"></i>
+                </a>
+
+                @if (string.IsNullOrEmpty(role))
+                {
+                    <a class="btn btn-sm btn-outline-primary border-0 px-2 py-1 fw-bold" asp-controller="Account" asp-action="Login">Login</a>
+                }
+                else
+                {
+                    <a class="nav-link p-2 text-dark" asp-controller="Account" asp-action="Logout" title="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                    </a>
+                }
+
+                <button class="navbar-toggler border-0 shadow-none p-1 ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <i class="bi bi-list fs-3 text-dark"></i>
+                </button>
+            </div>
+
+            <!-- desktop/Collapse Menu -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-3">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" asp-controller="Home" asp-action="TrustCenter">
+                            <i class="bi bi-shield-lock me-1"></i> Legal Support
+                        </a>
+                    </li>
+                    @if (role == "Customer")
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link notification-bell position-relative" href="#" id="notificationDropdown" 
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                                <span class="badge bg-danger" id="notification-badge" style="display: none;">0</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end notification-dropdown" 
+                                 aria-labelledby="notificationDropdown">
+                                <div class="dropdown-header d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">Notifications</span>
+                                    <a href="#" class="small text-white" onclick="return markAllAsRead()">Mark all read</a>
+                                </div>
+                                <div class="dropdown-divider m-0"></div>
+                                <div id="notification-list">
+                                    <div class="dropdown-item text-center text-muted">Loading...</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" asp-controller="Customer" asp-action="ViewCart">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none; font-size: 0.6rem;">0</span>
+                            </a>
+                        </li>
+                    }
+
+                    @if (!string.IsNullOrEmpty(role))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold" asp-controller="Account" asp-action="Logout">Logout</a>
+                        </li>
+                        <li class="nav-item">
+                            @if (role == "Admin") { <a class="btn btn-primary-gradient" asp-controller="Admin" asp-action="Dashboard">Dashboard</a> }
+                            else if (role == "Vendor") { <a class="btn btn-primary-gradient" asp-controller="Vendor" asp-action="Dashboard">Dashboard</a> }
+                            else { <a class="btn btn-primary-gradient" asp-controller="Customer" asp-action="Dashboard">Dashboard</a> }
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold" asp-controller="Account" asp-action="Login">Log In</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary-gradient" asp-controller="Vendor" asp-action="Register">Get Started</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Bottom Navigation (Visible only on mobile) -->
+    <div class="mobile-bottom-nav d-lg-none d-flex justify-content-around py-2 border-top bg-white fixed-bottom shadow-lg z-3">
+        <a asp-controller="Home" asp-action="Index" class="nav-item text-center text-decoration-none @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "text-muted")">
+            <i class="bi bi-house-door fs-4 d-block"></i>
+            <span class="small">Home</span>
+        </a>
+        <a asp-controller="Customer" asp-action="Explore" class="nav-item text-center text-decoration-none @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" && ViewContext.RouteData.Values["action"]?.ToString() == "Explore" ? "active" : "text-muted")">
+            <i class="bi bi-search fs-4 d-block"></i>
+            <span class="small">Explore</span>
+        </a>
+        <a asp-controller="Customer" asp-action="ViewCart" class="nav-item text-center text-decoration-none position-relative @(ViewContext.RouteData.Values["action"]?.ToString() == "ViewCart" ? "active" : "text-muted")">
+            <i class="bi bi-bag fs-4 d-block"></i>
+            <span class="small">Cart</span>
+            <span id="mobile-cart-badge" class="position-absolute top-0 start-50 translate-middle-y badge rounded-pill bg-danger" style="display: none; font-size: 0.6rem; transform: translateX(5px);">0</span>
+        </a>
+        <a asp-controller="@(string.IsNullOrEmpty(role) ? "Account" : role)" asp-action="@(string.IsNullOrEmpty(role) ? "Login" : "Dashboard")" class="nav-item text-center text-decoration-none @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" || ViewContext.RouteData.Values["controller"]?.ToString() == "Account" ? "active" : "text-muted")">
+            <i class="bi bi-person fs-4 d-block"></i>
+            <span class="small">@(string.IsNullOrEmpty(role) ? "Login" : "Account")</span>
+        </a>
+    </div>
+
+    <style>
+        .mobile-bottom-nav {
+            border-top: 1px solid #eee !important;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .mobile-bottom-nav .nav-item {
+            flex: 1;
+            transition: all 0.2s;
+        }
+        .mobile-bottom-nav .nav-item.active {
+            color: var(--primary-color) !important;
+        }
+        .mobile-bottom-nav .nav-item.active i {
+            transform: scale(1.1);
+        }
+        .mobile-bottom-nav .nav-item i {
+            margin-bottom: -2px;
+        }
+        /* Ensure content doesn't get hidden behind bottom nav */
+        @@media (max-width: 991px) {
+            body {
+                padding-bottom: 70px;
+            }
+        }
+    </style>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <!-- Admin & Vendor Access Section -->
+    <section class="admin-access-section">
+        <div class="container">
+            <div class="row g-4 justify-content-center">
+                <div class="col-12 text-center mb-4">
+                    <h2 class="text-white fw-bold mb-2">Admin & Vendor Access</h2>
+                    <p class="text-muted">Quick access to management dashboards</p>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="admin-card">
+                        <div class="admin-icon mb-3">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <h6 class="text-white fw-bold mb-2">Vendor Account</h6>
+                        <p class="text-muted small mb-3">Manage your services and profile</p>
+                        <a asp-controller="Vendor" asp-action="Register" class="btn btn-primary-gradient btn-sm w-100">
+                            Access Portal
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="admin-card">
+                        <div class="admin-icon mb-3">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <h6 class="text-white fw-bold mb-2">Vendor Dashboard</h6>
+                        <p class="text-muted small mb-3">Track bookings and earnings</p>
+                        <a asp-controller="Vendor" asp-action="Dashboard" class="btn btn-primary-gradient btn-sm w-100">
+                            Open Dashboard
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="admin-card">
+                        <div class="admin-icon mb-3">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                            </svg>
+                        </div>
+                        <h6 class="text-white fw-bold mb-2">Admin Dashboard</h6>
+                        <p class="text-muted small mb-3">Platform management system</p>
+                        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-primary-gradient btn-sm w-100">
+                            Admin Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4 pb-4">
+                <!-- Brand Column -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <a class="d-flex align-items-center gap-2 mb-3 text-decoration-none" href="#">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
+                            <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2"/>
+                            <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2"/>
+                        </svg>
+                        <span class="fw-bold text-white fs-5">PartyClap</span>
+                    </a>
+                    <p class="footer-text">Making every celebration special with India's best party professionals.</p>
+                </div>
+
+                <!-- Quick Links Column -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h6 class="footer-title">Quick Links</h6>
+                    <a href="#" class="footer-link">About Us</a>
+                    <a href="#" class="footer-link">How It Works</a>
+                    <a href="#" class="footer-link">Pricing</a>
+                    <a asp-controller="Home" asp-action="Contact" class="footer-link">Contact</a>
+                </div>
+
+                <!-- Support Column -->
+                <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+                    <h6 class="footer-title">Support</h6>
+                    <a href="#" class="footer-link">Help Center</a>
+                    <a href="#" class="footer-link">Terms</a>
+                    <a href="#" class="footer-link">Privacy</a>
+                    <a href="#" class="footer-link">FAQ</a>
+                    <a asp-controller="Home" asp-action="TrustCenter" class="footer-link">
+                        <i class="bi bi-shield-lock me-1"></i> Legal Support
+                    </a>
+                </div>
+
+                <!-- Services Column -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="footer-title">Our Services</h6>
+                    <a asp-controller="Customer" asp-action="Explore" class="footer-link">Singers</a>
+                    <a asp-controller="Customer" asp-action="Explore" class="footer-link">Chefs</a>
+                    <a asp-controller="Customer" asp-action="Explore" class="footer-link">Event Managers</a>
+                    <a asp-controller="Customer" asp-action="Explore" class="footer-link">Photographers</a>
+                </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="border-top border-secondary pt-4 mt-2 text-center">
+                <p class="footer-text mb-0">&copy; 2025 PartyClap. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/notifications.js" asp-append-version="true"></script>
+    <script src="~/js/cart-manager.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

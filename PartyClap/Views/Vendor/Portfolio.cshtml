@@ -1,0 +1,73 @@
+@model List<PartyClap.Models.PortfolioItem>
+
+<div class="container py-4">
+    <partial name="_VendorMenu" />
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Portfolio</h2>
+        <a href="/Vendor/Dashboard/@ViewBag.VendorId" class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="row">
+        <!-- Upload Form -->
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm">
+                <h4>Upload New Item</h4>
+                <form asp-action="UploadPortfolioItem" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="VendorId" value="@ViewBag.VendorId" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">File (Image or Audio)</label>
+                        <input type="file" name="File" class="form-control" required accept="image/*,audio/*" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="Description" class="form-control" rows="2" placeholder="e.g. Wedding Performance 2024"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">Upload</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Portfolio Grid -->
+        <div class="col-md-8">
+            <div class="row">
+                @if (Model != null && Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                @if (item.MediaType == "Image")
+                                {
+                                    <img src="@item.MediaUrl" class="card-img-top" alt="Portfolio Item" style="height: 200px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="card-body bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <audio controls class="w-100">
+                                            <source src="@item.MediaUrl" type="audio/mpeg">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    </div>
+                                }
+                                <div class="card-body">
+                                    <p class="card-text">@item.Description</p>
+                                    <span class="badge bg-secondary">@item.MediaType</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center mt-5">
+                        <p class="text-muted">No portfolio items yet. Upload some to showcase your work!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

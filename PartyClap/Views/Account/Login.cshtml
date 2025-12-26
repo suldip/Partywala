@@ -1,0 +1,237 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="login-page-wrapper">
+    <!-- Background Image with Overlay -->
+    <div class="login-bg" style="background-image: url('/antigravity/brain/03c53c21-38e8-4ddc-b41e-b5f91e711627/login_hero_celebration_1766732955092.png');">
+        <div class="login-overlay"></div>
+    </div>
+
+    <div class="container h-100 d-flex align-items-center justify-content-center">
+        <div class="login-card-container animate__animated animate__zoomIn">
+            <div class="card border-0 shadow-2xl glass-card">
+                <div class="card-body p-5">
+                    <!-- Brand / Logo Section -->
+                    <div class="text-center mb-5">
+                        <div class="brand-icon-wrapper mb-3">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#8B5CF6"/>
+                                <path d="M2 17L12 22L22 17" stroke="#8B5CF6" stroke-width="2"/>
+                                <path d="M2 12L12 17L22 12" stroke="#8B5CF6" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <h2 class="fw-800 text-dark mb-1">Welcome Back</h2>
+                        <p class="text-muted small">Your next great event starts here</p>
+                    </div>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 animate__animated animate__shakeX">
+                            <i class="bi bi-exclamation-circle me-2"></i> @ViewBag.Error
+                        </div>
+                    }
+
+                    <form asp-action="Login" method="post" id="loginForm">
+                        <div class="form-floating mb-4">
+                            <input type="tel" name="mobile" id="mobile" class="form-control premium-input shadow-none" placeholder="Mobile Number" required value="@ViewBag.Mobile">
+                            <label class="text-muted"><i class="bi bi-phone me-2"></i>Mobile Number / Admin Email</label>
+                        </div>
+                        
+                        <div class="mb-4" id="otpSection" style="display:none;">
+                            <div class="form-floating animate__animated animate__fadeInDown">
+                                <input type="text" name="otp" id="otp" class="form-control premium-input shadow-none" placeholder="Enter OTP">
+                                <label class="text-muted" id="otpLabel"><i class="bi bi-shield-lock me-2"></i>Verification Code</label>
+                            </div>
+                            <div class="text-center mt-3">
+                                <span class="badge bg-success bg-opacity-10 text-success py-2 px-3 rounded-pill" id="otpSentMsg" style="display:none;">
+                                    <i class="bi bi-check2-circle me-1"></i> OTP Sent!
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-3">
+                            <button type="button" id="btnGetOtp" class="btn btn-primary-gradient btn-lg py-3 rounded-pill shadow-lg hover-scale">
+                                Get One-Time Password
+                            </button>
+                            <button type="submit" id="btnLogin" class="btn btn-primary-gradient btn-lg py-3 rounded-pill shadow-lg hover-scale" style="display:none;">
+                                Authenticate & Enter
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-5">
+                        <p class="mb-0 text-muted small">
+                            Don't have an account? 
+                            <a href="@Url.Action("Signup", "Account")" class="text-primary fw-bold text-decoration-none hover-underline">Create an Account</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Helper Links -->
+            <div class="text-center mt-4 animate__animated animate__fadeIn animate__delay-1s">
+                <a href="/" class="text-white-50 text-decoration-none small hover-white">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Homepage
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-page-wrapper {
+        position: relative;
+        width: 100%;
+        min-height: 90vh;
+        z-index: 10;
+        background: #000;
+        padding: 60px 0;
+    }
+
+    .login-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        filter: blur(2px);
+    }
+
+    .login-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(17, 24, 39, 0.4) 0%, rgba(17, 24, 39, 0.8) 100%);
+    }
+
+    .login-card-container {
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 28px;
+        overflow: hidden;
+    }
+
+    .brand-icon-wrapper {
+        background: #f5f3ff;
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    .premium-input {
+        background: #f9fafb !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 16px !important;
+        height: 64px !important;
+        padding-top: 25px !important;
+    }
+
+    .premium-input:focus {
+        border-color: var(--primary-color) !important;
+        background: #ffffff !important;
+    }
+
+    .hover-scale {
+        transition: all 0.3s ease;
+    }
+
+    .hover-scale:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px -5px rgba(139, 92, 246, 0.4);
+    }
+
+    .hover-underline:hover {
+        text-decoration: underline !important;
+    }
+
+    .hover-white:hover {
+        color: #fff !important;
+    }
+
+    .fw-800 { font-weight: 800; }
+
+    @@media (max-width: 576px) {
+        .login-card-container {
+            padding: 15px;
+        }
+        .glass-card {
+            border-radius: 20px;
+        }
+    }
+</style>
+
+<script>
+    document.getElementById('btnGetOtp').addEventListener('click', function() {
+        var mobile = document.getElementById('mobile').value;
+        if(!mobile) {
+            SmartPop.warning('Input Required', 'Please enter a mobile number or admin email');
+            return;
+        }
+
+        // Check for Admin Login (Email)
+        if (mobile.indexOf(String.fromCharCode(64)) !== -1) {
+            document.getElementById('otpSection').style.display = 'block';
+            document.getElementById('btnGetOtp').style.display = 'none';
+            document.getElementById('btnLogin').style.display = 'block';
+            
+            var otpInput = document.getElementById('otp');
+            otpInput.type = 'password';
+            otpInput.placeholder = 'Enter Admin Password';
+            document.getElementById('otpLabel').innerHTML = '<i class="bi bi-key me-2"></i>Admin Password';
+            return;
+        }
+
+        var btn = document.getElementById('btnGetOtp');
+        var originalText = btn.innerText;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+        btn.disabled = true;
+
+        fetch('@Url.Action("SendOtp")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'mobile=' + encodeURIComponent(mobile)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                document.getElementById('otpSection').style.display = 'block';
+                document.getElementById('btnGetOtp').style.display = 'none';
+                document.getElementById('btnLogin').style.display = 'block';
+                
+                document.getElementById('otpSentMsg').innerHTML = '<i class="bi bi-check2-circle me-1"></i> OTP Sent: ' + data.debugOtp; 
+                document.getElementById('otpSentMsg').style.display = 'inline-block';
+                
+                SmartPop.success('OTP Sent', 'Please check your messages (Demo OTP: ' + data.debugOtp + ')');
+            } else {
+                SmartPop.error('Login Error', data.message);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            SmartPop.error('Network Error', 'Connection failed. Please try again.');
+            btn.innerText = originalText;
+            btn.disabled = false;
+        });
+    });
+</script>
+

@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "Legal Support & Trust Center";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-4 fw-800 text-gradient mb-3">Legal Support & Trust</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 700px;">
+            At PartyClap, we prioritize the safety and satisfaction of both our customers and vendors. Our dedicated arbitration team is here to ensure every celebration is handled with integrity.
+        </p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Protection for Customers -->
+        <div class="col-md-6 animate__animated animate__fadeInLeft">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-lift">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="brand-icon-wrapper bg-primary bg-opacity-10 text-primary me-3">
+                        <i class="bi bi-shield-check fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">Customer Protection</h3>
+                </div>
+                <ul class="list-unstyled space-y-3">
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <span><strong>Secure Payments:</strong> Your advance is held in escrow and only released to the vendor upon booking approval.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <span><strong>Service Guarantee:</strong> If a vendor fails to show up or significantly deviates from the agreement, we offer full mediation.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <span><strong>Dispute Resolution:</strong> Raise a dispute directly from your dashboard if expectations aren't met.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Protection for Vendors -->
+        <div class="col-md-6 animate__animated animate__fadeInRight">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 hover-lift">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="brand-icon-wrapper bg-success bg-opacity-10 text-success me-3">
+                        <i class="bi bi-briefcase fs-2"></i>
+                    </div>
+                    <h3 class="fw-bold mb-0">Vendor Security</h3>
+                </div>
+                <ul class="list-unstyled space-y-3">
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <span><strong>Guaranteed Payouts:</strong> We ensure customers have paid the required advance before you commit your time.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <span><strong>Fair Cancellation:</strong> Protection against last-minute cancellations with clear refund and penalty policies.</span>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <span><strong>Arbitration Support:</strong> Our legal team reviews claims based on provided evidence to prevent fraudulent disputes.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dispute Process Steps -->
+    <div class="card border-0 shadow-lg rounded-4 p-5 animate__animated animate__fadeInUp">
+        <h2 class="text-center fw-bold mb-5">How We Resolve Disputes</h2>
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="display-6 text-primary fw-bold mb-2">01</div>
+                <h5 class="fw-bold">Raise Claim</h5>
+                <p class="small text-muted">Submit a dispute through your dashboard within 48 hours of the event.</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="display-6 text-primary fw-bold mb-2">02</div>
+                <h5 class="fw-bold">Investigation</h5>
+                <p class="small text-muted">Our neutral arbitrators review chat logs, service details, and media evidence.</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="display-6 text-primary fw-bold mb-2">03</div>
+                <h5 class="fw-bold">Mediation</h5>
+                <p class="small text-muted">We attempt to reach a fair compromise between both parties.</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="display-6 text-primary fw-bold mb-2">04</div>
+                <h5 class="fw-bold">Resolution</h5>
+                <p class="small text-muted">Final decision is made, including refunds or payouts as applicable.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-gradient {
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .hover-lift {
+        transition: transform 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-10px);
+    }
+    .space-y-3 > li:not(:last-child) {
+        margin-bottom: 1.25rem;
+    }
+</style>

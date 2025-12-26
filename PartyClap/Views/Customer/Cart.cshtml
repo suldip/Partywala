@@ -1,0 +1,393 @@
+@model List<PartyClap.Models.CartItem>
+
+@{
+    ViewData["Title"] = "Your Cart";
+}
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="fw-bold mb-2">Your Cart</h1>
+            <p class="text-muted">Review your selected services and proceed to checkout.</p>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="row g-4">
+            <!-- Cart Items List -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-body p-0">
+                        @foreach (var item in Model)
+                        {
+                            <div class="p-4 border-bottom last-border-0">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 mb-3 mb-md-0">
+                                        <div class="ratio ratio-1x1 rounded-3 bg-light d-flex align-items-center justify-content-center overflow-hidden">
+                                            @if (!string.IsNullOrEmpty(item.MediaUrl))
+                                            {
+                                                <img src="@item.MediaUrl" alt="@item.ServiceType" class="object-fit-cover w-100 h-100">
+                                            }
+                                            else
+                                            {
+                                                <span class="fs-1">🎉</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <h5 class="fw-bold mb-1">@item.ServiceType</h5>
+                                        <p class="text-muted mb-1 small">Provided by <strong class="text-dark">@item.VendorName</strong></p>
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-geo-alt-fill text-danger me-1"></i> Mumbai
+                                            </span>
+                                            @if (item.EventDate.HasValue)
+                                            {
+                                                <span class="badge bg-primary text-white border-0" id="event-date-badge-@item.Id">
+                                                    <i class="bi bi-calendar-event me-1"></i> <span id="event-date-text-@item.Id">@item.EventDate.Value.ToString("MMM dd, yyyy")</span>
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark border-0" id="event-date-badge-@item.Id" style="display: none;">
+                                                    <i class="bi bi-calendar-event me-1"></i> <span id="event-date-text-@item.Id"></span>
+                                                </span>
+                                            }
+                                        </div>
+                                        <div class="event-date-picker" data-cart-item-id="@item.Id">
+                                            <label class="form-label small fw-semibold text-muted mb-1">
+                                                <i class="bi bi-calendar3 me-1"></i> Select Event Date
+                                            </label>
+                                            <input type="date" 
+                                                   class="form-control form-control-sm event-date-input" 
+                                                   data-cart-item-id="@item.Id"
+                                                   value="@(item.EventDate?.ToString("yyyy-MM-dd") ?? "")"
+                                                   min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                                   required
+                                                   style="max-width: 200px; border-radius: 6px;">
+                                            <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">
+                                                @if (item.WeekendCost.HasValue)
+                                                {
+                                                    <span class="text-info">
+                                                        <i class="bi bi-info-circle me-1"></i> Weekend pricing: ₹@item.WeekendCost.Value.ToString("N0")
+                                                    </span>
+                                                }
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <div class="h4 fw-bold text-primary mb-0">₹@item.Cost.ToString("N0")</div>
+                                        <p class="text-muted small mb-3">per @item.Unit</p>
+                                        
+                                        <form asp-action="RemoveFromCart" method="post" class="d-inline">
+                                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" style="pointer-events: auto; cursor: pointer;" data-confirm="Are you sure you want to remove this item from your cart?" data-confirm-title="Remove Item">
+                                                <i class="bi bi-trash me-1"></i> Remove
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <a href="@Url.Action("Explore")" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-arrow-left me-2"></i> Continue Exploring
+                    </a>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-light-subtle">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold mb-4">Order Summary</h4>
+                        
+                        @{
+                            decimal totalVendorCost = Model.Sum(x => x.Cost);
+                            decimal platformFee = totalVendorCost * 0.10m; // 10% platform fee
+                            decimal totalCustomerCost = totalVendorCost + platformFee;
+                            decimal advancePayment = totalVendorCost * 0.20m; // 20% advance
+                        }
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal (@Model.Count items)</span>
+                            <span class="fw-semibold">₹@totalVendorCost.ToString("N0")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Platform Fee (10%)</span>
+                            <span class="fw-semibold">₹@platformFee.ToString("N0")</span>
+                        </div>
+                        
+                        <hr class="my-3 text-muted opacity-25">
+                        
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="h5 fw-bold mb-0">Total Value</span>
+                            <span class="h5 fw-bold mb-0">₹@totalCustomerCost.ToString("N0")</span>
+                        </div>
+                        
+                        <div class="alert alert-success border-0 bg-success-subtle mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="d-block text-success-emphasis fw-semibold">Pay 20% Advance Now</small>
+                                    <small class="text-muted" style="font-size: 0.75rem;">To confirm booking & get contacts</small>
+                                </div>
+                                <div class="h4 fw-bold text-success mb-0">₹@advancePayment.ToString("N0")</div>
+                            </div>
+                        </div>
+                        
+                        <form asp-action="Checkout" method="post" id="checkout-form">
+                            <div id="date-validation-error" class="alert alert-warning border-0 bg-warning-subtle mb-3" style="display: none;">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <small>Please select event date for all items before proceeding.</small>
+                            </div>
+                            <button type="submit" id="checkout-btn" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm hover-shadow transition-all">
+                                Proceed to Pay ₹@advancePayment.ToString("N0")
+                            </button>
+                        </form>
+                        
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-lock-fill me-1"></i> Secure Payment
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                    <i class="bi bi-cart-x text-muted" style="font-size: 4rem;"></i>
+                </div>
+            </div>
+            <h2 class="fw-bold mb-3">Your cart is empty</h2>
+            <p class="text-muted mb-4 mx-auto" style="max-width: 400px;">
+                Looks like you haven't added any party services yet. Browse our verified professionals to get started!
+            </p>
+            <a href="@Url.Action("Explore", "Customer")" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+                Start Exploring
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ensure all buttons are enabled and clickable
+            const allButtons = document.querySelectorAll('button, input[type="submit"], input[type="button"]');
+            allButtons.forEach(btn => {
+                if (btn.id !== 'checkout-btn' || !btn.hasAttribute('disabled')) {
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.cursor = 'pointer';
+                }
+            });
+            
+            const dateInputs = document.querySelectorAll('.event-date-input');
+            const checkoutForm = document.getElementById('checkout-form');
+            const dateValidationError = document.getElementById('date-validation-error');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            // Ensure checkout button is enabled
+            if (checkoutBtn) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.style.pointerEvents = 'auto';
+                checkoutBtn.style.cursor = 'pointer';
+            }
+            
+            // Handle date input changes
+            if (dateInputs && dateInputs.length > 0) {
+                dateInputs.forEach(input => {
+                    const cartItemId = input.dataset.cartItemId;
+                    
+                    // Make sure input is not disabled
+                    input.disabled = false;
+                    input.style.pointerEvents = 'auto';
+                    input.style.cursor = 'pointer';
+                    
+                    // Update badge when date is selected
+                    input.addEventListener('change', function() {
+                    const selectedDate = this.value;
+                    const badge = document.getElementById(`event-date-badge-${cartItemId}`);
+                    const badgeText = document.getElementById(`event-date-text-${cartItemId}`);
+                    
+                    if (selectedDate) {
+                        const date = new Date(selectedDate);
+                        const formattedDate = date.toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                        });
+                        
+                        if (badge) {
+                            badge.style.display = 'inline-block';
+                            badge.classList.remove('bg-warning', 'text-dark');
+                            badge.classList.add('bg-primary', 'text-white');
+                            if (badgeText) {
+                                badgeText.textContent = formattedDate;
+                            }
+                        }
+                        
+                        // Update cart item on server
+                        updateCartItemDate(cartItemId, selectedDate);
+                    } else {
+                        if (badge) {
+                            badge.style.display = 'none';
+                        }
+                    }
+                    
+                        validateAllDates();
+                    });
+                });
+            }
+            
+            // Validate all dates before checkout
+            if (checkoutForm) {
+                checkoutForm.addEventListener('submit', function(e) {
+                    if (!validateAllDates()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (dateValidationError) {
+                            dateValidationError.style.display = 'block';
+                        }
+                        checkoutForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return false;
+                    }
+                });
+            }
+            
+            function validateAllDates() {
+                if (!dateInputs || dateInputs.length === 0) {
+                    return true; // No date inputs, allow checkout
+                }
+                
+                let allValid = true;
+                dateInputs.forEach(input => {
+                    if (!input.value || input.value.trim() === '') {
+                        allValid = false;
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                });
+                
+                if (allValid && dateValidationError) {
+                    dateValidationError.style.display = 'none';
+                }
+                
+                return allValid;
+            }
+            
+            // Flag to prevent multiple simultaneous updates
+            let isUpdatingDate = false;
+            
+            function updateCartItemDate(cartItemId, eventDate) {
+                // Prevent multiple simultaneous updates
+                if (isUpdatingDate) {
+                    console.log('Date update already in progress, skipping...');
+                    return;
+                }
+                
+                isUpdatingDate = true;
+                
+                // Update cart item date on server via AJAX
+                fetch('@Url.Action("UpdateCartItemDate", "Customer")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cartItemId: parseInt(cartItemId),
+                        eventDate: eventDate
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    isUpdatingDate = false;
+                    
+                    if (data.success) {
+                        console.log('Cart item date updated successfully');
+                        // Only reload if weekend pricing actually changed
+                        // Use a small delay to prevent rapid reloads
+                        if (data.recalculate) {
+                            // Check if we already reloaded recently
+                            const lastReload = sessionStorage.getItem('lastCartReload');
+                            const now = Date.now();
+                            
+                            if (!lastReload || (now - parseInt(lastReload)) > 2000) {
+                                sessionStorage.setItem('lastCartReload', now.toString());
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 500);
+                            }
+                        }
+                    } else {
+                        console.error('Failed to update cart item date:', data.message);
+                    }
+                })
+                .catch(error => {
+                    isUpdatingDate = false;
+                    console.error('Error updating cart item date:', error);
+                });
+            }
+        });
+    </script>
+}
+
+<style>
+    .last-border-0:last-child {
+        border-bottom: 0 !important;
+    }
+    
+    .hover-shadow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+    
+    .event-date-input.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .event-date-picker {
+        margin-top: 0.5rem;
+    }
+    
+    /* Ensure all buttons and inputs are clickable */
+    button, input, select, textarea, a {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+    }
+    
+    button:disabled {
+        cursor: not-allowed !important;
+        opacity: 0.6;
+    }
+    
+    button:not(:disabled):hover {
+        cursor: pointer !important;
+    }
+    
+    input[type="date"] {
+        cursor: pointer !important;
+        pointer-events: auto !important;
+    }
+    
+    /* Ensure no overlays are blocking clicks */
+    .card, .card-body, .btn-action-stack {
+        pointer-events: auto !important;
+        position: relative;
+        z-index: 1;
+    }
+</style>

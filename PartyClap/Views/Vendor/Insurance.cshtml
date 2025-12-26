@@ -1,0 +1,146 @@
+@model PartyClap.Models.Vendor
+
+@{
+    ViewData["Title"] = "Vendor Insurance";
+}
+
+<div class="container py-4">
+    <partial name="_VendorMenu" />
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <div class="card p-4 mb-4 border-0 shadow-sm rounded-4">
+                <div class="text-center">
+                    <div class="mb-3">
+                        <div class="bg-primary bg-opacity-10 d-inline-block p-3 rounded-circle">
+                            <span class="display-5">🛡️</span>
+                        </div>
+                    </div>
+                    <h4>PartyClap Secure</h4>
+                    <p class="text-muted small">Vendor Protection Program</p>
+                    <hr />
+                    <div class="text-start">
+                        <p class="mb-2"><small>Status:</small> <span class="badge bg-success">Active</span></p>
+                        <p class="mb-2"><small>Plan:</small> <strong>Basic Protection</strong></p>
+                        <p class="mb-0"><small>Coverage:</small> Up to ₹50,000</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card p-4 border-0 shadow-sm rounded-4 bg-primary text-white">
+                <h5>Need Help?</h5>
+                <p class="small mb-3">Contact our insurance helpline for claims or queries.</p>
+                <a href="tel:1800-PARTY-INSURE" class="btn btn-light w-100 fw-bold text-primary">
+                    <i class="bi bi-telephone-fill me-2"></i>1800-SECURE
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <div class="mb-4">
+                <h2 class="fw-bold mb-1">Insurance Plans</h2>
+                <p class="text-muted">Protect your business, equipment, and team.</p>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <!-- Basic Plan -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 position-relative">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="fw-bold text-muted mb-2">Basic</h5>
+                            <div class="fs-2 fw-bold mb-3">Free</div>
+                            <p class="small text-muted mb-4">Essential protection for every vendor.</p>
+                            
+                            <ul class="list-unstyled text-start small mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Liability up to ₹50k</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Order Cancellation Support</li>
+                                <li class="mb-2 opacity-50"><i class="bi bi-x-circle-fill me-2"></i>Equipment Damage</li>
+                                <li class="mb-2 opacity-50"><i class="bi bi-x-circle-fill me-2"></i>Medical Coverage</li>
+                            </ul>
+                            
+                            <button class="btn btn-outline-secondary w-100 rounded-pill" disabled>Current Plan</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gold Plan -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-primary shadow rounded-4 position-relative overflow-hidden">
+                        <div class="position-absolute top-0 end-0 bg-primary text-white px-3 py-1 small rounded-bottom-start">Popular</div>
+                        <div class="card-body p-4 text-center">
+                            <h5 class="fw-bold text-primary mb-2">Gold</h5>
+                            <div class="fs-2 fw-bold mb-1">₹499<small class="fs-6 text-muted">/mo</small></div>
+                            <p class="small text-muted mb-4">Comprehensive coverage for professionals.</p>
+                            
+                            <ul class="list-unstyled text-start small mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Liability up to ₹5 Lakh</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Accidental Damage</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Equipment Cover (₹2L)</li>
+                                <li class="mb-2 opacity-50"><i class="bi bi-x-circle-fill me-2"></i>Team Medical</li>
+                            </ul>
+                            
+                            <button class="btn btn-primary-gradient w-100 rounded-pill">Upgrade Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Platinum Plan -->
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 bg-dark text-white" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%);">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="fw-bold mb-2 text-warning">Platinum</h5>
+                            <div class="fs-2 fw-bold mb-1">₹999<small class="fs-6 text-white-50">/mo</small></div>
+                            <p class="small text-white-50 mb-4">Maximum protection for business owners.</p>
+                            
+                            <ul class="list-unstyled text-start small mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Liability up to ₹20 Lakh</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Full Equipment Cover</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Team Medical (up to 5)</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Legal Assistance</li>
+                            </ul>
+                            
+                            <button class="btn btn-warning w-100 rounded-pill text-dark fw-bold">Contact Sales</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3">Frequently Asked Questions</h5>
+                <div class="accordion accordion-flush" id="insuranceFaq">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                What is covered under "Liability"?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#insuranceFaq">
+                            <div class="accordion-body text-muted small">
+                                Finds liability covers damages caused to venue property or third-party injuries during your event service.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                How do I claim insurance?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#insuranceFaq">
+                            <div class="accordion-body text-muted small">
+                                You can file a claim directly from this dashboard within 24 hours of the incident. Our team processes claims within 3-5 business days.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a asp-action="Dashboard" class="btn btn-link text-decoration-none text-muted">← Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>

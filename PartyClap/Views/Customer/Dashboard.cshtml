@@ -1,0 +1,731 @@
+@model List<PartyClap.Models.Booking>
+
+@{
+    ViewData["Title"] = "My Dashboard";
+    var customer = ViewBag.Customer as PartyClap.Models.Customer;
+    var walletTransactions = ViewBag.WalletTransactions as List<PartyClap.Models.WalletTransaction>;
+    var serviceRequestsList = ViewBag.ServiceRequests as List<Dictionary<string, object>>;
+}
+
+<style>
+    .wallet-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 30px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .wallet-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 15s ease-in-out infinite;
+    }
+    
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    
+    .wallet-balance {
+        font-size: 3rem;
+        font-weight: 700;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        margin: 10px 0;
+    }
+    
+    .wallet-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .add-money-btn {
+        background: white;
+        color: #667eea;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    .add-money-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        color: #764ba2;
+    }
+    
+    .transaction-item {
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .transaction-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+    }
+    
+    .stats-card {
+        border-radius: 15px;
+        border: none;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+    }
+    
+    .amount-btn {
+        border: 2px solid #667eea;
+        color: #667eea;
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .amount-btn:hover, .amount-btn.active {
+        background: #667eea;
+        color: white;
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Welcome back, <strong>@customer?.Name</strong>! 👋</h2>
+            <p class="text-muted">Manage your bookings and wallet</p>
+        </div>
+    </div>
+    
+
+    
+    <!-- Wallet and Stats Section -->
+    <div class="row g-4 mb-4">
+        <!-- Wallet Card -->
+        <div class="col-lg-6">
+            <div class="wallet-card">
+                <div class="position-relative" style="z-index: 1;">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-wallet2 me-2" style="font-size: 1.5rem;"></i>
+                        <span class="wallet-label">My Wallet</span>
+                    </div>
+                    <div class="wallet-balance">
+                        ₹@(customer?.WalletBalance.ToString("N2") ?? "0.00")
+                    </div>
+                    <p class="mb-4 opacity-75">Available Balance</p>
+                    <button class="add-money-btn" data-bs-toggle="modal" data-bs-target="#addMoneyModal">
+                        <i class="bi bi-plus-circle me-2"></i>Add Money
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats & Loyalty -->
+        <div class="col-lg-6">
+            <div class="row g-3">
+                <!-- Loyalty Card -->
+                <div class="col-12">
+                     @{
+                        string tier = ViewBag.LoyaltyTier as string ?? "Bronze";
+                        int points = ViewBag.PartyPoints != null ? (int)ViewBag.PartyPoints : 0;
+                        int nextPoints = ViewBag.NextTierPoints != null ? (int)ViewBag.NextTierPoints : 500;
+                        int progress = (int)((double)points / nextPoints * 100);
+                        if (progress > 100) progress = 100;
+
+                        string tierGradient = "linear-gradient(135deg, #cd7f32 0%, #a05a2c 100%)"; // Bronze
+                        string icon = "🥉";
+                        
+                        if (tier == "Silver") {
+                            tierGradient = "linear-gradient(135deg, #C0C0C0 0%, #9aa0a6 100%)";
+                            icon = "🥈";
+                        } else if (tier == "Gold") {
+                            tierGradient = "linear-gradient(135deg, #FFD700 0%, #FDB931 100%)";
+                            icon = "🥇";
+                        }
+                    }
+                    
+                    <div class="card text-white border-0 shadow-sm" style="background: @tierGradient; border-radius: 20px; overflow: hidden;">
+                        <div class="card-body p-4 position-relative">
+                            <div class="position-absolute top-0 end-0 p-3 opacity-25" style="font-size: 5rem; line-height: 0;">
+                                @icon
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0 fw-bold"><i class="bi bi-stars me-2"></i>Party Rewards</h5>
+                                <span class="badge bg-white text-dark bg-opacity-75">@tier Member</span>
+                            </div>
+                            <div class="display-6 fw-bold mb-1">@points Points</div>
+                            <p class="small opacity-75 mb-3">Earn points on every booking!</p>
+                            
+                            <div class="progress bg-white bg-opacity-25" style="height: 6px; border-radius: 10px;">
+                                <div class="progress-bar bg-white" role="progressbar" style="width: @progress%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small style="font-size: 0.7rem;">0</small>
+                                <small style="font-size: 0.7rem;">@nextPoints for next tier</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6">
+                    <div class="card stats-card shadow-sm p-3 h-100">
+                        <div class="d-flex align-items-center">
+                            <div class="stats-icon bg-primary bg-opacity-10 text-primary me-3">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <div>
+                                <h3 class="mb-0">@(Model?.Count ?? 0)</h3>
+                                <small class="text-muted">Bookings</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card stats-card shadow-sm p-3 h-100">
+                        <div class="d-flex align-items-center">
+                            <div class="stats-icon bg-success bg-opacity-10 text-success me-3">
+                                <i class="bi bi-inbox"></i>
+                            </div>
+                            <div>
+                                @{
+                                    var requestCount = serviceRequestsList?.Count ?? 0;
+                                }
+                                <h3 class="mb-0">@requestCount</h3>
+                                <small class="text-muted">Requests</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Transactions (Simplified) -->
+                <div class="col-12">
+                     <div class="card stats-card shadow-sm p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Activity</h6>
+                            <small class="text-muted">Wallet</small>
+                        </div>
+                        
+                        @if (walletTransactions != null && walletTransactions.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var txn in walletTransactions.Take(2))
+                                {
+                                    <div class="list-group-item border-0 px-0 py-1">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-truncate small" style="max-width: 150px;">@txn.Description</span>
+                                            <span class="fw-bold small @(txn.TransactionType == "Credit" ? "text-success" : "text-danger")">
+                                                @(txn.TransactionType == "Credit" ? "+" : "-")₹@txn.Amount.ToString("N0")
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted small mb-0">No transactions yet</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Service Requests Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h4 class="mb-0">
+                <i class="bi bi-inbox me-2"></i>My Service Requests
+            </h4>
+        </div>
+        <div class="card-body">
+            @if (serviceRequestsList != null && serviceRequestsList.Any())
+            {
+                @foreach (var requestDict in serviceRequestsList)
+                {
+                    var requestId = requestDict["Id"].ToString();
+                    var requestStatus = requestDict["Status"].ToString();
+                    var vendorName = requestDict.ContainsKey("VendorName") ? requestDict["VendorName"].ToString() : "Unknown Vendor";
+                    var vendorPhone = requestDict.ContainsKey("VendorPhone") ? requestDict["VendorPhone"].ToString() : "";
+                    var serviceType = requestDict.ContainsKey("ServiceType") ? requestDict["ServiceType"].ToString() : "";
+                    var eventDate = (DateTime)requestDict["EventDate"];
+                    var eventType = requestDict.ContainsKey("EventType") ? requestDict["EventType"].ToString() : "";
+                    var guestCount = Convert.ToInt32(requestDict["GuestCount"]);
+                    var additionalDetails = requestDict.ContainsKey("AdditionalDetails") ? requestDict["AdditionalDetails"].ToString() : "";
+                    var createdDate = (DateTime)requestDict["CreatedDate"];
+                    var responseDate = requestDict.ContainsKey("ResponseDate") && requestDict["ResponseDate"] != null ? (DateTime?)requestDict["ResponseDate"] : null;
+                    
+                    string borderClass = "";
+                    if (requestStatus == "Pending") borderClass = "border-start border-warning border-4";
+                    else if (requestStatus == "Approved") borderClass = "border-start border-success border-4";
+                    else if (requestStatus == "Rejected") borderClass = "border-start border-danger border-4";
+                    
+                    <div class="card mb-3 p-4 border-0 shadow-sm rounded-4 @borderClass">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <h5 class="fw-bold mb-0">Service Request #@requestId.Substring(0, 8)</h5>
+                                    @if (requestStatus == "Pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-clock me-1"></i>Pending
+                                        </span>
+                                    }
+                                    else if (requestStatus == "Approved")
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Approved
+                                        </span>
+                                    }
+                                    else if (requestStatus == "Rejected")
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x-circle me-1"></i>Rejected
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@requestStatus</span>
+                                    }
+                                </div>
+                                
+                                <!-- Vendor Information -->
+                                <div class="bg-light rounded p-3 mb-3">
+                                    <h6 class="fw-semibold mb-2">
+                                        <i class="bi bi-person-circle text-primary me-2"></i>Vendor Details
+                                    </h6>
+                                    <div class="row g-2 small">
+                                        <div class="col-md-6">
+                                            <strong>Vendor:</strong> @vendorName
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Phone:</strong> 
+                                            @if (!string.IsNullOrEmpty(vendorPhone))
+                                            {
+                                                <a href="tel:@vendorPhone" class="text-decoration-none">@vendorPhone</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Not provided</span>
+                                            }
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Service:</strong> <span class="badge bg-primary">@serviceType</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Event Details -->
+                                <div class="bg-info bg-opacity-10 rounded p-3 mb-3">
+                                    <h6 class="fw-semibold mb-2">
+                                        <i class="bi bi-calendar-event text-info me-2"></i>Event Details
+                                    </h6>
+                                    <div class="row g-2 small">
+                                        <div class="col-md-6">
+                                            <strong>Event Date:</strong> 
+                                            <span class="badge bg-light text-dark border">
+                                                @eventDate.ToString("MMM dd, yyyy")
+                                            </span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Event Type:</strong> <span class="badge bg-secondary">@eventType</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Number of Guests:</strong> <span class="badge bg-light text-dark">@guestCount</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Requested:</strong> @createdDate.ToString("MMM dd, yyyy 'at' hh:mm tt")
+                                        </div>
+                                        @if (responseDate.HasValue)
+                                        {
+                                            <div class="col-md-6">
+                                                <strong>Response Date:</strong> @responseDate.Value.ToString("MMM dd, yyyy 'at' hh:mm tt")
+                                            </div>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(additionalDetails))
+                                    {
+                                        <div class="mt-2">
+                                            <strong>Additional Details:</strong>
+                                            <p class="mb-0 small text-muted">@additionalDetails</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: #ddd;"></i>
+                    <p class="text-muted mt-3">No service requests found.</p>
+                    <a href="@Url.Action("Explore")" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-2"></i>Find Services
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <!-- Bookings Section -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h4 class="mb-0"><i class="bi bi-calendar-check me-2"></i>My Bookings</h4>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Event Date</th>
+                                <th>Total Cost</th>
+                                <th>Advance Paid</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var booking in Model)
+                            {
+                                <tr>
+                                    <td>@booking.Id.Substring(0, 8)...</td>
+                                    <td>@booking.EventDate.ToString("MMM dd, yyyy")</td>
+                                    <td>₹@booking.CustomerTotalCost</td>
+                                    <td>₹@booking.AdvancePaid</td>
+                                    <td>
+                                        @if (booking.Status == "Requested")
+                                        {
+                                            <span class="badge bg-warning text-dark">Requested</span>
+                                        }
+                                        else if (booking.Status == "Approved")
+                                        {
+                                            <span class="badge bg-info text-dark">Approved - Pay Balance</span>
+                                        }
+                                        else if (booking.Status == "Confirmed")
+                                        {
+                                            <span class="badge bg-success">Confirmed</span>
+                                        }
+                                        else if (booking.Status == "Rejected")
+                                        {
+                                            <span class="badge bg-danger">Rejected</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@booking.Status</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (booking.Status == "Approved" && !booking.BalancePaidOnApp)
+                                        {
+                                            <div class="d-flex gap-2">
+                                                <form asp-action="PayBalance" method="post" class="d-inline">
+                                                    <input type="hidden" name="bookingId" value="@booking.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success" data-confirm="Pay balance of ₹@booking.BalanceAmount?" data-confirm-title="Confirm Payment">
+                                                        <i class="bi bi-credit-card me-1"></i> Pay Balance
+                                                    </button>
+                                                </form>
+                                                <form asp-action="CancelBooking" method="post" class="d-inline">
+                                                    <input type="hidden" name="bookingId" value="@booking.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="Are you sure you want to CANCEL this booking? Current payments will be refunded to your wallet." data-confirm-title="Cancel Booking">
+                                                        <i class="bi bi-x-circle"></i> Cancel
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                        else if (booking.BalancePaidOnApp) // Confirmed & Paid
+                                        {
+                                             <div class="d-flex gap-2 align-items-center">
+                                                <span class="badge bg-success me-2">
+                                                    <i class="bi bi-check-circle me-1"></i> Balance Paid
+                                                </span>
+                                                @if (booking.Status != "Completed" && booking.EventDate > DateTime.Now)
+                                                {
+                                                     <form asp-action="CancelBooking" method="post" class="d-inline">
+                                                        <input type="hidden" name="bookingId" value="@booking.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="Are you sure you want to CANCEL this confirmed booking? Full amount will be refunded." data-confirm-title="Confirm Cancellation">
+                                                            <i class="bi bi-x-circle"></i> Cancel
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        }
+                                        else if (booking.Status == "Requested")
+                                        {
+                                            <form asp-action="CancelBooking" method="post" class="d-inline">
+                                                <input type="hidden" name="bookingId" value="@booking.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="Cancel this request? Advance paid will be refunded." data-confirm-title="Cancel Request">
+                                                    <i class="bi bi-trash"></i> Cancel Request
+                                                </button>
+                                            </form>
+                                        }
+                                        @if (booking.Status == "Confirmed" && booking.EventDate < DateTime.Now)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3" 
+                                                    onclick="openFeedbackModal('@booking.Id', '@booking.VendorId', '@booking.ServiceId', '@(booking.EventDate.ToString("MMM dd, yyyy"))')">
+                                                <i class="bi bi-star-fill me-1"></i> Rate Service
+                                            </button>
+                                        }
+                                        else if (booking.Status == "Cancelled")
+                                        {
+                                            <span class="text-muted small"><i class="bi bi-arrow-return-left me-1"></i>Refunded</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x" style="font-size: 3rem; color: #ddd;"></i>
+                    <p class="text-muted mt-3">You haven't made any bookings yet.</p>
+                    <a href="@Url.Action("Explore")" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i>Explore Services
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Add Money Modal -->
+<div class="modal fade" id="addMoneyModal" tabindex="-1" aria-labelledby="addMoneyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="addMoneyModalLabel">
+                    <i class="bi bi-wallet2 me-2"></i>Add Money to Wallet
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="AddMoneyToWallet" method="post">
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Select an amount or enter a custom value</p>
+                    
+                    <!-- Quick Amount Buttons -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <button type="button" class="amount-btn w-100" onclick="setAmount(500)">₹500</button>
+                        </div>
+                        <div class="col-4">
+                            <button type="button" class="amount-btn w-100" onclick="setAmount(1000)">₹1,000</button>
+                        </div>
+                        <div class="col-4">
+                            <button type="button" class="amount-btn w-100" onclick="setAmount(2000)">₹2,000</button>
+                        </div>
+                        <div class="col-4">
+                            <button type="button" class="amount-btn w-100" onclick="setAmount(5000)">₹5,000</button>
+                        </div>
+                        <div class="col-4">
+                            <button type="button" class="amount-btn w-100" onclick="setAmount(10000)">₹10,000</button>
+                        </div>
+                        <div class="col-4">
+                            <button type="button" class="amount-btn w-100" onclick="setAmount(20000)">₹20,000</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Amount Input -->
+                    <div class="mb-3">
+                        <label for="customAmount" class="form-label">Or enter custom amount</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="customAmount" name="amount" 
+                                   placeholder="Enter amount" min="1" max="100000" step="1" required>
+                        </div>
+                        <small class="text-muted">Minimum: ₹1 | Maximum: ₹1,00,000</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Add Money
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Share Your Experience</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-4">How was the service on <span id="feedbackDate" class="fw-bold"></span>?</p>
+                
+                <form id="feedbackForm">
+                    <input type="hidden" id="f_bookingId" name="bookingId" />
+                    <input type="hidden" id="f_vendorId" name="vendorId" />
+                    <input type="hidden" id="f_serviceId" name="serviceId" />
+                    
+                    <div class="text-center mb-4">
+                        <div class="star-rating">
+                            <i class="bi bi-star m-1 fs-2 rating-star" data-rating="1"></i>
+                            <i class="bi bi-star m-1 fs-2 rating-star" data-rating="2"></i>
+                            <i class="bi bi-star m-1 fs-2 rating-star" data-rating="3"></i>
+                            <i class="bi bi-star m-1 fs-2 rating-star" data-rating="4"></i>
+                            <i class="bi bi-star m-1 fs-2 rating-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" name="rating" id="selectedRating" value="5" />
+                        <div id="ratingText" class="text-primary fw-semibold mt-2">Excellent!</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Your Feedback</label>
+                        <textarea class="form-control rounded-3" name="comment" rows="4" placeholder="What did you like the most? Any suggestions for improvement?"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-gradient w-100 py-3 rounded-pill fw-bold shadow-sm">
+                        Submit Review
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rating-star {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #ddd;
+    }
+    .rating-star.active {
+        color: #FFD700;
+        transform: scale(1.1);
+    }
+    .amount-btn {
+        border: 1px solid #dee2e6;
+        background: white;
+        padding: 10px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .amount-btn:hover, .amount-btn.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+</style>
+
+<script>
+    function setAmount(amount) {
+        document.getElementById('customAmount').value = amount;
+        document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function openFeedbackModal(bookingId, vendorId, serviceId, date) {
+        document.getElementById('f_bookingId').value = bookingId;
+        document.getElementById('f_vendorId').value = vendorId;
+        document.getElementById('f_serviceId').value = serviceId;
+        document.getElementById('feedbackDate').innerText = date;
+        
+        // Reset stars
+        updateStars(5);
+        
+        const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+        modal.show();
+    }
+
+    function updateStars(rating) {
+        document.getElementById('selectedRating').value = rating;
+        const stars = document.querySelectorAll('.rating-star');
+        const labels = ["", "Poor", "Fair", "Good", "Very Good", "Excellent!"];
+        
+        stars.forEach(star => {
+            const starRating = parseInt(star.getAttribute('data-rating'));
+            if (starRating <= rating) {
+                star.classList.replace('bi-star', 'bi-star-fill');
+                star.classList.add('active');
+            } else {
+                star.classList.replace('bi-star-fill', 'bi-star');
+                star.classList.remove('active');
+            }
+        });
+        
+        document.getElementById('ratingText').innerText = labels[rating];
+    }
+
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            updateStars(parseInt(this.getAttribute('data-rating')));
+        });
+    });
+
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Posting...';
+
+        fetch('@Url.Action("SubmitReview", "Review")', {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('feedbackModal')).hide();
+                SmartPop.success('Feedback Saved', data.message);
+                // Optionally reload or remove the button
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                SmartPop.error('Submission Failed', data.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        })
+        .catch(err => {
+            SmartPop.error('Network Error', 'Something went wrong. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+</script>
+

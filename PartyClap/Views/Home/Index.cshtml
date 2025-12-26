@@ -1,0 +1,279 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">
+            <span class="text-gradient">Make Your Party</span><br>
+            <span class="text-gradient">Unforgettable!</span>
+        </h1>
+        <p class="hero-subtitle mb-4">
+            Book skilled vendors for singers, chefs, magicians, event managers, and more. Create magical moments with India's best party professionals.
+        </p>
+
+        <!-- Smart Search Bar -->
+        <div class="search-container mx-auto mb-5 animate__animated animate__fadeInUp animate__delay-1s">
+            <form asp-controller="Customer" asp-action="Explore" method="get" class="search-glass d-flex align-items-center p-2 rounded-pill shadow-lg bg-white bg-opacity-75 blur-md">
+                <div class="flex-grow-1 px-3 d-flex align-items-center border-end">
+                    <i class="bi bi-search text-muted me-2"></i>
+                    <input type="text" name="searchTerm" class="form-control border-0 bg-transparent shadow-none" placeholder="Search for singers, magicians, chefs..." style="min-width: 250px;">
+                </div>
+                <div class="px-3 d-none d-md-flex align-items-center">
+                    <i class="bi bi-geo-alt text-muted me-2"></i>
+                    <input type="text" name="pinCode" class="form-control border-0 bg-transparent shadow-none" placeholder="Location/PIN" style="max-width: 120px;">
+                </div>
+                <button type="submit" class="btn btn-primary-gradient rounded-pill px-4 ms-2 py-2">
+                    <span class="d-none d-sm-inline">Find Vendors</span>
+                    <i class="bi bi-arrow-right d-sm-none"></i>
+                </button>
+            </form>
+        </div>
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="Customer" asp-action="Explore" class="btn btn-primary-gradient btn-lg px-5">Book Now</a>
+            <a asp-controller="Vendor" asp-action="Register" class="btn btn-outline-dark-custom btn-lg px-5">Join as Vendor</a>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3">Why Choose PrivateParty Wala?</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h5 class="fw-bold mb-2">Expert Vendors</h5>
+                    <p class="text-muted small mb-0">Verified professionals for all your party needs.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h5 class="fw-bold mb-2">Quality Guaranteed</h5>
+                    <p class="text-muted small mb-0">Top-rated services with customer reviews.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <h5 class="fw-bold mb-2">Secure Payments</h5>
+                    <p class="text-muted small mb-0">Safe and secure payment processing.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h5 class="fw-bold mb-2">Easy Booking</h5>
+                    <p class="text-muted small mb-0">Simple booking process with instant confirmation.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3">Our Services</h2>
+        </div>
+        <div class="row g-4 horizontal-scroll-mobile">
+            <!-- Service 1 -->
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-3 me-3">
+                            <span class="fs-4">🎤</span>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Singers & Musicians</h5>
+                            <span class="badge bg-danger-subtle text-danger rounded-pill">Popular</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Professional artists for your entertainment.</p>
+                    <a asp-controller="Customer" asp-action="Explore" asp-route-category="Music" class="text-primary text-decoration-none fw-semibold small">Explore Vendors →</a>
+                </div>
+            </div>
+            <!-- Service 2 -->
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-3 me-3">
+                            <span class="fs-4">👨‍🍳</span>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Chefs & Caterers</h5>
+                            <span class="badge bg-warning-subtle text-warning rounded-pill">Popular</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Delicious food for your guests.</p>
+                    <a asp-controller="Customer" asp-action="Explore" asp-route-category="Catering" class="text-primary text-decoration-none fw-semibold small">Explore Vendors →</a>
+                </div>
+            </div>
+            <!-- Service 3 -->
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-3 me-3">
+                            <span class="fs-4">🎩</span>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Magicians</h5>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Amazing magic shows for all ages.</p>
+                    <a asp-controller="Customer" asp-action="Explore" asp-route-category="Magic" class="text-primary text-decoration-none fw-semibold small">Explore Vendors →</a>
+                </div>
+            </div>
+            <!-- Service 4 -->
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-3 me-3">
+                            <span class="fs-4">📋</span>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Event Managers</h5>
+                            <span class="badge bg-primary-subtle text-primary rounded-pill">Popular</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Complete event planning and execution.</p>
+                    <a asp-controller="Customer" asp-action="Explore" asp-route-category="Planning" class="text-primary text-decoration-none fw-semibold small">Explore Vendors →</a>
+                </div>
+            </div>
+            <!-- Service 5 -->
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-3 me-3">
+                            <span class="fs-4">🎈</span>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Decorators</h5>
+                            <span class="badge bg-success-subtle text-success rounded-pill">Popular</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Beautiful decorations for any theme.</p>
+                    <a asp-controller="Customer" asp-action="Explore" asp-route-category="Decoration" class="text-primary text-decoration-none fw-semibold small">Explore Vendors →</a>
+                </div>
+            </div>
+            <!-- Service 6 -->
+            <div class="col-md-4">
+                <div class="service-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light p-3 me-3">
+                            <span class="fs-4">📸</span>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Photographers</h5>
+                            <span class="badge bg-info-subtle text-info rounded-pill">Popular</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Capture your special moments.</p>
+                    <a asp-controller="Customer" asp-action="Explore" asp-route-category="Photography" class="text-primary text-decoration-none fw-semibold small">Explore Vendors →</a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a asp-controller="Customer" asp-action="Explore" class="btn btn-primary-gradient px-4">View All Services →</a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="stat-number">500+</div>
+                <p class="text-muted">Verified Vendors</p>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-number">10,000+</div>
+                <p class="text-muted">Happy Customers</p>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-number">50+</div>
+                <p class="text-muted">Cities Covered</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-5" style="background-color: #FFF1F2;">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3" style="font-size: 2.5rem; color: var(--dark-color);">What Our Customers Say</h2>
+        </div>
+        <div class="row g-4 horizontal-scroll-mobile">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text">"Amazing service! I found the perfect singer for my daughter's birthday party. The booking process was so easy!"</p>
+                    <div>
+                        <div class="testimonial-author">Priya Sharma</div>
+                        <div class="testimonial-location">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Mumbai
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text">"The chef we booked was incredible. Food was restaurant quality and everyone loved it. Highly recommend!"</p>
+                    <div>
+                        <div class="testimonial-author">Rajesh Kumar</div>
+                        <div class="testimonial-location">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Delhi
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">★★★★★</div>
+                    <p class="testimonial-text">"Professional magician made our anniversary party unforgettable. Kids and adults were both entertained!"</p>
+                    <div>
+                        <div class="testimonial-author">Anita Patel</div>
+                        <div class="testimonial-location">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Bangalore
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="container">
+    <div class="cta-section">
+        <div class="mb-4">
+            <svg width="48" height="48" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+        </div>
+        <h2 class="fw-bold mb-3">Ready to Plan Your Perfect Party?</h2>
+        <p class="mb-4 opacity-75">Join thousands of satisfied customers who trust PrivateParty Wala for their celebrations.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="Customer" asp-action="Explore" class="btn btn-light text-primary fw-bold px-4">Start Planning</a>
+            <a asp-controller="Vendor" asp-action="Register" class="btn btn-outline-light fw-bold px-4">Join as Vendor</a>
+        </div>
+    </div>
+</section>

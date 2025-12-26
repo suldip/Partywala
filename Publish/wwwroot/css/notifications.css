@@ -1,0 +1,125 @@
+/* ============================================
+   NOTIFICATION SYSTEM
+   ============================================ */
+
+/* Notification Bell */
+.notification-bell {
+    position: relative;
+    font-size: 1.25rem;
+    color: #333;
+    transition: color 0.2s;
+}
+
+.notification-bell:hover {
+    color: #667eea;
+}
+
+#notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: #dc3545;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+    width: 380px;
+    max-height: 500px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+.notification-dropdown .dropdown-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 16px;
+    font-weight: 600;
+}
+
+.notification-dropdown .dropdown-header a {
+    color: white;
+    text-decoration: underline;
+}
+
+/* Notification Item */
+.notification-item {
+    padding: 14px 16px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+    text-decoration: none;
+}
+
+.notification-item.unread {
+    background-color: #e7f3ff;
+    border-left-color: #667eea;
+}
+
+.notification-icon {
+    font-size: 1.75rem;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.unread-dot {
+    width: 10px;
+    height: 10px;
+    background: #667eea;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.notification-item .fw-bold {
+    color: #333;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.notification-item .small {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Scrollbar Styling */
+.notification-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .notification-dropdown {
+        width: 320px;
+    }
+}

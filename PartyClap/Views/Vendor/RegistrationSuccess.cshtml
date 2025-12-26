@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Registration Successful";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container py-5" style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    <div class="row w-100 justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden text-center p-5">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 p-4 mb-3">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 11.08V12C21.9988 14.1564 21.3005 16.2547 20.0093 17.9818C18.7182 19.709 16.9033 20.9725 14.8354 21.5839C12.7674 22.1953 10.5573 22.1219 8.53447 21.3746C6.51168 20.6273 4.78465 19.2461 3.61096 17.4371C2.43727 15.628 1.87979 13.4881 2.02168 11.3363C2.16356 9.18455 2.99721 7.13631 4.40179 5.49706C5.80637 3.8578 7.71072 2.71389 9.83546 2.23432C11.9602 1.75475 14.1947 1.96502 16.2 2.82" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M22 4L12 14.01L9 11.01" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h2 class="fw-bold mb-3">Welcome to PartyClap!</h2>
+                    <p class="text-muted lead mb-4">Your vendor account has been created successfully. You are now part of India's fastest-growing party network.</p>
+                </div>
+
+                <div class="d-flex flex-column gap-3">
+                    <a href="@Url.Action("Dashboard", "Vendor", new { id = ViewData["VendorId"] })" class="btn btn-primary-gradient btn-lg w-100 py-3 fw-bold rounded-pill text-white shadow-sm">
+                        Go to Dashboard <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                    
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-dark-custom btn-lg w-100 py-3 fw-bold rounded-pill border-0 bg-light text-muted">
+                        Back to Home
+                    </a>
+                </div>
+                
+                <div class="mt-5 pt-4 border-top">
+                    <p class="small text-muted mb-0">Need help? <a href="#" class="text-decoration-none fw-semibold">Contact Support</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%);
+        border: none;
+        transition: transform 0.2s;
+    }
+    .btn-primary-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -10px rgba(139, 92, 246, 0.5);
+    }
+    .card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+    }
+    body {
+        background-color: #F9FAFB;
+    }
+</style>
