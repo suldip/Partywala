@@ -1,0 +1,27 @@
+@{
+    var address = ViewData["PartyLocation"] as string ?? "";
+    var pinCode = ViewData["PartyPinCode"] as string ?? "";
+    if (string.IsNullOrWhiteSpace(pinCode) && ViewData["PartyPinCode"] != null)
+    {
+        pinCode = ViewData["PartyPinCode"].ToString();
+    }
+}
+@if (!string.IsNullOrWhiteSpace(address))
+{
+    var mapsQuery = string.IsNullOrWhiteSpace(pinCode) ? address : $"{address}, {pinCode}";
+    var mapsUrl = $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(mapsQuery)}";
+    <div class="party-location-display">
+        <div class="party-location-display-address">
+            <i class="bi bi-geo-alt-fill"></i>@address
+        </div>
+        @if (!string.IsNullOrWhiteSpace(pinCode))
+        {
+            <div class="party-location-display-pin">
+                <i class="bi bi-mailbox me-1"></i>PIN: @pinCode
+            </div>
+        }
+        <a href="@mapsUrl" target="_blank" rel="noopener" class="party-location-display-link text-primary">
+            <i class="bi bi-box-arrow-up-right"></i> Open in Google Maps
+        </a>
+    </div>
+}

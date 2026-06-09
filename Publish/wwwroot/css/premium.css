@@ -1305,19 +1305,307 @@ textarea.vendor-form-input {
         font-size: 0.85rem;
     }
 }
+
 /* --- Smart Mobile Enhancements --- */
-.blur-md { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.search-container { max-width: 800px; width: 100%; }
-.search-glass { border: 1px solid rgba(255, 255, 255, 0.3); transition: transform 0.3s ease, box-shadow 0.3s ease; }
-.search-glass:focus-within { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.2) !important; background: white !important; }
-@media (max-width: 767px) {
-    .horizontal-scroll-mobile { display: flex !important; flex-direction: row !important; overflow-x: auto !important; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; gap: 1rem; padding: 0.5rem 1rem 1.5rem !important; margin-left: -1rem; margin-right: -1rem; }
-    .horizontal-scroll-mobile::-webkit-scrollbar { display: none; }
-    .horizontal-scroll-mobile > .col-md-4, .horizontal-scroll-mobile > .col-md-3 { flex: 0 0 80% !important; width: 80% !important; scroll-snap-align: center; }
+.blur-md {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
-/* Mobile Brand Text Fix */
-@media (max-width: 380px) {
-    .brand-text { font-size: 1.1rem; }
-    .navbar-brand svg { width: 20px; height: 20px; }
+.search-container {
+    max-width: 800px;
+    width: 100%;
+}
+
+.search-glass {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-glass:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.2) !important;
+    background: white !important;
+}
+
+@media (max-width: 767px) {
+
+    /* Global Mobile Fit Fixes */
+    body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        position: relative;
+    }
+
+    .container {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Hero Section Fitting */
+    .hero-section {
+        padding: 40px 0 30px !important;
+        margin: 0 !important;
+        overflow: hidden;
+    }
+
+    .hero-title {
+        font-size: 2.1rem !important;
+        margin-top: 0.5rem;
+        line-height: 1.2 !important;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: -0.5px;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem !important;
+        text-align: center;
+        padding: 0 10px;
+        margin-bottom: 25px !important;
+        line-height: 1.5;
+    }
+
+    /* Stacking Buttons Perfectly */
+    .hero-btns {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 12px !important;
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto !important;
+        padding: 0 10px;
+    }
+
+    .hero-btns .btn {
+        width: 100% !important;
+        padding: 14px !important;
+        margin: 0 !important;
+        font-size: 1rem !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Search Bar Fitting */
+    .search-container {
+        padding: 0 !important;
+        margin: 2rem 15px !important;
+        width: auto;
+    }
+
+    .search-glass {
+        flex-direction: column !important;
+        border-radius: 16px !important;
+        padding: 8px !important;
+        background: white !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .search-input-group {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        padding: 12px 10px !important;
+    }
+
+    .search-input-group input {
+        font-size: 0.95rem !important;
+        width: 100% !important;
+    }
+
+    .search-glass .btn {
+        width: 100% !important;
+        margin: 8px 0 0 0 !important;
+        padding: 14px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Precisely Aligned Horizontal Scroll */
+    .horizontal-scroll-mobile {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        -webkit-overflow-scrolling: touch;
+        gap: 16px !important;
+        padding: 10px 30px 40px !important;
+        /* Standard side padding */
+        margin: 0 -30px !important;
+        /* Pull to window edges */
+        width: calc(100% + 60px) !important;
+        justify-content: flex-start !important;
+    }
+
+    .horizontal-scroll-mobile::-webkit-scrollbar {
+        display: none;
+    }
+
+    .horizontal-scroll-mobile>.col-md-4,
+    .horizontal-scroll-mobile>.col-md-3 {
+        flex: 0 0 calc(100% - 60px) !important;
+        /* Width must match gutter calculation */
+        width: calc(100% - 60px) !important;
+        scroll-snap-align: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Service Card Mobile Tuning */
+    .service-card {
+        padding: 1.5rem !important;
+        border-radius: 20px !important;
+        border: 1px solid #f1f5f9;
+        text-align: left;
+        margin: 0 auto;
+        width: 100%;
+        background: white !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .service-card .rounded-circle {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.5rem !important;
+        margin-right: 15px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .service-card h5 {
+        font-size: 1.2rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .service-card .text-muted {
+        font-size: 0.9rem !important;
+    }
+
+    /* Feature Cards (Why Choose Us) - Stacked Vertically */
+    .feature-card {
+        margin: 0 0 15px 0 !important;
+        text-align: center !important;
+        display: block !important;
+        padding: 1.5rem !important;
+        background: white !important;
+        border: 1px solid #f1f5f9 !important;
+    }
+
+    .feature-icon {
+        margin: 0 auto 12px !important;
+        width: 48px;
+        height: 48px;
+    }
+}
+
+/* Navbar Brand Fix for Mobile Header */
+@media (max-width: 480px) {
+    .brand-text {
+        font-size: 0.9rem !important;
+        white-space: nowrap;
+    }
+
+    .navbar-brand {
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .navbar-brand svg {
+        width: 20px;
+        height: 20px;
+        margin-right: 6px !important;
+    }
+
+    .navbar .container {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    .gap-2 {
+        gap: 0.35rem !important;
+    }
+}
+
+/* ============================================
+   DESIGN POLISH LAYER (market-standard refinements)
+   ============================================ */
+html { scroll-behavior: smooth; }
+
+::selection { background: rgba(139, 92, 246, 0.2); color: var(--dark-color); }
+
+/* Consistent, softer button shape with subtle press feedback */
+.btn-primary-gradient,
+.btn-outline-dark-custom,
+.btn-light-purple {
+    border-radius: 12px;
+    letter-spacing: 0.2px;
+}
+
+.btn-primary-gradient {
+    box-shadow: 0 6px 16px -6px rgba(139, 92, 246, 0.5);
+}
+
+.btn-primary-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 22px -8px rgba(139, 92, 246, 0.55);
+    filter: saturate(1.05);
+}
+
+.btn-primary-gradient:active,
+.btn-light-purple:active,
+.btn-outline-dark-custom:active {
+    transform: translateY(0);
+}
+
+/* Accessible keyboard focus rings */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible {
+    outline: 3px solid rgba(139, 92, 246, 0.45);
+    outline-offset: 2px;
+}
+
+/* Softer, more premium card elevation */
+.feature-card,
+.service-card,
+.testimonial-card {
+    border-radius: 18px;
+}
+
+/* Brand logo hover affordance */
+.navbar-brand { transition: opacity 0.2s ease; }
+.navbar-brand:hover { opacity: 0.85; }
+
+.brand-logo {
+    border-radius: 10px;
+    box-shadow: 0 4px 10px -3px rgba(139, 92, 246, 0.45);
+    object-fit: cover;
+}
+@media (max-width: 480px) {
+    .brand-logo { width: 30px !important; height: 30px !important; }
+}
+
+/* Form inputs: consistent focus glow site-wide */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+/* Badges a touch rounder */
+.badge { border-radius: 8px; }
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
 }

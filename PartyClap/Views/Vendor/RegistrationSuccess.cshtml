@@ -19,13 +19,23 @@
                 </div>
 
                 <div class="d-flex flex-column gap-3">
-                    <a href="@Url.Action("Dashboard", "Vendor", new { id = ViewData["VendorId"] })" class="btn btn-primary-gradient btn-lg w-100 py-3 fw-bold rounded-pill text-white shadow-sm">
+                    <a href="@Url.Action("Dashboard", "Vendor", new { id = ViewData["VendorId"], section = "profile" })" class="btn btn-primary-gradient btn-lg w-100 py-3 fw-bold rounded-pill text-white shadow-sm">
+                        Set Up Payment Details <i class="bi bi-shield-lock ms-2"></i>
+                    </a>
+                    <a href="@Url.Action("Dashboard", "Vendor", new { id = ViewData["VendorId"] })" class="btn btn-outline-primary btn-lg w-100 py-3 fw-bold rounded-pill">
                         Go to Dashboard <i class="bi bi-arrow-right ms-2"></i>
                     </a>
                     
                     <a href="@Url.Action("Index", "Home")" class="btn btn-outline-dark-custom btn-lg w-100 py-3 fw-bold rounded-pill border-0 bg-light text-muted">
                         Back to Home
                     </a>
+                </div>
+
+                <div class="alert alert-light border rounded-4 mt-4 mb-0 text-start">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Bank and UPI payout information is collected only from your signed-in vendor dashboard, never on the public registration page.
+                    </small>
                 </div>
                 
                 <div class="mt-5 pt-4 border-top">

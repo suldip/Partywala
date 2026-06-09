@@ -1,0 +1,218 @@
+@{
+    var backUrl = ViewData["PayBackUrl"] as string ?? Url.Action("ViewCart", "Customer");
+    var backLabel = ViewData["PayBackLabel"] as string ?? "Back to Cart";
+    var vendorName = ViewData["PayVendorName"] as string ?? "Vendor";
+    var serviceType = ViewData["PayServiceType"] as string ?? "Service";
+    var dateRange = ViewData["PayDateRange"] as string ?? "";
+    var timeRange = ViewData["PayTimeRange"] as string;
+    var dayCount = ViewData["PayDayCount"] as int? ?? 1;
+    var eventType = ViewData["PayEventType"] as string;
+    var bookingId = ViewData["PayBookingId"] as string;
+    var amountDue = ViewData["PayAmountDue"] as decimal? ?? 0m;
+    var serviceTotal = ViewData["PayServiceTotal"] as decimal? ?? amountDue;
+    var alreadyPaid = ViewData["PayAlreadyPaid"] as decimal? ?? 0m;
+    var formAction = ViewData["PayFormAction"] as string ?? "";
+    var submitLabel = ViewData["PaySubmitLabel"] as string ?? $"Pay ₹{amountDue:N0}";
+    var isSuccess = ViewData["PayIsSuccess"] as bool? ?? false;
+    var isBlocked = ViewData["PayIsBlocked"] as bool? ?? false;
+    var blockedMessage = ViewData["PayBlockedMessage"] as string ?? "Payment is not available right now.";
+    var successTitle = ViewData["PaySuccessTitle"] as string ?? "Payment Complete";
+    var successMessage = ViewData["PaySuccessMessage"] as string ?? "Your booking is confirmed.";
+    var successAmount = ViewData["PaySuccessAmount"] as decimal? ?? amountDue;
+    var successPrimaryUrl = ViewData["PaySuccessPrimaryUrl"] as string ?? backUrl;
+    var successPrimaryLabel = ViewData["PaySuccessPrimaryLabel"] as string ?? "Back to Cart";
+    var successSecondaryUrl = ViewData["PaySuccessSecondaryUrl"] as string;
+    var successSecondaryLabel = ViewData["PaySuccessSecondaryLabel"] as string ?? "View Invoice";
+}
+
+<link rel="stylesheet" href="~/css/payment-checkout.css" asp-append-version="true" />
+
+<div class="container py-5 pay-checkout-page">
+    <a href="@backUrl" class="pay-checkout-back">
+        <i class="bi bi-arrow-left"></i> @backLabel
+    </a>
+
+    @if (isSuccess)
+    {
+        <div class="pay-card pay-success-card">
+            <div class="pay-success-icon"><i class="bi bi-check-lg"></i></div>
+            <h2 class="fw-bold mb-2">@successTitle</h2>
+            <p class="text-muted mb-3">@successMessage</p>
+            <div class="h3 fw-bold text-success mb-4">₹@successAmount.ToString("N0") paid</div>
+            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                @if (!string.IsNullOrEmpty(successSecondaryUrl))
+                {
+                    <a href="@successSecondaryUrl" target="_blank" class="btn btn-outline-primary rounded-pill px-4">
+                        <i class="bi bi-receipt me-1"></i> @successSecondaryLabel
+                    </a>
+                }
+                <a href="@successPrimaryUrl" class="btn btn-primary rounded-pill px-4">@successPrimaryLabel</a>
+            </div>
+        </div>
+    }
+    else if (isBlocked)
+    {
+        <div class="pay-card p-4">
+            <div class="alert alert-warning border-0 mb-3">@blockedMessage</div>
+            <a href="@backUrl" class="btn btn-outline-secondary rounded-pill">@backLabel</a>
+        </div>
+    }
+    else
+    {
+        <div class="pay-checkout-grid">
+            <div class="pay-checkout-main">
+                <div class="pay-card">
+                    <div class="pay-card-header"><i class="bi bi-bag-check"></i> Booking details</div>
+                    <div class="pay-card-body">
+                        <div class="pay-service-row">
+                            <div class="pay-service-icon"><i class="bi bi-stars"></i></div>
+                            <div class="flex-grow-1">
+                                <div class="pay-service-name">@serviceType</div>
+                                <div class="pay-service-vendor">@vendorName</div>
+                                <div class="pay-meta-grid">
+                                    <div>
+                                        <div class="pay-meta-label">Event dates</div>
+                                        <div class="pay-meta-value">@dateRange</div>
+                                        @if (dayCount > 1)
+                                        {
+                                            <div class="small text-primary">@dayCount days</div>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(timeRange))
+                                    {
+                                        <div>
+                                            <div class="pay-meta-label">Time</div>
+                                            <div class="pay-meta-value">@timeRange</div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(eventType))
+                                    {
+                                        <div>
+                                            <div class="pay-meta-label">Event type</div>
+                                            <div class="pay-meta-value">@eventType</div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(bookingId))
+                                    {
+                                        <div>
+                                            <div class="pay-meta-label">Booking ID</div>
+                                            <div class="pay-meta-value">#@bookingId.Substring(0, Math.Min(8, bookingId.Length))</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pay-card" data-pay-checkout>
+                    <div class="pay-card-header"><i class="bi bi-wallet2"></i> Payment method</div>
+                    <div class="pay-card-body">
+                        <div class="pay-methods">
+                            <label class="pay-method-option active" data-method="upi">
+                                <input type="radio" name="payMethod" value="upi" checked>
+                                <span class="pay-method-icon"><i class="bi bi-phone"></i></span>
+                                <span class="pay-method-text">
+                                    <strong>UPI</strong>
+                                    <span>Google Pay, PhonePe, Paytm & more</span>
+                                </span>
+                            </label>
+                            <div class="pay-method-panel active" data-method="upi">
+                                <div class="small text-muted mb-2">Pay instantly using your UPI app</div>
+                                <div class="pay-upi-apps">
+                                    <span class="pay-upi-chip">Google Pay</span>
+                                    <span class="pay-upi-chip">PhonePe</span>
+                                    <span class="pay-upi-chip">Paytm</span>
+                                    <span class="pay-upi-chip">BHIM UPI</span>
+                                </div>
+                            </div>
+
+                            <label class="pay-method-option" data-method="card">
+                                <input type="radio" name="payMethod" value="card">
+                                <span class="pay-method-icon"><i class="bi bi-credit-card"></i></span>
+                                <span class="pay-method-text">
+                                    <strong>Credit / Debit Card</strong>
+                                    <span>Visa, Mastercard, RuPay</span>
+                                </span>
+                            </label>
+                            <div class="pay-method-panel" data-method="card">
+                                <div class="small text-muted">You will be redirected to a secure card payment page.</div>
+                            </div>
+
+                            <label class="pay-method-option" data-method="netbanking">
+                                <input type="radio" name="payMethod" value="netbanking">
+                                <span class="pay-method-icon"><i class="bi bi-bank"></i></span>
+                                <span class="pay-method-text">
+                                    <strong>Net Banking</strong>
+                                    <span>All major Indian banks</span>
+                                </span>
+                            </label>
+                            <div class="pay-method-panel" data-method="netbanking">
+                                <div class="small text-muted">Select your bank on the next step.</div>
+                            </div>
+
+                            <label class="pay-method-option" data-method="wallet">
+                                <input type="radio" name="payMethod" value="wallet">
+                                <span class="pay-method-icon"><i class="bi bi-wallet"></i></span>
+                                <span class="pay-method-text">
+                                    <strong>Wallets</strong>
+                                    <span>PartyClap wallet & other options</span>
+                                </span>
+                            </label>
+                            <div class="pay-method-panel" data-method="wallet">
+                                <div class="small text-muted">Use your PartyClap wallet balance if available.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="pay-summary-card">
+                <div class="pay-summary-header">
+                    <h2>Order summary</h2>
+                    <p>Review before you pay</p>
+                </div>
+                <div class="pay-summary-body">
+                    <div class="pay-summary-line">
+                        <span class="label">@serviceType · @vendorName</span>
+                        <span class="amount">₹@serviceTotal.ToString("N0")</span>
+                    </div>
+                    @if (alreadyPaid > 0)
+                    {
+                        <div class="pay-summary-line">
+                            <span class="label">Already paid</span>
+                            <span class="amount text-success">− ₹@alreadyPaid.ToString("N0")</span>
+                        </div>
+                    }
+                    <hr class="pay-summary-divider">
+                    <div class="pay-summary-total">
+                        <span class="label">Total payable</span>
+                        <span class="amount">₹@amountDue.ToString("N0")</span>
+                    </div>
+
+                    <form asp-action="@formAction" method="post">
+                        @Html.AntiForgeryToken()
+                        @if (ViewData["PayHiddenFields"] is IEnumerable<KeyValuePair<string, string>> hiddenFields)
+                        {
+                            foreach (var field in hiddenFields)
+                            {
+                                <input type="hidden" name="@field.Key" value="@field.Value" />
+                            }
+                        }
+                        <button type="submit" class="pay-btn-primary">
+                            <i class="bi bi-shield-lock"></i> @submitLabel
+                        </button>
+                    </form>
+
+                    <div class="pay-trust-row">
+                        <span class="pay-trust-item"><i class="bi bi-shield-check"></i> 256-bit SSL</span>
+                        <span class="pay-trust-item"><i class="bi bi-lock-fill"></i> Secure checkout</span>
+                        <span class="pay-trust-item"><i class="bi bi-patch-check"></i> Verified vendor</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    }
+</div>
+
+<script src="~/js/payment-checkout.js" asp-append-version="true"></script>

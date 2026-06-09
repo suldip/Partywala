@@ -1,0 +1,146 @@
+@model PartyClap.Models.VendorAvailabilityCalendarViewModel
+@using PartyClap.Services
+
+@if (Model.ShowStatCards)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="vac-stat-card vac-stat-open">
+                <div class="vac-stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div>
+                    <div class="vac-stat-value" data-vac-stat="open">@Model.StatOpenDays</div>
+                    <div class="vac-stat-label">Open days</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="vac-stat-card vac-stat-booked">
+                <div class="vac-stat-icon"><i class="bi bi-calendar-x-fill"></i></div>
+                <div>
+                    <div class="vac-stat-value" data-vac-stat="booked">@Model.StatBookedDays</div>
+                    <div class="vac-stat-label">Booked</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="vac-stat-card vac-stat-pending">
+                <div class="vac-stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="vac-stat-value" data-vac-stat="pending">@Model.StatPendingDays</div>
+                    <div class="vac-stat-label">Under process</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="vac-stat-card vac-stat-manual">
+                <div class="vac-stat-icon"><i class="bi bi-sliders"></i></div>
+                <div>
+                    <div class="vac-stat-value" data-vac-stat="manual">@Model.StatManualEntries</div>
+                    <div class="vac-stat-label">Manual entries</div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row g-4 @(Model.ShowDayPanel ? "" : "g-0")">
+    <div class="@(Model.ShowDayPanel ? "col-xl-8" : "col-12")">
+        <div class="vac-calendar-card vac-calendar-full">
+            <div id="@Model.ElementId"
+                 class="vendor-teams-calendar"
+                 data-schedule="@Html.Raw(Model.ScheduleJson)"
+                 data-read-only="@(Model.ReadOnly ? "true" : "false")">
+                <div class="vtc-toolbar">
+                    <div class="vtc-toolbar-left">
+                        <button type="button" class="btn vtc-nav-btn vtc-prev" aria-label="Previous month"><i class="bi bi-chevron-left"></i></button>
+                        <button type="button" class="btn vtc-nav-btn vtc-next" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>
+                        <button type="button" class="btn vtc-today-btn vtc-today">Today</button>
+                    </div>
+                    <h5 class="fw-bold mb-0 vtc-month-label"></h5>
+                    <div class="vtc-toolbar-right">
+                        <span class="vtc-sync-hint"><i class="bi bi-arrow-repeat me-1"></i> Slots reopen 1h after end · Synced with Explore</span>
+                    </div>
+                </div>
+                <div class="vtc-weekdays"></div>
+                <div class="vtc-grid"></div>
+                <div class="vtc-legend">
+                    <span class="vtc-legend-item"><span class="vtc-dot vtc-available"></span> Available</span>
+                    <span class="vtc-legend-item"><span class="vtc-dot vtc-under-process"></span> Under process</span>
+                    <span class="vtc-legend-item"><span class="vtc-dot vtc-partyclap"></span> PartyClap block</span>
+                    <span class="vtc-legend-item"><span class="vtc-dot vtc-booked"></span> Customer booked</span>
+                    <span class="vtc-legend-item"><span class="vtc-dot vtc-today-dot"></span> Today</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.ShowDayPanel)
+    {
+        <div class="col-xl-4">
+            <div class="vtc-teams-day-panel vac-side-card h-100">
+                <div class="vac-side-card-header">
+                    <span><i class="bi bi-calendar-day"></i> Selected day</span>
+                </div>
+                <div class="vac-day-detail-body p-3">
+                    <div class="vtc-teams-day-empty text-center py-4">
+                        <i class="bi bi-calendar3"></i>
+                        <p>Click a date on the calendar</p>
+                    </div>
+                    <div class="vtc-teams-day-content" style="display:none;">
+                        <div class="vtc-teams-date-header">
+                            <div class="vtc-teams-weekday"></div>
+                            <div class="vtc-teams-date-line"></div>
+                        </div>
+                        <div class="vtc-day-status-badge mb-2"></div>
+                        <p class="text-muted small vtc-day-summary mb-2"></p>
+                        <div class="vtc-day-events"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (Model.ShowManualEntries)
+{
+    <div class="vac-manual-entries-wrap mt-4" id="@(Model.ElementId)-manual-entries">
+        @if (Model.ManualBlocks.Any(b => !b.IsAvailable))
+        {
+            <div class="vac-side-card">
+                <div class="vac-side-card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-list-ul"></i> Manual entries</span>
+                    <span class="badge rounded-pill vac-entry-count">@Model.ManualBlocks.Count(b => !b.IsAvailable)</span>
+                </div>
+                <div class="vac-entry-list vac-entry-list-grid">
+                    @foreach (var block in Model.ManualBlocks.Where(b => !b.IsAvailable).Take(12))
+                    {
+                        var blockLabel = string.IsNullOrWhiteSpace(block.Label) ? "PartyClap" : block.Label.Trim();
+                        var isPartyClapBlock = VendorScheduleHelper.IsPartyClapBlockLabel(blockLabel);
+                        <div class="vac-entry-item @(isPartyClapBlock ? "vac-entry-partyclap" : "vac-entry-blocked")">
+                            <div class="vac-entry-icon">
+                                <i class="bi @(isPartyClapBlock ? "bi-shield-lock-fill" : "bi-x-lg")"></i>
+                            </div>
+                            <div class="vac-entry-body">
+                                <div class="vac-entry-date">@block.BlockDate.ToString("ddd, MMM dd")</div>
+                                <div class="vac-entry-meta">
+                                    @if (!string.IsNullOrWhiteSpace(block.StartTime) && !string.IsNullOrWhiteSpace(block.EndTime))
+                                    {
+                                        <span class="vac-entry-time"><i class="bi bi-clock me-1"></i>@block.StartTime – @block.EndTime</span>
+                                    }
+                                    <span class="vac-entry-label @(isPartyClapBlock ? "vac-entry-label-partyclap" : "")">@blockLabel</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="vac-side-card">
+                <div class="vac-side-card-header"><span><i class="bi bi-list-ul"></i> Manual entries</span></div>
+                <div class="p-3"><p class="text-muted small mb-0">No manual calendar entries.</p></div>
+            </div>
+        }
+    </div>
+}

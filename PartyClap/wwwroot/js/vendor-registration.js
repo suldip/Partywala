@@ -212,16 +212,305 @@ let cityPinCodeMap = {}; // Map city to pin codes
 
 // Wizard State
 let currentStep = 1;
+const VENDOR_CONTACT_STORAGE_KEY = 'partyclap_vendor_contact_verified';
+let vendorContactVerified = false;
+
+function getApiUrl(path) {
+    if (!window.basePath) {
+        const basePathMeta = document.querySelector('meta[name="base-path"]');
+        window.basePath = basePathMeta
+            ? (basePathMeta.content.endsWith('/') ? basePathMeta.content : basePathMeta.content + '/')
+            : '/PartyClap/';
+    }
+    if (!window.basePath.endsWith('/')) {
+        window.basePath += '/';
+    }
+    return window.basePath + String(path).replace(/^\//, '');
+}
+
+async function postJson(url, body) {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams(body).toString()
+    });
+    return response.json().catch(() => ({}));
+}
+
+function applyVerifiedContact(data) {
+    const firstNameEl = document.getElementById('vendor-name');
+    const lastNameEl = document.getElementById('vendor-last-name');
+    const emailEl = document.getElementById('vendor-email');
+    const phoneEl = document.getElementById('vendor-phone');
+    const vendorIdEl = document.getElementById('vendor-id');
+    const badge = document.getElementById('contact-verified-badge');
+    const banner = document.getElementById('contact-verify-banner');
+    const verifyBtn = document.getElementById('btn-verify-contact');
+
+    if (firstNameEl) firstNameEl.value = data.firstName || '';
+    if (lastNameEl) lastNameEl.value = data.lastName || '';
+    if (emailEl) emailEl.value = data.email || '';
+    if (phoneEl) phoneEl.value = data.mobile || data.phone || '';
+    if (vendorIdEl) vendorIdEl.value = data.vendorId || '';
+
+    [firstNameEl, lastNameEl, emailEl, phoneEl].forEach(function (el) {
+        if (!el) return;
+        el.readOnly = true;
+        el.classList.add('vendor-contact-locked');
+        el.classList.remove('is-invalid');
+    });
+
+    if (badge) badge.style.display = 'inline-flex';
+    if (banner) banner.style.display = 'none';
+    if (verifyBtn) verifyBtn.style.display = 'none';
+
+    vendorContactVerified = true;
+    sessionStorage.setItem(VENDOR_CONTACT_STORAGE_KEY, JSON.stringify(data));
+}
+
+function restoreVerifiedContact() {
+    try {
+        const raw = sessionStorage.getItem(VENDOR_CONTACT_STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data && data.vendorId && (data.mobile || data.phone)) {
+            applyVerifiedContact(data);
+        }
+    } catch (e) {
+        sessionStorage.removeItem(VENDOR_CONTACT_STORAGE_KEY);
+    }
+}
+
+function buildContactDetailsPopupHtml() {
+    return `
+        <div class="vendor-verify-popup">
+            <div class="mb-3">
+                <label class="form-label" for="swal-first-name">First Name</label>
+                <input type="text" id="swal-first-name" class="form-control" placeholder="First name" maxlength="150" autocomplete="given-name">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="swal-last-name">Last Name</label>
+                <input type="text" id="swal-last-name" class="form-control" placeholder="Last name" maxlength="150" autocomplete="family-name">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="swal-email">Email</label>
+                <input type="email" id="swal-email" class="form-control" placeholder="you@example.com" maxlength="254" autocomplete="email">
+            </div>
+            <div class="mb-0">
+                <label class="form-label" for="swal-mobile">Mobile Number</label>
+                <input type="tel" id="swal-mobile" class="form-control" placeholder="9876543210" maxlength="10" inputmode="numeric" autocomplete="tel">
+            </div>
+        </div>`;
+}
+
+function buildOtpPopupHtml() {
+    return `
+        <div class="vendor-verify-popup">
+            <p class="small text-muted mb-3">Enter the 6-digit code sent to your mobile number. It expires in 1 minute.</p>
+            <label class="form-label" for="swal-otp">OTP</label>
+            <input type="text" id="swal-otp" class="form-control" placeholder="6-digit OTP" maxlength="6" inputmode="numeric">
+        </div>`;
+}
+
+function readContactPopupValues() {
+    return {
+        firstName: document.getElementById('swal-first-name')?.value?.trim() || '',
+        lastName: document.getElementById('swal-last-name')?.value?.trim() || '',
+        email: document.getElementById('swal-email')?.value?.trim() || '',
+        mobile: normalizeIndianMobile(document.getElementById('swal-mobile')?.value || '')
+    };
+}
+
+function validateContactPopupValues(values) {
+    if (!values.firstName || values.firstName.length < 2) {
+        return 'Enter a valid first name.';
+    }
+    if (!values.lastName || values.lastName.length < 2) {
+        return 'Enter a valid last name.';
+    }
+    if (!values.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+        return 'Enter a valid email address.';
+    }
+    if (!isValidIndianMobile(values.mobile)) {
+        return 'Enter a valid 10-digit Indian mobile number.';
+    }
+    return null;
+}
+
+async function showContactVerificationModal() {
+    if (!window.Swal) {
+        await notifyUser('error', 'Error', 'Verification popup is unavailable. Please refresh the page.');
+        return false;
+    }
+
+    const prefill = {
+        firstName: document.getElementById('vendor-name')?.value?.trim() || '',
+        lastName: document.getElementById('vendor-last-name')?.value?.trim() || '',
+        email: document.getElementById('vendor-email')?.value?.trim() || '',
+        mobile: normalizeIndianMobile(document.getElementById('vendor-phone')?.value || '')
+    };
+
+    const detailsResult = await Swal.fire({
+        title: 'Verify Your Contact Details',
+        html: buildContactDetailsPopupHtml(),
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Send OTP',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#8B5CF6',
+        customClass: { popup: 'vendor-verify-popup' },
+        didOpen: function () {
+            const fn = document.getElementById('swal-first-name');
+            const ln = document.getElementById('swal-last-name');
+            const em = document.getElementById('swal-email');
+            const mob = document.getElementById('swal-mobile');
+            if (fn && !fn.value) fn.value = prefill.firstName;
+            if (ln && !ln.value) ln.value = prefill.lastName;
+            if (em && !em.value) em.value = prefill.email;
+            if (mob && !mob.value) mob.value = prefill.mobile;
+            fn?.focus();
+        },
+        preConfirm: function () {
+            const values = readContactPopupValues();
+            const error = validateContactPopupValues(values);
+            if (error) {
+                Swal.showValidationMessage(error);
+                return false;
+            }
+            return values;
+        }
+    });
+
+    if (!detailsResult.isConfirmed || !detailsResult.value) {
+        return false;
+    }
+
+    const contact = detailsResult.value;
+    const sendResult = await postJson(getApiUrl('Account/SendOtp'), { mobile: contact.mobile });
+    if (!sendResult.success) {
+        await notifyUser('error', 'OTP Failed', sendResult.message || 'Could not send OTP. Please try again.');
+        return false;
+    }
+
+    let otpValue = null;
+    while (otpValue === null) {
+        const otpResult = await Swal.fire({
+            title: 'Enter OTP',
+            html: buildOtpPopupHtml(),
+            focusConfirm: false,
+            showCancelButton: true,
+            showDenyButton: true,
+            confirmButtonText: 'Verify & Save',
+            cancelButtonText: 'Back',
+            denyButtonText: 'Resend OTP',
+            confirmButtonColor: '#8B5CF6',
+            denyButtonColor: '#6b7280',
+            customClass: { popup: 'vendor-verify-popup' },
+            didOpen: function () {
+                document.getElementById('swal-otp')?.focus();
+            },
+            preConfirm: function () {
+                const otp = document.getElementById('swal-otp')?.value?.trim() || '';
+                if (otp.length < 4) {
+                    Swal.showValidationMessage('Enter the OTP sent to your phone.');
+                    return false;
+                }
+                return otp;
+            }
+        });
+
+        if (otpResult.isDenied) {
+            const resendResult = await postJson(getApiUrl('Account/SendOtp'), { mobile: contact.mobile });
+            if (!resendResult.success) {
+                await notifyUser('error', 'Resend Failed', resendResult.message || 'Could not resend OTP.');
+            } else {
+                await notifyUser('success', 'OTP Resent', 'A new code has been sent to your mobile number.');
+            }
+            continue;
+        }
+
+        if (!otpResult.isConfirmed) {
+            return showContactVerificationModal();
+        }
+
+        otpValue = otpResult.value;
+    }
+
+    const verifyResult = await postJson(getApiUrl('Account/VerifyOtp'), {
+        mobile: contact.mobile,
+        otp: otpValue
+    });
+    if (!verifyResult.success) {
+        await notifyUser('error', 'Verification Failed', verifyResult.message || 'Invalid or expired OTP.');
+        return showContactVerificationModal();
+    }
+
+    const saveResult = await postJson(getApiUrl('Vendor/SaveVerifiedContact'), {
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        email: contact.email,
+        mobile: contact.mobile
+    });
+    if (!saveResult.success) {
+        await notifyUser('error', 'Save Failed', saveResult.message || 'Could not save your details.');
+        return false;
+    }
+
+    applyVerifiedContact(saveResult);
+    await notifyUser('success', 'Contact Verified', 'Your details are saved. Continue with your registration.');
+    return true;
+}
+
+function initContactVerification() {
+    restoreVerifiedContact();
+
+    const verifyBtn = document.getElementById('btn-verify-contact');
+    if (verifyBtn) {
+        verifyBtn.addEventListener('click', async function () {
+            await showContactVerificationModal();
+        });
+    }
+
+    if (!vendorContactVerified) {
+        window.setTimeout(function () {
+            if (!vendorContactVerified) {
+                showContactVerificationModal();
+            }
+        }, 350);
+    }
+}
 const totalSteps = 5;
 const stepData = [
     { title: 'Personal Information', description: 'Provide your contact details and address information', stepDesc: '👤 Enter your personal details and address information' },
     { title: 'Service Category', description: 'Choose your main service category and specializations', stepDesc: '🎯 Select your service category and specializations' },
     { title: 'Portfolio & Showcase', description: 'Upload your work samples to attract customers', stepDesc: '📁 Upload voice samples, photos, and showcase your work' },
     { title: 'Pricing & Payment', description: 'Set your rates and pricing model', stepDesc: '💰 Set your rates and pricing model' },
-    { title: 'Payment Account Setup', description: 'Add your bank accounts and UPI details for receiving payments', stepDesc: '🏦 Add your bank accounts and UPI for receiving payments' }
+    { title: 'Review & Submit', description: 'Confirm your details and complete registration', stepDesc: '✅ Review your information and accept the terms to register' }
 ];
 let selectedCategory = null;
 let selectedSubCategories = [];
+
+function notifyUser(type, title, message) {
+    if (window.SmartPop) {
+        if (type === 'error') return SmartPop.error(title, message);
+        if (type === 'warning') return SmartPop.warning(title, message);
+    }
+    window.alert((title ? title + ': ' : '') + (message || ''));
+    return Promise.resolve();
+}
+
+function focusFirstInvalid(scopeSelector) {
+    const scope = scopeSelector ? document.querySelector(scopeSelector) : document;
+    const firstInvalid = scope?.querySelector('.is-invalid');
+    if (firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalid.focus({ preventScroll: true });
+    }
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function () {
@@ -229,6 +518,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initStateCityCascade();
     initLocationAdder();
     initCityPinCodeAutoPopulate();
+    initContactVerification();
     initWizard();
     renderCategories();
 
@@ -477,12 +767,16 @@ function initWizard() {
 
     // Next Button
     document.getElementById('btn-next').addEventListener('click', async function () {
-        if (await validateStep(currentStep)) {
-            if (currentStep < totalSteps) {
-                currentStep++;
-                updateStepVisibility();
-                window.scrollTo(0, 0);
+        try {
+            if (await validateStep(currentStep)) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateStepVisibility();
+                    window.scrollTo(0, 0);
+                }
             }
+        } catch (err) {
+            console.error('Step validation error:', err);
         }
     });
 
@@ -547,6 +841,12 @@ function updateStepVisibility() {
         connectorFill.style.width = `${progressPercentage}%`;
     }
 
+    // Scroll active step into view on horizontal mobile stepper
+    const activeStep = document.querySelector('.vendor-step-rail .wizard-step.active');
+    if (activeStep && window.matchMedia('(max-width: 991px)').matches) {
+        activeStep.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
     // Update Texts
     const data = stepData[currentStep - 1];
     if (data) {
@@ -583,51 +883,118 @@ function updateStepVisibility() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function normalizeIndianMobile(value) {
+    if (!value) return '';
+    let digits = value.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+        digits = digits.slice(2);
+    } else if (digits.length === 11 && digits.startsWith('0')) {
+        digits = digits.slice(1);
+    }
+    return digits;
+}
+
+function isValidIndianMobile(value) {
+    return /^[6-9]\d{9}$/.test(normalizeIndianMobile(value));
+}
+
+function isValidPinCode(value) {
+    const digits = (value || '').replace(/\D/g, '');
+    return /^[1-9]\d{5}$/.test(digits);
+}
+
+function isValidName(value) {
+    return /^[A-Za-z\s.'-]{2,150}$/.test((value || '').trim());
+}
+
 async function validateStep(step) {
     if (step === 1) {
+        if (!vendorContactVerified) {
+            await notifyUser('warning', 'Verify Contact', 'Please verify your contact details before continuing.');
+            const verified = await showContactVerificationModal();
+            if (!verified) {
+                return false;
+            }
+        }
+
         const name = document.querySelector('input[name="Name"]');
+        const lastName = document.getElementById('vendor-last-name');
         const email = document.querySelector('input[name="Email"]');
         const phone = document.querySelector('input[name="Phone"]');
         const pincode = document.querySelector('input[name="PinCode"]');
+        const address = document.querySelector('textarea[name="Address"]');
+        const stateSelect = document.getElementById('vendor-address-state');
+        const citySelect = document.getElementById('vendor-address-city');
 
         let isValid = true;
 
-        if (!name.value.trim()) {
-            name.classList.add('is-invalid');
+        if (!name || !isValidName(name.value)) {
+            if (name) name.classList.add('is-invalid');
             isValid = false;
-        } else {
+        } else if (name) {
             name.classList.remove('is-invalid');
         }
 
-        if (!email.value.trim() || !email.value.includes('@')) {
-            email.classList.add('is-invalid');
+        if (!lastName || !isValidName(lastName.value)) {
+            if (lastName) lastName.classList.add('is-invalid');
             isValid = false;
-        } else {
+        } else if (lastName) {
+            lastName.classList.remove('is-invalid');
+        }
+
+        if (!email || !email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+            if (email) email.classList.add('is-invalid');
+            isValid = false;
+        } else if (email) {
             email.classList.remove('is-invalid');
         }
 
-        if (!phone.value.trim() || phone.value.length < 10) {
-            phone.classList.add('is-invalid');
+        if (!phone || !isValidIndianMobile(phone.value)) {
+            if (phone) phone.classList.add('is-invalid');
             isValid = false;
-        } else {
+        } else if (phone) {
             phone.classList.remove('is-invalid');
+            phone.value = normalizeIndianMobile(phone.value);
         }
 
-        if (!pincode.value.trim()) {
-            pincode.classList.add('is-invalid');
+        if (!stateSelect || !stateSelect.value) {
+            if (stateSelect) stateSelect.classList.add('is-invalid');
             isValid = false;
-        } else {
+        } else if (stateSelect) {
+            stateSelect.classList.remove('is-invalid');
+        }
+
+        if (!citySelect || !citySelect.value || citySelect.disabled) {
+            if (citySelect) citySelect.classList.add('is-invalid');
+            isValid = false;
+        } else if (citySelect) {
+            citySelect.classList.remove('is-invalid');
+        }
+
+        if (!pincode || !isValidPinCode(pincode.value)) {
+            if (pincode) pincode.classList.add('is-invalid');
+            isValid = false;
+        } else if (pincode) {
             pincode.classList.remove('is-invalid');
+            pincode.value = pincode.value.replace(/\D/g, '').slice(0, 6);
+        }
+
+        if (!address || address.value.trim().length < 5) {
+            if (address) address.classList.add('is-invalid');
+            isValid = false;
+        } else if (address) {
+            address.classList.remove('is-invalid');
         }
 
         if (!isValid) {
-            SmartPop.error('Validation Error', 'Please fill in all required fields correctly.');
+            await notifyUser('error', 'Validation Error', 'Please fill in all required fields with valid values.');
+            focusFirstInvalid('#step-1');
             return false;
         }
     }
 
     if (step === 2 && !selectedCategory) {
-        SmartPop.warning('Missing Category', 'Please select a service category to proceed.');
+        await notifyUser('warning', 'Missing Category', 'Please select a service category to proceed.');
         return false;
     }
 
@@ -648,7 +1015,7 @@ async function validateStep(step) {
             if (!festivalBase.value) { festivalBase.classList.add('is-invalid'); isValid = false; missing.push('Festival'); } else festivalBase.classList.remove('is-invalid');
 
             if (!isValid) {
-                SmartPop.error('Pricing Missing', errorMsg + missing.join(', '));
+                await notifyUser('error', 'Pricing Missing', errorMsg + missing.join(', '));
                 return false;
             }
 
@@ -663,29 +1030,20 @@ async function validateStep(step) {
     }
 
     if (step === 5) {
-        const accountHolder = document.getElementById('account-holder');
-        const accountNumber = document.getElementById('account-number');
-        const ifscCode = document.getElementById('ifsc-code');
+        if (!vendorContactVerified) {
+            await notifyUser('warning', 'Verify Contact', 'Please verify your contact details before submitting.');
+            await showContactVerificationModal();
+            return vendorContactVerified;
+        }
+
         const terms = document.getElementById('terms');
 
-        let isValid = true;
-
-        if (!accountHolder.value.trim()) { accountHolder.classList.add('is-invalid'); isValid = false; } else accountHolder.classList.remove('is-invalid');
-        if (!accountNumber.value.trim()) { accountNumber.classList.add('is-invalid'); isValid = false; } else accountNumber.classList.remove('is-invalid');
-        if (!ifscCode.value.trim()) { ifscCode.classList.add('is-invalid'); isValid = false; } else ifscCode.classList.remove('is-invalid');
-
         if (!terms.checked) {
-            SmartPop.warning('Terms Required', 'You must agree to the Terms of Service and Privacy Policy.');
+            await notifyUser('warning', 'Terms Required', 'You must agree to the Terms of Service and Privacy Policy.');
             return false;
         }
 
-        if (!isValid) {
-            SmartPop.error('Bank Details Missing', 'Please fill in all required bank details.');
-            return false;
-        }
-
-        // Don't call submitForm here, let the submit button handler do it
-        return true; // Allow validation to pass
+        return true;
     }
 
     return true;
@@ -698,6 +1056,16 @@ function submitForm() {
         SmartPop.error('Form Error', 'Error: Registration form not found. Please refresh the page and try again.');
         return;
     }
+
+    if (form.dataset.submitting === 'true') {
+        return;
+    }
+    form.dataset.submitting = 'true';
+    sessionStorage.removeItem(VENDOR_CONTACT_STORAGE_KEY);
+
+    form.querySelectorAll('input[name^="Services[0]."], input[name^="ServiceLocations["]').forEach(function (input) {
+        input.remove();
+    });
 
     // Debug: Log selected category
     console.log('Selected Category:', selectedCategory);
@@ -728,8 +1096,8 @@ function submitForm() {
         console.warn('No category selected! Service data will not be saved.');
     }
 
-    // Collect Service Locations from added badges - extract pin codes
-    const locationBadges = document.querySelectorAll('#locations-display .location-badge');
+    // Collect Service Locations from added chips - extract pin codes
+    const locationBadges = document.querySelectorAll('#locations-display .location-chip');
     const pinCodes = []; // Store pin codes from the location badges
 
     console.log('Found location badges:', locationBadges.length);
@@ -893,6 +1261,7 @@ function submitForm() {
             if (submitButton.disabled) {
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
+                delete form.dataset.submitting;
             }
         }, 10000); // 10 second timeout
     }
@@ -938,6 +1307,7 @@ function submitForm() {
                 submitButton.disabled = false;
                 submitButton.innerHTML = 'Complete Registration 🎉';
             }
+            delete form.dataset.submitting;
         }
     }, 100);
 }
@@ -1225,6 +1595,15 @@ function initStateCityCascade(container = document) {
                             });
                             citySelect.disabled = false;
                             console.log(`Populated ${cities.length} cities`);
+
+                            if (citySelect.id === 'service-location-city') {
+                                bindServiceCityPincodeLoad(citySelect);
+                            }
+
+                            if (citySelect.id === 'service-location-city' && citySelect.value) {
+                                const stateVal = stateSelect?.value || selectedState || '';
+                                loadServicePincodesForCity(citySelect.value, stateVal);
+                            }
                         } else {
                             console.warn('No cities returned for state:', selectedState);
                             citySelect.innerHTML = '<option value="">No cities found</option>';
@@ -1246,33 +1625,243 @@ function initStateCityCascade(container = document) {
     });
 }
 
-function initCityPinCodeAutoPopulate() {
-    // For the location adder specifically
-    const citySelect = document.querySelector('#locations-container select[data-cascade="city"]');
-    const pinCodeInput = document.getElementById('location-pincode');
+const servicePincodePicker = {
+    allLocations: [],
+    filteredLocations: []
+};
 
-    if (citySelect && pinCodeInput) {
-        citySelect.addEventListener('change', async function () {
-            const selectedCity = this.value;
-            if (selectedCity) {
-                // Load pin codes for this city
-                await loadPinCodesForCity(selectedCity);
-                if (cityPinCodeMap[selectedCity]) {
-                    pinCodeInput.value = cityPinCodeMap[selectedCity];
-                } else {
-                    pinCodeInput.value = '';
-                }
-            } else {
-                pinCodeInput.value = '';
-            }
-        });
-
-        // Add autocomplete for location pincode input
-        initPinCodeAutocomplete(pinCodeInput, 'location-pincode-autocomplete');
+function updateServicePincodeCount() {
+    const countEl = document.getElementById('service-pincode-count');
+    const checked = document.querySelectorAll('#service-pincode-list .service-pincode-checkbox:checked').length;
+    if (countEl) {
+        countEl.textContent = `${checked} selected`;
     }
 
+    const selectAll = document.getElementById('service-pincode-select-all');
+    const visibleBoxes = document.querySelectorAll('#service-pincode-list .service-pincode-checkbox');
+    if (selectAll && visibleBoxes.length > 0) {
+        const visibleChecked = document.querySelectorAll('#service-pincode-list .service-pincode-checkbox:checked').length;
+        selectAll.checked = visibleChecked === visibleBoxes.length;
+        selectAll.indeterminate = visibleChecked > 0 && visibleChecked < visibleBoxes.length;
+    } else if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    }
+}
+
+function renderServicePincodeList(filterText) {
+    const listEl = document.getElementById('service-pincode-list');
+    const panel = document.getElementById('service-pincode-panel');
+    const hint = document.getElementById('service-pincode-hint');
+    if (!listEl) return;
+
+    const query = (filterText || '').trim().toLowerCase();
+    servicePincodePicker.filteredLocations = servicePincodePicker.allLocations.filter(function (loc) {
+        if (!query) return true;
+        const pin = (loc.PinCode || loc.pinCode || '').toString();
+        const area = (loc.AreaName || loc.areaName || '').toString().toLowerCase();
+        return pin.includes(query) || area.includes(query);
+    });
+
+    listEl.innerHTML = '';
+
+    if (servicePincodePicker.filteredLocations.length === 0) {
+        listEl.innerHTML = '<div class="service-pincode-empty">No pin codes found for this city.</div>';
+        if (panel) panel.style.display = 'block';
+        if (hint) hint.style.display = 'none';
+        updateServicePincodeCount();
+        return;
+    }
+
+    servicePincodePicker.filteredLocations.forEach(function (loc) {
+        const pin = (loc.PinCode || loc.pinCode || '').toString();
+        const area = (loc.AreaName || loc.areaName || '').toString();
+        const city = (loc.City || loc.city || '').toString();
+        const item = document.createElement('label');
+        item.className = 'service-pincode-item';
+        item.innerHTML = `
+            <input type="checkbox" class="service-pincode-checkbox" value="${pin}" data-area="${area.replace(/"/g, '&quot;')}">
+            <span class="service-pincode-item-label">
+                <strong>${pin}</strong>
+                <small>${area || city}</small>
+            </span>`;
+        item.querySelector('.service-pincode-checkbox').addEventListener('change', updateServicePincodeCount);
+        listEl.appendChild(item);
+    });
+
+    if (panel) panel.style.display = 'block';
+    if (hint) hint.style.display = 'none';
+    updateServicePincodeCount();
+}
+
+async function fetchPinCodesForCity(city, state) {
+    const params = new URLSearchParams({ city: city });
+    if (state) {
+        params.set('state', state);
+    }
+
+    const url = getApiUrl('Vendor/GetPinCodes?' + params.toString());
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(function () { controller.abort(); }, 15000);
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            signal: controller.signal
+        });
+
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+
+        const locations = await response.json();
+        return Array.isArray(locations) ? locations : [];
+    } finally {
+        window.clearTimeout(timeoutId);
+    }
+}
+
+async function loadServicePincodesForCity(city, state) {
+    const panel = document.getElementById('service-pincode-panel');
+    const hint = document.getElementById('service-pincode-hint');
+    const searchInput = document.getElementById('service-pincode-search');
+    const listEl = document.getElementById('service-pincode-list');
+
+    city = (city || '').trim();
+    state = (state || '').trim();
+
+    servicePincodePicker.allLocations = [];
+    servicePincodePicker.filteredLocations = [];
+
+    if (!city) {
+        if (panel) panel.style.display = 'none';
+        if (hint) {
+            hint.style.display = 'block';
+            hint.textContent = 'Select a city to load available pin codes.';
+        }
+        if (searchInput) searchInput.value = '';
+        if (listEl) listEl.innerHTML = '';
+        updateServicePincodeCount();
+        return;
+    }
+
+    if (hint) {
+        hint.style.display = 'block';
+        hint.textContent = 'Loading pin codes...';
+    }
+    if (panel) panel.style.display = 'none';
+
+    try {
+        let locations = await fetchPinCodesForCity(city, state);
+
+        if (locations.length === 0 && state) {
+            locations = await fetchPinCodesForCity(city, '');
+        }
+
+        servicePincodePicker.allLocations = locations;
+
+        if (searchInput) searchInput.value = '';
+        renderServicePincodeList('');
+
+        if (locations.length === 0 && hint) {
+            hint.style.display = 'block';
+            hint.textContent = 'No pin codes found for ' + city + '. Ask admin to add locations for this city.';
+        }
+    } catch (error) {
+        console.error('Error loading service pin codes:', error);
+        if (hint) {
+            hint.style.display = 'block';
+            hint.textContent = 'Could not load pin codes. Please refresh and try again.';
+        }
+        if (panel) panel.style.display = 'none';
+    }
+}
+
+function getSelectedServicePincodes() {
+    return Array.from(document.querySelectorAll('#service-pincode-list .service-pincode-checkbox:checked'))
+        .map(function (cb) {
+            return {
+                pinCode: cb.value,
+                areaName: cb.getAttribute('data-area') || ''
+            };
+        })
+        .filter(function (item) { return item.pinCode; });
+}
+
+function clearServicePincodeSelection() {
+    const searchInput = document.getElementById('service-pincode-search');
+    if (searchInput) searchInput.value = '';
+    document.querySelectorAll('#service-pincode-list .service-pincode-checkbox').forEach(function (cb) {
+        cb.checked = false;
+    });
+    const selectAll = document.getElementById('service-pincode-select-all');
+    if (selectAll) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    }
+    updateServicePincodeCount();
+}
+
+function bindServiceCityPincodeLoad(citySelect) {
+    if (!citySelect || citySelect.dataset.pincodeLoadBound === 'true') {
+        return;
+    }
+    citySelect.dataset.pincodeLoadBound = 'true';
+    citySelect.addEventListener('change', function () {
+        const state = document.getElementById('service-location-state')?.value || '';
+        loadServicePincodesForCity(this.value, state);
+    });
+}
+
+function initServicePincodePicker() {
+    const container = document.getElementById('locations-container');
+    const citySelect = document.getElementById('service-location-city');
+    const searchInput = document.getElementById('service-pincode-search');
+    const selectAll = document.getElementById('service-pincode-select-all');
+
+    bindServiceCityPincodeLoad(citySelect);
+
+    if (container && container.dataset.pincodePickerBound !== 'true') {
+        container.dataset.pincodePickerBound = 'true';
+        container.addEventListener('change', function (e) {
+            const target = e.target;
+            if (!target) return;
+
+            if (target.id === 'service-location-city') {
+                const state = document.getElementById('service-location-state')?.value || '';
+                loadServicePincodesForCity(target.value, state);
+            } else if (target.id === 'service-location-state' && !target.value) {
+                loadServicePincodesForCity('', '');
+            }
+        });
+    }
+
+    if (searchInput && searchInput.dataset.bound !== 'true') {
+        searchInput.dataset.bound = 'true';
+        searchInput.addEventListener('input', function () {
+            renderServicePincodeList(this.value);
+        });
+    }
+
+    if (selectAll && selectAll.dataset.bound !== 'true') {
+        selectAll.dataset.bound = 'true';
+        selectAll.addEventListener('change', function () {
+            const checked = this.checked;
+            document.querySelectorAll('#service-pincode-list .service-pincode-checkbox').forEach(function (cb) {
+                cb.checked = checked;
+            });
+            updateServicePincodeCount();
+        });
+    }
+}
+
+function initCityPinCodeAutoPopulate() {
+    initServicePincodePicker();
+
     // For the main address section
-    const mainCitySelect = document.querySelector('#step-1 select[data-cascade="city"]');
+    const mainCitySelect = document.getElementById('vendor-address-city');
     const mainPinCodeInput = document.getElementById('main-pincode-input') || document.querySelector('#step-1 input[name="PinCode"]');
 
     if (mainCitySelect && mainPinCodeInput) {
@@ -1296,102 +1885,92 @@ function initCityPinCodeAutoPopulate() {
 
 function initLocationAdder() {
     const btnAdd = document.getElementById('btn-add-location');
-    const stateSelect = document.querySelector('#locations-container select[data-cascade="state"]');
-    const citySelect = document.querySelector('#locations-container select[data-cascade="city"]');
-    const pinCodeInput = document.getElementById('location-pincode');
+    const stateSelect = document.getElementById('service-location-state');
+    const citySelect = document.getElementById('service-location-city');
     const locationsDisplay = document.getElementById('locations-display');
     const addedLocationsList = document.getElementById('added-locations-list');
 
-    // Array to store added locations
     let addedLocations = [];
 
+    function addLocationChip(location) {
+        const badge = document.createElement('div');
+        badge.className = 'location-chip';
+        badge.setAttribute('data-pincode', location.pinCode);
+
+        const areaSuffix = location.areaName ? ` - ${location.areaName}` : '';
+        const displayText = `${location.city}, ${location.state} (${location.pinCode}${areaSuffix})`;
+
+        badge.innerHTML = `
+            <i class="fas fa-map-pin"></i>
+            <span>${displayText}</span>
+            <button type="button" class="remove-location" title="Remove">&times;</button>
+        `;
+
+        badge.querySelector('.remove-location').addEventListener('click', function () {
+            addedLocations = addedLocations.filter(function (loc) { return loc.key !== location.key; });
+            badge.remove();
+            if (addedLocations.length === 0 && addedLocationsList) {
+                addedLocationsList.style.display = 'none';
+            }
+        });
+
+        locationsDisplay.appendChild(badge);
+        if (addedLocationsList) addedLocationsList.style.display = 'block';
+    }
+
     if (btnAdd && stateSelect && citySelect) {
-        btnAdd.addEventListener('click', function () {
+        btnAdd.addEventListener('click', async function () {
             const selectedState = stateSelect.value;
             const selectedCity = citySelect.value;
-            const selectedPinCode = pinCodeInput ? pinCodeInput.value.trim() : '';
+            const selectedPincodes = getSelectedServicePincodes();
 
-            // Validate selection
             if (!selectedState || !selectedCity) {
-                SmartPop.warning('Location Incomplete', 'Please select both State and City before adding a location.');
+                await notifyUser('warning', 'Location Incomplete', 'Please select both State and City before adding locations.');
                 return;
             }
 
-            // Validate Pin Code if entered
-            if (selectedPinCode && !/^\d{6}$/.test(selectedPinCode)) {
-                SmartPop.warning('Invalid Pin Code', 'Please enter a valid 6-digit Pin Code.');
+            if (selectedPincodes.length === 0) {
+                await notifyUser('warning', 'Pin Code Required', 'Please select at least one pin code for the chosen city.');
                 return;
             }
 
-            // Check for duplicates
-            const locationKey = selectedPinCode
-                ? `${selectedCity}, ${selectedState} - ${selectedPinCode}`
-                : `${selectedCity}, ${selectedState}`;
-
-            if (addedLocations.some(loc => loc.key === locationKey)) {
-                SmartPop.warning('Duplicate Location', 'This location has already been added.');
-                return;
-            }
-
-            // Determine pin code to use - check database map first, then fallback
-            const pinCodeToUse = selectedPinCode || cityPinCodeMap[selectedCity] || cityPinCodeData[selectedCity] || '';
-
-            // Add to array
-            addedLocations.push({
-                key: locationKey,
-                state: selectedState,
-                city: selectedCity,
-                pinCode: pinCodeToUse
-            });
-
-            // Create badge element
-            const badge = document.createElement('div');
-            badge.className = 'location-badge';
-            badge.style.cssText = 'background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;';
-
-            // Store pin code in data attribute for easy retrieval
-            //const pinCodeToUse1 = selectedPinCode || cityPinCodeData[selectedCity] || '';
-            if (pinCodeToUse) {
-                badge.setAttribute('data-pincode', pinCodeToUse);
-            }
-
-            const displayText = pinCodeToUse
-                ? `📍 ${selectedCity}, ${selectedState} (${pinCodeToUse})`
-                : `📍 ${selectedCity}, ${selectedState}`;
-
-            badge.innerHTML = `
-                <span>${displayText}</span>
-                <button type="button" class="btn-close btn-close-white" style="font-size: 10px; opacity: 0.8;" title="Remove"></button>
-            `;
-
-            // Add remove functionality
-            badge.querySelector('.btn-close').addEventListener('click', function () {
-                addedLocations = addedLocations.filter(loc => loc.key !== locationKey);
-                badge.remove();
-
-                // Hide list if empty
-                if (addedLocations.length === 0) {
-                    addedLocationsList.style.display = 'none';
+            let addedCount = 0;
+            selectedPincodes.forEach(function (item) {
+                const locationKey = `${selectedCity}|${selectedState}|${item.pinCode}`;
+                if (addedLocations.some(function (loc) { return loc.key === locationKey; })) {
+                    return;
                 }
+
+                const location = {
+                    key: locationKey,
+                    state: selectedState,
+                    city: selectedCity,
+                    pinCode: item.pinCode,
+                    areaName: item.areaName
+                };
+
+                addedLocations.push(location);
+                addLocationChip(location);
+                addedCount++;
             });
 
-            // Add to display
-            locationsDisplay.appendChild(badge);
+            if (addedCount === 0) {
+                await notifyUser('warning', 'Duplicate Location', 'All selected pin codes are already added.');
+                return;
+            }
 
-            // Show the list
-            addedLocationsList.style.display = 'block';
-
-            // Reset dropdowns and input
             stateSelect.value = '';
             citySelect.value = '';
             citySelect.disabled = true;
-            if (pinCodeInput) pinCodeInput.value = '';
+            loadServicePincodesForCity('', '');
+            clearServicePincodeSelection();
 
-            // Success feedback
-            const originalText = btnAdd.textContent;
-            btnAdd.textContent = '✓ Location Added!';
-            setTimeout(() => {
-                btnAdd.textContent = originalText;
+            const originalHtml = btnAdd.innerHTML;
+            btnAdd.innerHTML = `<i class="fas fa-check me-2"></i>${addedCount} Pin Code${addedCount > 1 ? 's' : ''} Added!`;
+            btnAdd.disabled = true;
+            setTimeout(function () {
+                btnAdd.innerHTML = originalHtml;
+                btnAdd.disabled = false;
             }, 2000);
         });
     }

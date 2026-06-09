@@ -1,169 +1,991 @@
 @model PartyClap.Models.Vendor
 @using System.Linq
+@{
+    ViewData["Title"] = "Vendor Dashboard";
+    var activeSection = ViewBag.Section as string ?? "overview";
+    var overviewBooked = ViewBag.VendorBookedDates as List<PartyClap.Models.VendorScheduleEntry> ?? new List<PartyClap.Models.VendorScheduleEntry>();
+    var overviewAvailable = ViewBag.VendorAvailableDates as List<PartyClap.Models.VendorScheduleEntry> ?? new List<PartyClap.Models.VendorScheduleEntry>();
+    var vendorScheduleFull = ViewBag.VendorSchedule as List<PartyClap.Models.VendorScheduleEntry> ?? new List<PartyClap.Models.VendorScheduleEntry>();
+    var calendarBlocks = (ViewBag.VendorCalendarBlocks as List<PartyClap.Models.VendorCalendarBlock> ?? new List<PartyClap.Models.VendorCalendarBlock>())
+        .Where(b => !b.IsAvailable).ToList();
+}
 
-<div class="container mt-4">
+<style>
+    :root {
+        --sidebar-width: 280px;
+        --sidebar-collapsed-width: 85px;
+        --sidebar-bg: #ffffff;
+        --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+        --primary-color: #8b5cf6;
+        --content-bg: #f8f7fc;
+        --card-shadow: 0 12px 32px rgba(124, 58, 237, 0.07);
+    }
 
-    
-    <!-- Vendor Navigation Menu -->
-    <partial name="_VendorMenu" />
+    .dashboard-wrapper {
+        display: flex;
+        min-height: calc(100vh - 70px);
+        background-color: var(--content-bg);
+        position: relative;
+    }
 
+    /* Sidebar Styles */
+    .dashboard-sidebar {
+        width: var(--sidebar-width);
+        background: var(--sidebar-bg);
+        border-right: 1px solid #eee;
+        padding: 1.5rem 0;
+        display: flex;
+        flex-direction: column;
+        position: sticky;
+        top: 70px;
+        height: calc(100vh - 70px);
+        z-index: 1000;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
 
-    <div class="row">
-        <!-- Sidebar / Profile -->
-        <div class="col-md-4">
-            <div class="card p-4 mb-4">
-                <div class="text-center">
-                    <div class="display-1 mb-2">👤</div>
-                    <h3>@Model.Name</h3>
-                    <p class="text-muted">@Model.Email</p>
-                    <span class="badge bg-success">Verified Vendor</span>
-                </div>
-                <hr />
-                <div class="mt-3">
-                    <h5>Trust Score</h5>
-                    <div class="trust-score-bar">
-                        <div class="trust-score-fill" style="width: @(Model.TrustScore > 100 ? 100 : Model.TrustScore)%"></div>
-                    </div>
-                    <div class="d-flex justify-content-between mt-1">
-                        <small>New</small>
-                        <strong>@Model.TrustScore Points</strong>
-                    </div>
-                </div>
+    .dashboard-sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+    }
+
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 1rem 1rem;
+    }
+
+    #sidebarToggle {
+        background: #f8f9fa;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        color: #6c757d;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    #sidebarToggle:hover {
+        background: #f5f3ff;
+        color: var(--primary-color);
+    }
+
+    .sidebar-user {
+        padding: 0 1.5rem 2rem;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 1rem;
+        transition: opacity 0.3s;
+    }
+
+    .dashboard-sidebar.collapsed .sidebar-user {
+        opacity: 0;
+        height: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        margin: 0 auto 10px;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+        box-shadow: 0 5px 15px rgba(139, 92, 246, 0.35);
+        overflow: hidden;
+    }
+
+    .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        flex-grow: 1;
+    }
+
+    .menu-item {
+        margin: 5px 15px;
+    }
+
+    .menu-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: #6c757d;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .menu-link i {
+        font-size: 1.25rem;
+        margin-right: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .menu-link span {
+        transition: opacity 0.3s, transform 0.3s;
+        white-space: nowrap;
+    }
+
+    .dashboard-sidebar.collapsed .menu-link span {
+        opacity: 0;
+        transform: translateX(-10px);
+        pointer-events: none;
+        width: 0;
+    }
+
+    .dashboard-sidebar.collapsed .menu-link {
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .dashboard-sidebar.collapsed .menu-link i {
+        margin-right: 0;
+        font-size: 1.5rem;
+    }
+
+    .menu-link:hover {
+        background: #f5f3ff;
+        color: var(--primary-color);
+    }
+
+    .menu-link.active {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
+    }
+
+    .menu-link.active i {
+        color: white;
+    }
+
+    /* Main Content Styles */
+    .dashboard-content {
+        flex-grow: 1;
+        padding: 2rem;
+        overflow-x: hidden;
+    }
+
+    .section-header {
+        margin-bottom: 2rem;
+    }
+
+    /* Card Styles */
+    .glass-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #f1eefb;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .glass-card.text-center:hover {
+        transform: translateY(-4px);
+        border-color: #e9d5ff;
+        box-shadow: 0 18px 36px -18px rgba(124, 58, 237, 0.35);
+    }
+
+    /* Wallet specific */
+    .wallet-card-new {
+        background: var(--primary-gradient);
+        border-radius: 20px;
+        padding: 30px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .wallet-card-new::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 15s ease-in-out infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    @@media (max-width: 991px) {
+        .dashboard-sidebar {
+            width: var(--sidebar-collapsed-width);
+        }
+        .sidebar-user, .sidebar-header {
+            display: none;
+        }
+        .menu-link i {
+            margin-right: 0.35rem;
+            font-size: 1.15rem;
+        }
+        .menu-item {
+            margin: 5px 10px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .dashboard-wrapper {
+            flex-direction: column;
+        }
+        .dashboard-sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            top: 0;
+            padding: 1rem 0;
+            border-right: none;
+            border-bottom: 1px solid #eee;
+        }
+        .sidebar-menu {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 10px;
+        }
+        .menu-item {
+            margin: 0 5px;
+            flex-shrink: 0;
+        }
+    }
+
+    /* Incentive Widget styling */
+    .incentive-widget {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+    }
+
+    .incentive-tier-badge {
+        font-size: 0.8rem;
+        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 50px;
+        text-transform: uppercase;
+    }
+
+    .service-card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .service-card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+    }
+
+    /* Portfolio specific */
+    .portfolio-card {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .portfolio-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .portfolio-card:hover .portfolio-overlay {
+        opacity: 1;
+    }
+
+    .portfolio-img-wrapper img, .portfolio-img-wrapper video {
+        transition: transform 0.5s ease;
+    }
+
+    .portfolio-card:hover .portfolio-img-wrapper img, 
+    .portfolio-card:hover .portfolio-img-wrapper video {
+        transform: scale(1.1);
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+    }
+
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow);
+    }
+</style>
+
+<link rel="stylesheet" href="~/css/party-location.css" asp-append-version="true" />
+<div class="dashboard-wrapper page-dashboard">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar" id="mainSidebar">
+        <div class="sidebar-header">
+            <button id="sidebarToggle" title="Toggle Sidebar">
+                <i class="bi bi-layout-sidebar-inset"></i>
+            </button>
+        </div>
+        <div class="sidebar-user">
+            <div class="user-avatar text-uppercase">
+                @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                {
+                    <img src="@Model.ProfilePicture" alt="@Model.Name" />
+                }
+                else
+                {
+                    @Model.Name.Substring(0, 1)
+                }
+            </div>
+            <h6 class="fw-bold mb-1">@Model.Name</h6>
+            <p class="text-muted small mb-0">@Model.Email</p>
+            <div class="mt-2">
+                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                    <i class="bi bi-patch-check-fill me-1"></i>Verified Vendor
+                </span>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-md-8">
-            <!-- Incentive Program Widget -->
-            @{
-                dynamic stats = ViewBag.IncentiveStats;
-                string tierColor = "secondary";
-                string tierIcon = "🥉";
-                string gradient = "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)";
-                string textColor = "text-dark";
-                
-                if (stats.Tier == "Silver") { 
-                    tierColor = "secondary"; 
-                    tierIcon = "🥈"; 
-                    gradient = "linear-gradient(135deg, #E2E8F0 0%, #CBD5E1 100%)";
-                }
-                else if (stats.Tier == "Gold") { 
-                    tierColor = "warning"; 
-                    tierIcon = "🥇"; 
-                    gradient = "linear-gradient(135deg, #FEF3C7 0%, #F59E0B 100%)";
-                }
-                else if (stats.Tier == "Platinum") { 
-                    tierColor = "info"; 
-                    tierIcon = "💎"; 
-                    gradient = "linear-gradient(135deg, #DBEAFE 0%, #3B82F6 100%)";
-                    textColor = "text-white";
-                }
-            }
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="@Url.Action("Dashboard", new { section = "overview" })" class="menu-link @(activeSection == "overview" ? "active" : "")">
+                    <i class="bi bi-grid-fill"></i>
+                    <span>Overview</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="@Url.Action("Dashboard", new { section = "availability" })" class="menu-link @(activeSection == "availability" ? "active" : "")">
+                    <i class="bi bi-calendar3"></i>
+                    <span>Availability</span>
+                </a>
+                <a href="@Url.Action("Dashboard", new { section = "bookings" })" class="menu-link @(activeSection == "bookings" ? "active" : "")">
+                    <i class="bi bi-calendar-check-fill"></i>
+                    <span>My Bookings</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="@Url.Action("Dashboard", new { section = "servicerequests" })" class="menu-link @(activeSection == "servicerequests" ? "active" : "")">
+                    <i class="bi bi-chat-left-dots-fill"></i>
+                    <span>Service Requests</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="@Url.Action("Dashboard", new { section = "services" })" class="menu-link @(activeSection == "services" ? "active" : "")">
+                    <i class="bi bi-shop-window"></i>
+                    <span>My Services</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="@Url.Action("Dashboard", new { section = "portfolio" })" class="menu-link @(activeSection == "portfolio" ? "active" : "")">
+                    <i class="bi bi-images"></i>
+                    <span>Portfolio</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="@Url.Action("Dashboard", new { section = "messages" })" class="menu-link @(activeSection == "messages" ? "active" : "")">
+                    <i class="bi bi-envelope-fill"></i>
+                    <span>Messages</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="@Url.Action("Dashboard", new { section = "wallet" })" class="menu-link @(activeSection == "wallet" ? "active" : "")">
+                    <i class="bi bi-wallet2"></i>
+                    <span>Wallet & Earnings</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="@Url.Action("Dashboard", new { section = "profile" })" class="menu-link @(activeSection == "profile" ? "active" : "")">
+                    <i class="bi bi-person-fill-gear"></i>
+                    <span>My Profile</span>
+                </a>
+            </li>
+            <li class="menu-item mt-4">
+                <a asp-controller="Account" asp-action="Logout" class="menu-link text-danger">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
 
-            <div class="card border-0 shadow-sm rounded-4 mb-5 overflow-hidden">
-                <div class="card-body p-0">
-                    <div class="row g-0">
-                        <!-- Left: Current Status -->
-                        <div class="col-md-4 p-4 text-center d-flex flex-column justify-content-center" 
-                             style="background: @gradient;">
-                            <div class="mb-2 display-4">@tierIcon</div>
-                            <h4 class="fw-bold fs-5 mb-1" style="color: #1f2937;">@stats.Tier Vendor</h4>
-                            <p class="small mb-0 opacity-75" style="color: #4b5563;">Current Commission: <strong>@stats.Commission</strong></p>
+    <!-- Main Content -->
+    <main class="dashboard-content">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (string.IsNullOrWhiteSpace(Model.PinCode))
+        {
+            <div class="alert alert-warning border-0 rounded-3 shadow-sm d-flex flex-wrap align-items-center justify-content-between gap-2" role="alert">
+                <div>
+                    <strong><i class="bi bi-geo-alt-fill me-1"></i> Not visible on Explore</strong>
+                    <span class="d-block small">Add your 6-digit pin code in Profile so customers can find you.</span>
+                </div>
+                <a href="@Url.Action("Dashboard", new { section = "profile" })" class="btn btn-sm btn-warning rounded-pill px-3">Add Pin Code</a>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["WarningMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @switch (activeSection)
+        {
+            case "overview":
+                <div class="section-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="fw-bold mb-1">Welcome back, @Model.Name!</h2>
+                        <p class="text-muted mb-0">Here's what's happening with your business today.</p>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4 dashboard-kpi-row">
+                    <div class="col-6 col-md-3">
+                        <div class="glass-card text-center h-100">
+                            <div class="display-6 mb-2">⭐</div>
+                            <h4 class="fw-bold mb-1">@Model.TrustScore</h4>
+                            <p class="text-muted small mb-0">Trust Score</p>
                         </div>
-                        
-                        <!-- Right: Progress & Details -->
-                        <div class="col-md-8 p-4 bg-white">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold mb-0">Level Up Progress</h5>
-                                <span class="badge bg-light text-primary border">
-                                    @stats.Count Completed Bookings
-                                </span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="glass-card text-center h-100">
+                            <div class="display-6 mb-2">📋</div>
+                            @{
+                                var bookings = ViewBag.BookingsWithDetails as List<Dictionary<string, object>>;
+                            }
+                            <h4 class="fw-bold mb-1">@bookings?.Count</h4>
+                            <p class="text-muted small mb-0">Total Bookings</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="glass-card text-center h-100">
+                            <div class="display-6 mb-2">💰</div>
+                            <h4 class="fw-bold mb-1">₹@Model.WalletBalance.ToString("N0")</h4>
+                            <p class="text-muted small mb-0">Wallet Balance</p>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="glass-card text-center h-100">
+                            <div class="display-6 mb-2">💎</div>
+                            <h4 class="fw-bold mb-1">@(((dynamic)ViewBag.IncentiveStats).Tier)</h4>
+                            <p class="text-muted small mb-0">Current Tier</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incentive Progress -->
+                <div class="incentive-widget">
+                    @{
+                        dynamic stats = ViewBag.IncentiveStats;
+                        string gradient = "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)";
+                        string tierIcon = "🥉";
+                        if (stats.Tier == "Silver") { gradient = "linear-gradient(135deg, #E2E8F0 0%, #CBD5E1 100%)"; tierIcon = "🥈"; }
+                        else if (stats.Tier == "Gold") { gradient = "linear-gradient(135deg, #FEF3C7 0%, #F59E0B 100%)"; tierIcon = "🥇"; }
+                        else if (stats.Tier == "Platinum") { gradient = "linear-gradient(135deg, #DBEAFE 0%, #3B82F6 100%)"; tierIcon = "💎"; }
+                    }
+                    <div class="row g-0">
+                        <div class="col-md-4 p-4 text-center" style="background: @gradient;">
+                            <div class="display-4 mb-2">@tierIcon</div>
+                            <h4 class="fw-bold">@stats.Tier Vendor</h4>
+                            <span class="badge bg-white text-dark shadow-sm">Commission: @stats.Commission</span>
+                        </div>
+                        <div class="col-md-8 p-4">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h5 class="fw-bold mb-0">Growth Roadmap</h5>
+                                <span class="text-primary small">@stats.Count Completed Bookings</span>
                             </div>
-                            
-                            <!-- Progress Bar -->
                             @if (stats.NextTier != "Max Level")
                             {
-                                <div class="mb-4">
+                                <div class="mb-3">
                                     <div class="d-flex justify-content-between small text-muted mb-1">
                                         <span>Current: @stats.Tier</span>
-                                        <span>Next: @stats.NextTier (@stats.Needed more to go)</span>
+                                        <span>Next: @stats.NextTier</span>
                                     </div>
-                                    <div class="progress" style="height: 10px; border-radius: 10px; background-color: #f3f4f6;">
-                                        <div class="progress-bar bg-primary-gradient" role="progressbar" 
-                                             style="width: @stats.Progress%; border-radius: 10px;" 
-                                             aria-valuenow="@stats.Progress" aria-valuemin="0" aria-valuemax="100">
-                                        </div>
+                                    <div class="progress" style="height: 12px; border-radius: 10px;">
+                                        <div class="progress-bar bg-primary-gradient" style="width: @stats.Progress%;"></div>
                                     </div>
-                                    <div class="mt-2 text-end">
-                                        <small class="text-primary fw-semibold" style="font-size: 0.8rem;">
-                                            Next Benefit: Reduced Commission (@stats.NextCommission) 🚀
-                                        </small>
+                                    <div class="mt-2 text-primary small">
+                                        Just <strong>@stats.Needed</strong> more bookings to reach @stats.NextTier and get <strong>@stats.NextCommission commission</strong>!
                                     </div>
                                 </div>
                             }
                             else
                             {
-                                <div class="alert alert-success mb-0 py-2">
-                                    <small><i class="bi bi-trophy-fill me-2"></i>You've reached the top tier! Enjoy maximum benefits.</small>
+                                <div class="alert alert-success py-2 mt-2">
+                                    <i class="bi bi-trophy-fill me-2"></i>You've reached the highest tier!
                                 </div>
                             }
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- Benefits List (Mini) -->
-                            <div class="row g-2 mt-2">
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center gap-2 p-2 rounded bg-light">
-                                        <div class="bg-white p-1 rounded-circle shadow-sm">💰</div>
-                                        <div class="small lh-1">
-                                            <div class="fw-bold">Lower Fees</div>
-                                            <span class="text-muted" style="font-size: 0.7rem;">Save on every booking</span>
-                                        </div>
-                                    </div>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="glass-card h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0">Upcoming Booked Dates</h5>
+                                <a href="@Url.Action("Dashboard", new { section = "availability" })" class="small text-primary text-decoration-none">View all</a>
+                            </div>
+                            @if (overviewBooked.Any())
+                            {
+                                <ul class="list-unstyled mb-0 small">
+                                    @foreach (var entry in overviewBooked.Take(5))
+                                    {
+                                        <li class="mb-2"><i class="bi bi-calendar-x text-danger me-2"></i>@entry.Date.ToString("MMM dd, yyyy") — @entry.Status</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted small mb-0">No bookings in the next 60 days.</p>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-card h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0">Next Available Dates</h5>
+                                <a href="@Url.Action("Dashboard", new { section = "availability" })" class="small text-primary text-decoration-none">View all</a>
+                            </div>
+                            @if (overviewAvailable.Any())
+                            {
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var entry in overviewAvailable.Take(8))
+                                    {
+                                        <span class="badge bg-success-subtle text-success">@entry.Date.ToString("MMM dd")</span>
+                                    }
                                 </div>
-                                <div class="col-6">
-                                    <div class="d-flex align-items-center gap-2 p-2 rounded bg-light">
-                                        <div class="bg-white p-1 rounded-circle shadow-sm">⭐</div>
-                                        <div class="small lh-1">
-                                            <div class="fw-bold">Top Badge</div>
-                                            <span class="text-muted" style="font-size: 0.7rem;">Stand out to customers</span>
-                                        </div>
-                                    </div>
-                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted small mb-0">Calendar fully booked.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-5">
+                        <h5 class="fw-bold mb-3">Quick Actions</h5>
+                        <div class="d-grid gap-3">
+                            <a asp-action="AddService" class="btn btn-outline-primary text-start p-3 rounded-4 bg-white border-0 shadow-sm service-card-hover">
+                                <i class="bi bi-plus-circle-fill me-2 text-primary"></i> Add New Service Listing
+                            </a>
+                            <a href="@Url.Action("Dashboard", new { section = "portfolio" })" class="btn btn-outline-primary text-start p-3 rounded-4 bg-white border-0 shadow-sm service-card-hover">
+                                <i class="bi bi-images me-2 text-primary"></i> Update Portfolio Gallery
+                            </a>
+                            <a href="@Url.Action("Dashboard", new { section = "profile" })" class="btn btn-outline-primary text-start p-3 rounded-4 bg-white border-0 shadow-sm service-card-hover">
+                                <i class="bi bi-person-badge-fill me-2 text-primary"></i> Edit Profile & Bank Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                break;
+
+            case "availability":
+                var today = DateTime.Today;
+                var futureSchedule = vendorScheduleFull.Where(e => e.Date >= today).ToList();
+                var statOpen = futureSchedule.Count(e => !e.IsBooked && !e.IsUnderProcess);
+                var statBooked = futureSchedule.Count(e => e.IsBooked);
+                var statPending = futureSchedule.Count(e => e.IsUnderProcess);
+                var statManual = calendarBlocks.Count;
+                <div class="section-header d-flex flex-wrap justify-content-between align-items-start gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-1">Availability Calendar</h2>
+                        <p class="text-muted mb-0">Manage your schedule — customers see live availability on Explore.</p>
+                    </div>
+                    <a href="@Url.Action("VendorProfile", "Customer", new { vendorId = Model.Id })" class="btn btn-sm btn-outline-primary rounded-pill px-3" target="_blank" rel="noopener">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Preview on Explore
+                    </a>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-lg-3">
+                        <div class="vac-stat-card vac-stat-open">
+                            <div class="vac-stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+                            <div>
+                                <div class="vac-stat-value">@statOpen</div>
+                                <div class="vac-stat-label">Open days</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="vac-stat-card vac-stat-booked">
+                            <div class="vac-stat-icon"><i class="bi bi-calendar-x-fill"></i></div>
+                            <div>
+                                <div class="vac-stat-value">@statBooked</div>
+                                <div class="vac-stat-label">Booked</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="vac-stat-card vac-stat-pending">
+                            <div class="vac-stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                            <div>
+                                <div class="vac-stat-value">@statPending</div>
+                                <div class="vac-stat-label">Under process</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="vac-stat-card vac-stat-manual">
+                            <div class="vac-stat-icon"><i class="bi bi-sliders"></i></div>
+                            <div>
+                                <div class="vac-stat-value">@statManual</div>
+                                <div class="vac-stat-label">Manual entries</div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="mb-5">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="fw-bold text-dark mb-0">Your Services</h3>
-                    <a asp-action="AddService" class="btn btn-primary-gradient px-4 rounded-pill">
-                        <span class="me-1">➕</span> Add New Service
-                    </a>
+                <div class="vendor-calendar-panel">
+                    <div class="vac-calendar-card vac-calendar-full">
+                        <div id="vendor-teams-calendar"
+                             class="vendor-teams-calendar"
+                             data-schedule="@System.Text.Json.JsonSerializer.Serialize(PartyClap.Services.VendorScheduleHelper.ToCalendarPayload(vendorScheduleFull))">
+                            <div class="vtc-toolbar">
+                                <div class="vtc-toolbar-left">
+                                    <button type="button" class="btn vtc-nav-btn vtc-prev" aria-label="Previous month"><i class="bi bi-chevron-left"></i></button>
+                                    <button type="button" class="btn vtc-nav-btn vtc-next" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>
+                                    <button type="button" class="btn vtc-today-btn vtc-today">Today</button>
+                                </div>
+                                <h5 class="fw-bold mb-0 vtc-month-label"></h5>
+                                <div class="vtc-toolbar-right">
+                                    <span class="vtc-sync-hint"><i class="bi bi-arrow-repeat me-1"></i> Slots reopen 1h after end · Synced with Explore</span>
+                                </div>
+                            </div>
+                            <div class="vtc-weekdays"></div>
+                            <div class="vtc-grid"></div>
+                            <div class="vtc-legend">
+                                <span class="vtc-legend-item"><span class="vtc-dot vtc-available"></span> Available</span>
+                                <span class="vtc-legend-item"><span class="vtc-dot vtc-under-process"></span> Under process</span>
+                                <span class="vtc-legend-item"><span class="vtc-dot vtc-partyclap"></span> PartyClap block</span>
+                                <span class="vtc-legend-item"><span class="vtc-dot vtc-booked"></span> Customer booked</span>
+                                <span class="vtc-legend-item"><span class="vtc-dot vtc-available"></span> Available</span>
+                                <span class="vtc-legend-item"><span class="vtc-dot vtc-today-dot"></span> Today</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (calendarBlocks.Any())
+                    {
+                        <div class="vac-side-card mt-4">
+                            <div class="vac-side-card-header d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-list-ul"></i> Manual entries</span>
+                                <span class="badge rounded-pill vac-entry-count">@calendarBlocks.Count</span>
+                            </div>
+                            <div class="vac-entry-list vac-entry-list-grid">
+                                @foreach (var block in calendarBlocks.Take(10))
+                                {
+                                    var blockLabel = string.IsNullOrWhiteSpace(block.Label) ? "PartyClap" : block.Label.Trim();
+                                    var isPartyClapBlock = PartyClap.Services.VendorScheduleHelper.IsPartyClapBlockLabel(blockLabel);
+                                    <div class="vac-entry-item @(isPartyClapBlock ? "vac-entry-partyclap" : "vac-entry-blocked")">
+                                        <div class="vac-entry-icon">
+                                            <i class="bi @(isPartyClapBlock ? "bi-shield-lock-fill" : "bi-x-lg")"></i>
+                                        </div>
+                                        <div class="vac-entry-body">
+                                            <div class="vac-entry-date">@block.BlockDate.ToString("ddd, MMM dd")</div>
+                                            <div class="vac-entry-meta">
+                                                @if (!string.IsNullOrWhiteSpace(block.StartTime) && !string.IsNullOrWhiteSpace(block.EndTime))
+                                                {
+                                                    <span class="vac-entry-time"><i class="bi bi-clock me-1"></i>@block.StartTime – @block.EndTime</span>
+                                                }
+                                                <span class="vac-entry-label @(isPartyClapBlock ? "vac-entry-label-partyclap" : "")">@blockLabel</span>
+                                            </div>
+                                        </div>
+                                        <form asp-action="DeleteCalendarBlock" method="post" class="vac-entry-remove">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="blockId" value="@block.Id" />
+                                            <button type="submit" class="btn btn-sm" title="Remove" aria-label="Remove entry">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="modal fade" id="vendor-schedule-modal" tabindex="-1" aria-labelledby="vendorScheduleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable vtc-schedule-modal-dialog">
+                        <div class="modal-content border-0 shadow-lg vtc-schedule-modal">
+                            <div class="modal-header border-0 pb-0">
+                                <div>
+                                    <h5 class="modal-title fw-bold" id="vendorScheduleModalLabel">Manage schedule</h5>
+                                    <p class="text-muted small mb-0 vtc-modal-date-label">Select a date on the calendar</p>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body pt-3">
+                                <div class="vtc-modal-slots-section" style="display:none;">
+                                    <div class="vtc-modal-slots-header d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-semibold small text-uppercase text-muted">Slots on this day</span>
+                                        <span class="badge rounded-pill bg-light text-dark vtc-modal-slot-count">0</span>
+                                    </div>
+                                    <div class="vtc-modal-slots-list"></div>
+                                </div>
+                                <div class="vtc-modal-booking-details" style="display:none;"></div>
+                                <div class="vtc-modal-booked-note alert alert-light border rounded-3 small" style="display:none;" role="note">
+                                    <i class="bi bi-info-circle me-1 text-muted"></i>
+                                    <span class="vtc-modal-booked-text">Past dates cannot be updated.</span>
+                                </div>
+                                <div class="vtc-modal-schedule-forms">
+                                    <p class="vac-tab-desc">Mark a slot unavailable — like blocking time in Microsoft Teams.</p>
+                                    <form asp-action="SaveCalendarBlock" method="post" class="vac-action-form vtc-block-form">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="isAvailable" value="false" />
+                                            <input type="hidden" name="blockId" class="vtc-form-block-id" value="" />
+                                            <div class="vac-form-field">
+                                                <label class="vac-form-label">Date</label>
+                                                <div class="vac-input-wrap">
+                                                    <i class="bi bi-calendar3"></i>
+                                                    <input type="date" name="blockDate" class="form-control vtc-form-date" required min="@today.ToString("yyyy-MM-dd")" />
+                                                </div>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-6">
+                                                    <div class="vac-form-field">
+                                                        <label class="vac-form-label">Start</label>
+                                                        <div class="vac-input-wrap">
+                                                            <i class="bi bi-clock"></i>
+                                                            <input type="time" name="startTime" class="form-control vtc-form-start" value="09:00" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="vac-form-field">
+                                                        <label class="vac-form-label">End</label>
+                                                        <div class="vac-input-wrap">
+                                                            <i class="bi bi-clock-history"></i>
+                                                            <input type="time" name="endTime" class="form-control vtc-form-end" value="10:00" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="vac-form-field vtc-hourly-field">
+                                                <label class="vac-form-label d-flex align-items-center gap-2 mb-2">
+                                                    <input type="checkbox" name="isHourly" value="true" class="form-check-input m-0 vtc-form-hourly" />
+                                                    Hourly slot
+                                                </label>
+                                                <div class="vtc-duration-btns" style="display:none;">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary vtc-duration-btn active" data-hours="1">1 hr</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary vtc-duration-btn" data-hours="2">2 hr</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary vtc-duration-btn" data-hours="3">3 hr</button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary vtc-duration-btn" data-hours="4">4 hr</button>
+                                                </div>
+                                            </div>
+                                            <div class="vac-form-field">
+                                                <label class="vac-form-label">Title (optional)</label>
+                                                <input type="text" name="label" class="form-control vtc-form-label" placeholder="Private event, maintenance…" />
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="submit" class="btn vac-btn-block flex-grow-1 rounded-pill vtc-form-submit">
+                                                    <i class="bi bi-slash-circle me-1"></i> Block slot
+                                                </button>
+                                                <button type="button" class="btn btn-light rounded-pill vtc-cancel-edit" style="display:none;">Cancel</button>
+                                            </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <link rel="stylesheet" href="~/css/vendor-calendar.css" asp-append-version="true" />
+                <script src="~/js/vendor-calendar.js" asp-append-version="true"></script>
+                break;
+
+            case "bookings":
+                var allBookings = ViewBag.BookingsWithDetails as List<Dictionary<string, object>>;
+
+                <div class="section-header">
+                    <h2 class="fw-bold mb-1">My Bookings</h2>
+                    <p class="text-muted">Manage your confirmed and requested bookings.</p>
                 </div>
                 
-                <div class="row g-4">
-                    @if (ViewBag.Services != null && (ViewBag.Services as List<PartyClap.Models.ServiceListing>).Any())
+                @if (allBookings != null && allBookings.Any())
+                {
+                    foreach (var booking in allBookings)
                     {
-                        foreach (var service in ViewBag.Services as List<PartyClap.Models.ServiceListing>)
+                        var status = booking["Status"].ToString();
+                        string statusBadge = "bg-info";
+                        if (status == "Requested") statusBadge = "bg-warning text-dark";
+                        else if (status == "Approved") statusBadge = "bg-success";
+                        else if (status == "Cancelled") statusBadge = "bg-secondary";
+
+                        <div class="card mb-4 border-0 shadow-sm rounded-4 overflow-hidden">
+                            <div class="card-header bg-white border-0 p-3 d-flex justify-content-between align-items-center">
+                                <span class="badge @statusBadge rounded-pill px-3">@status</span>
+                                <span class="text-muted small">Booking ID: #@booking["Id"].ToString().Substring(0, 8)</span>
+                            </div>
+                            <div class="card-body p-4 pt-0">
+                                <div class="row g-4 align-items-center">
+                                    <div class="col-md-5">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="bg-light rounded-circle p-3">
+                                                <i class="bi bi-person text-primary fs-4"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">@booking["CustomerName"]</h6>
+                                                <div class="small text-muted">@booking["CustomerPhone"]</div>
+                                                <div class="small text-muted">@booking["CustomerEmail"]</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="small text-muted mb-1"><i class="bi bi-calendar-event me-2"></i>Event Date</div>
+                                        <h6 class="fw-bold mb-0">@(((DateTime)booking["EventDate"]).ToString("MMM dd, yyyy"))</h6>
+                                        <span class="badge bg-light text-primary mt-1">@booking["ServiceType"]</span>
+                                        @if (booking.ContainsKey("PartyLocation") && !string.IsNullOrWhiteSpace(booking["PartyLocation"]?.ToString()))
+                                        {
+                                            <div class="mt-2">
+                                                <partial name="_PartyLocationDisplay" view-data='new ViewDataDictionary(ViewData) {
+                                                    { "PartyLocation", booking["PartyLocation"] },
+                                                    { "PartyPinCode", booking.ContainsKey("PartyPinCode") ? booking["PartyPinCode"] : null }
+                                                }' />
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-3 text-md-end">
+                                        <div class="small text-muted mb-1">Your Earnings</div>
+                                        <h4 class="fw-bold text-primary mb-0">₹@(((decimal)booking["VendorCost"]).ToString("N0"))</h4>
+                                    </div>
+                                </div>
+
+                                @if (status == "Requested")
+                                {
+                                    <hr />
+                                    <form asp-action="UpdateBookingStatus" method="post" class="d-flex gap-2 justify-content-end">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="bookingId" value="@booking["Id"]" />
+                                        <button type="submit" name="status" value="Rejected" class="btn btn-outline-danger btn-sm px-4 rounded-pill">Reject</button>
+                                        <button type="submit" name="status" value="Approved" class="btn btn-success btn-sm px-4 rounded-pill">Accept</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="glass-card text-center py-5">
+                        <div class="display-1 mb-3 opacity-25">📅</div>
+                        <h5>No bookings yet</h5>
+                        <p class="text-muted">Your confirmed bookings will appear here.</p>
+                    </div>
+                }
+                break;
+
+
+            case "services":
+                <div class="section-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="fw-bold mb-1">My Service Listings</h2>
+                        <p class="text-muted mb-0">Manage the services you offer on the platform.</p>
+                    </div>
+                    <a asp-action="AddService" class="btn btn-primary-gradient rounded-pill px-4">
+                        <i class="bi bi-plus-lg me-2"></i>Add Service
+                    </a>
+                </div>
+
+                <div class="row g-4">
+                    @{
+                        var vServices = ViewBag.Services as List<PartyClap.Models.ServiceListing>;
+                    }
+                    @if (vServices != null && vServices.Any())
+                    {
+                        foreach (var service in vServices)
                         {
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden service-card-hover">
                                     <div class="position-relative">
                                         <img src="@(string.IsNullOrEmpty(service.MediaUrl) ? "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=500&q=80" : service.MediaUrl)" 
-                                             class="card-img-top" style="height: 160px; object-fit: cover;" alt="@service.ServiceType">
+                                             class="card-img-top" style="height: 180px; object-fit: cover;">
                                         <div class="position-absolute top-0 end-0 m-2">
-                                            <span class="badge bg-white text-primary shadow-sm rounded-pill px-3 py-2">
-                                                ₹@service.Cost / @service.Unit
-                                            </span>
+                                            @if (service.Cost < 1)
+                                            {
+                                                <span class="badge bg-warning text-dark shadow-sm rounded-pill px-3 py-2">
+                                                    Price required
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-white text-primary shadow-sm rounded-pill px-3 py-2">
+                                                    ₹@service.Cost.ToString("N0") / @service.Unit
+                                                </span>
+                                            }
                                         </div>
                                     </div>
                                     <div class="card-body p-4">
                                         <h5 class="fw-bold mb-2">@service.ServiceType</h5>
                                         <p class="text-muted small mb-3 text-truncate-2">@service.Description</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="badge bg-light text-dark rounded-pill px-3">Active</span>
-                                            <a href="#" class="btn btn-link btn-sm text-decoration-none p-0">Edit Details</a>
+                                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                                            @if (service.Cost < 1)
+                                            {
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3">Needs pricing</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3">Active</span>
+                                            }
+                                            <div class="dropdown">
+                                                <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="dropdown">
+                                                    <i class="bi bi-three-dots-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                                                    <li><a class="dropdown-item" href="@Url.Action("EditService", new { id = service.Id })"><i class="bi bi-pencil me-2"></i>Edit Service</a></li>
+                                                    <li>
+                                                        <form asp-action="DeleteService" method="post" onsubmit="return confirm('Are you sure you want to delete this service?');" class="m-0">
+                                                            <input type="hidden" name="id" value="@service.Id" />
+                                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Delete Service</button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -173,435 +995,546 @@
                     else
                     {
                         <div class="col-12">
-                            <div class="bg-white p-5 rounded-4 text-center border-dashed">
-                                <div class="display-4 text-muted mb-3 opacity-25">🛍️</div>
-                                <h5 class="text-muted">No services listed yet</h5>
-                                <p class="text-muted small mb-4">Add your first service to start receiving bookings!</p>
-                                <a asp-action="AddService" class="btn btn-outline-primary rounded-pill px-4">Create Service</a>
+                            <div class="glass-card text-center py-5">
+                                <div class="display-3 mb-3 opacity-25">🛍️</div>
+                                <h4>No services active</h4>
+                                <p class="text-muted mb-4">List your services to start appearing in customer searches.</p>
+                                <a asp-action="AddService" class="btn btn-primary-gradient px-4 rounded-pill">Create My First Service</a>
                             </div>
                         </div>
                     }
                 </div>
-            </div>
+                break;
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold text-dark mb-0">Customer Requests & Bookings</h3>
-            </div>
-            
-            <!-- Service Requests Section -->
-            @{
-                var serviceRequestsList = ViewBag.ServiceRequests as List<Dictionary<string, object>>;
-                var pendingRequests = serviceRequestsList?.Where(r => r.ContainsKey("Status") && r["Status"]?.ToString() == "Pending").ToList();
-                
-                // DEBUG INFO REMOVED
-            }
-            
-            @if (pendingRequests != null && pendingRequests.Any())
-            {
-                <div class="mb-5">
-                    <h5 class="fw-bold mb-3 text-primary">
-                        <i class="bi bi-inbox me-2"></i>Service Requests (Pending Approval) - @pendingRequests.Count
-                    </h5>
-                    @foreach (var requestDict in pendingRequests)
-                    {
-                        var requestId = requestDict["Id"].ToString();
-                        var requestStatus = requestDict["Status"].ToString();
-                        var customerName = requestDict.ContainsKey("CustomerName") ? requestDict["CustomerName"].ToString() : "Unknown Customer";
-                        var customerEmail = requestDict.ContainsKey("CustomerEmail") ? requestDict["CustomerEmail"].ToString() : "";
-                        var customerPhone = requestDict.ContainsKey("CustomerPhone") ? requestDict["CustomerPhone"].ToString() : "";
-                        var serviceType = requestDict.ContainsKey("ServiceType") ? requestDict["ServiceType"].ToString() : "";
-                        var eventDate = (DateTime)requestDict["EventDate"];
-                        var eventType = requestDict.ContainsKey("EventType") ? requestDict["EventType"].ToString() : "";
-                        var guestCount = Convert.ToInt32(requestDict["GuestCount"]);
-                        var additionalDetails = requestDict.ContainsKey("AdditionalDetails") ? requestDict["AdditionalDetails"].ToString() : "";
-                        var createdDate = (DateTime)requestDict["CreatedDate"];
-                        
-                        <div class="card mb-3 p-4 border-0 shadow-sm rounded-4 border-start border-warning border-4">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex align-items-center gap-2 mb-2">
-                                            <h5 class="fw-bold mb-0">Service Request #@requestId.Substring(0, 8)</h5>
-                                            <span class="badge bg-warning text-dark">
-                                                <i class="bi bi-clock me-1"></i>Pending Approval
-                                            </span>
-                                        </div>
-                                        
-                                        <!-- Customer Information -->
-                                        <div class="bg-light rounded p-3 mb-3">
-                                            <h6 class="fw-semibold mb-2">
-                                                <i class="bi bi-person-circle text-primary me-2"></i>Customer Details
-                                            </h6>
-                                            <div class="row g-2 small">
-                                                <div class="col-md-6">
-                                                    <strong>Name:</strong> @customerName
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Email:</strong> 
-                                                    @if (!string.IsNullOrEmpty(customerEmail))
-                                                    {
-                                                        <a href="mailto:@customerEmail" class="text-decoration-none">@customerEmail</a>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-muted">Not provided</span>
-                                                    }
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Phone:</strong> 
-                                                    @if (!string.IsNullOrEmpty(customerPhone))
-                                                    {
-                                                        <a href="tel:@customerPhone" class="text-decoration-none">@customerPhone</a>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-muted">Not provided</span>
-                                                    }
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Service:</strong> <span class="badge bg-primary">@serviceType</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Event Details -->
-                                        <div class="bg-info bg-opacity-10 rounded p-3 mb-3">
-                                            <h6 class="fw-semibold mb-2">
-                                                <i class="bi bi-calendar-event text-info me-2"></i>Event Details
-                                            </h6>
-                                            <div class="row g-2 small">
-                                                <div class="col-md-6">
-                                                    <strong>Event Date:</strong> 
-                                                    <span class="badge bg-light text-dark border">
-                                                        @eventDate.ToString("MMM dd, yyyy")
-                                                        @if (eventDate.DayOfWeek == DayOfWeek.Saturday || eventDate.DayOfWeek == DayOfWeek.Sunday)
-                                                        {
-                                                            <span class="badge bg-warning text-dark ms-1">Weekend</span>
-                                                        }
-                                                    </span>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Event Type:</strong> <span class="badge bg-secondary">@eventType</span>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Number of Guests:</strong> <span class="badge bg-light text-dark">@guestCount</span>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <strong>Requested:</strong> @createdDate.ToString("MMM dd, yyyy 'at' hh:mm tt")
-                                                </div>
-                                            </div>
-                                            @if (!string.IsNullOrEmpty(additionalDetails))
-                                            {
-                                                <div class="mt-2">
-                                                    <strong>Additional Details:</strong>
-                                                    <p class="mb-0 small text-muted">@additionalDetails</p>
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <hr class="my-3" />
-                                <div class="bg-warning-subtle rounded p-3">
-                                    <h6 class="fw-semibold mb-3">
-                                        <i class="bi bi-exclamation-circle me-2"></i>Action Required
-                                    </h6>
-                                    <form asp-action="UpdateServiceRequestStatus" method="post">
-                                        <input type="hidden" name="requestId" value="@requestId" />
-                                        <div class="row g-3 align-items-end">
-                                            <div class="col-md-8">
-                                                <p class="mb-0 small text-muted">
-                                                    Review the request details above. You can approve to proceed with booking or reject if unavailable.
-                                                </p>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="d-grid gap-2">
-                                                    <button type="submit" name="status" value="Approved" class="btn btn-success">
-                                                        <i class="bi bi-check-circle me-2"></i>Approve Request
-                                                    </button>
-                                                    <button type="submit" name="status" value="Rejected" class="btn btn-outline-danger">
-                                                        <i class="bi bi-x-circle me-2"></i>Reject Request
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                    }
+            case "servicerequests":
+                <div class="section-header">
+                    <h2 class="fw-bold mb-1">Service Requests</h2>
+                    <p class="text-muted">Inquiries from customers about your services.</p>
                 </div>
-            }
-
-            @* Display History (Approved/Rejected) *@
-            @{
-                var pastRequests = serviceRequestsList?.Where(r => !r.ContainsKey("Status") || r["Status"]?.ToString() != "Pending").ToList();
-            }
-            
-            @if (pastRequests != null && pastRequests.Any())
-            {
-                <div class="mb-5">
-                    <h5 class="fw-bold mb-3 text-secondary">
-                        <i class="bi bi-clock-history me-2"></i>Request History (@pastRequests.Count)
-                    </h5>
-                    @foreach (var requestDict in pastRequests)
+                <div class="glass-card">
+                    @{
+                        var sReqs = ViewBag.ServiceRequests as List<Dictionary<string, object>>;
+                    }
+                    @if (sReqs != null && sReqs.Any())
                     {
-                        var requestId = requestDict["Id"].ToString();
-                        var requestStatus = requestDict["Status"]?.ToString() ?? "Unknown";
-                        var customerName = requestDict.ContainsKey("CustomerName") ? requestDict["CustomerName"].ToString() : "Unknown Customer";
-                        var serviceType = requestDict.ContainsKey("ServiceType") ? requestDict["ServiceType"].ToString() : "";
-                        var eventDate = (DateTime)requestDict["EventDate"];
-                        var eventType = requestDict.ContainsKey("EventType") ? requestDict["EventType"].ToString() : "";
-                        var createdDate = (DateTime)requestDict["CreatedDate"];
-                        
-                        string statusBadgeClass = requestStatus == "Approved" ? "bg-success" : (requestStatus == "Rejected" ? "bg-danger" : "bg-secondary");
-                        string borderClass = requestStatus == "Approved" ? "border-success" : (requestStatus == "Rejected" ? "border-danger" : "border-secondary");
-
-                        <div class="card mb-3 p-4 border-0 shadow-sm rounded-4 border-start @borderClass border-4" style="opacity: 0.9;">
-                             <div class="d-flex justify-content-between align-items-center">
-                                 <div>
-                                     <div class="d-flex align-items-center gap-2 mb-1">
-                                         <h6 class="fw-bold mb-0">@customerName</h6>
-                                         <span class="badge @statusBadgeClass">@requestStatus</span>
-                                     </div>
-                                     <div class="small text-muted">
-                                         @serviceType • @eventDate.ToString("MMM dd") • @eventType
-                                     </div>
-                                 </div>
-                                 <div class="text-end small text-muted">
-                                     <div>Requested: @createdDate.ToString("MMM dd")</div>
-                                     <div>#@requestId.Substring(0, 6)</div>
-                                 </div>
-                             </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr class="text-muted small">
+                                        <th>CUSTOMER</th>
+                                        <th>SERVICE / EVENT</th>
+                                        <th>STATUS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var request in sReqs)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold">@request["CustomerName"]</div>
+                                                <div class="small text-muted">@request["CustomerPhone"]</div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-medium">@request["ServiceType"]</div>
+                                                <div class="small text-muted">
+                                                    @{
+                                                        var vReqStart = (DateTime)request["EventDate"];
+                                                        var vReqEnd = request.ContainsKey("EventEndDate") && request["EventEndDate"] != null
+                                                            ? (DateTime?)request["EventEndDate"] : null;
+                                                    }
+                                                    @vReqStart.ToString("MMM dd, yyyy")@(vReqEnd.HasValue && vReqEnd.Value.Date != vReqStart.Date ? " – " + vReqEnd.Value.ToString("MMM dd, yyyy") : "")
+                                                    @if (request.ContainsKey("EventStartTime") && request["EventStartTime"] != null)
+                                                    {
+                                                        <span> · @request["EventStartTime"]@(request.ContainsKey("EventEndTime") && request["EventEndTime"] != null ? "–" + request["EventEndTime"] : "")</span>
+                                                    }
+                                                    <br />@request["EventType"] · ₹@Convert.ToDecimal(request["ServiceCost"]).ToString("N0")
+                                                </div>
+                                                @if (request.ContainsKey("PartyLocation") && !string.IsNullOrWhiteSpace(request["PartyLocation"]?.ToString()))
+                                                {
+                                                    <partial name="_PartyLocationDisplay" view-data='new ViewDataDictionary(ViewData) {
+                                                        { "PartyLocation", request["PartyLocation"] },
+                                                        { "PartyPinCode", request.ContainsKey("PartyPinCode") ? request["PartyPinCode"] : null }
+                                                    }' />
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var status = request["Status"].ToString();
+                                                    var displayStatus = status == "UnderProcess" ? "Under Process" : status;
+                                                    var badgeClass = (status == "Pending" || status == "UnderProcess") ? "bg-warning text-dark"
+                                                        : (status == "Approved" ? "bg-success" : (status == "Paid" ? "bg-primary" : "bg-danger"));
+                                                }
+                                                <span class="badge @badgeClass rounded-pill">@displayStatus</span>
+                                            </td>
+                                            <td>
+                                                @if (status == "UnderProcess" || status == "Pending")
+                                                {
+                                                    <form asp-action="UpdateServiceRequestStatus" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="requestId" value="@request["Id"]" />
+                                                        <input type="hidden" name="status" value="Approved" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3 me-2">Accept</button>
+                                                    </form>
+                                                    <form asp-action="UpdateServiceRequestStatus" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="requestId" value="@request["Id"]" />
+                                                        <input type="hidden" name="status" value="Rejected" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">No action</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <div class="display-1 text-muted opacity-25 mb-3">📩</div>
+                            <p class="text-muted">No service requests found.</p>
                         </div>
                     }
                 </div>
-            }
-            
-            @if ((pendingRequests == null || !pendingRequests.Any()) && (pastRequests == null || !pastRequests.Any()))
-            {
-                <div class="mb-5">
-                    <div class="alert alert-secondary">
-                        <i class="bi bi-inbox me-2"></i>
-                        No service requests found. Service requests will appear here when customers submit them.
+                break;
+
+            case "portfolio":
+                <div class="section-header">
+                    <h2 class="fw-bold mb-1">Portfolio Gallery</h2>
+                    <p class="text-muted">Display your best work to build customer trust.</p>
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <div class="glass-card h-100 border-dashed border-2 text-center p-5 cursor-pointer hover-lift" onclick="document.getElementById('photoInput').click()">
+                            <div class="display-4 text-primary mb-3">📸</div>
+                            <h5 class="fw-bold">Upload Photos</h5>
+                            <p class="text-muted small">Showcase your high-quality event photography.</p>
+                            <form asp-action="UploadPortfolioItem" method="post" enctype="multipart/form-data" id="photoForm">
+                                <input type="hidden" name="VendorId" value="@Model.Id" />
+                                <input type="hidden" name="MediaType" value="Image" />
+                                <input type="file" name="File" id="photoInput" hidden onchange="this.form.submit()" accept="image/*" />
+                                <button type="button" class="btn btn-outline-primary rounded-pill px-4">Browse Files</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-card h-100 border-dashed border-2 text-center p-5 cursor-pointer hover-lift" onclick="document.getElementById('videoInput').click()">
+                            <div class="display-4 text-danger mb-3">🎥</div>
+                            <h5 class="fw-bold">Upload Videos</h5>
+                            <p class="text-muted small">Share event highlights and performance clips.</p>
+                            <form asp-action="UploadPortfolioItem" method="post" enctype="multipart/form-data" id="videoForm">
+                                <input type="hidden" name="VendorId" value="@Model.Id" />
+                                <input type="hidden" name="MediaType" value="Video" />
+                                <input type="file" name="File" id="videoInput" hidden onchange="this.form.submit()" accept="video/*" />
+                                <button type="button" class="btn btn-outline-danger rounded-pill px-4">Browse Files</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            }
-            
-            <!-- Bookings Section -->
-            <h5 class="fw-bold mb-3 text-dark">
-                <i class="bi bi-calendar-check me-2"></i>Confirmed Bookings
-            </h5>
-            
-            @if (ViewBag.BookingsWithDetails != null && (ViewBag.BookingsWithDetails as List<Dictionary<string, object>>).Any())
-            {
-                foreach (var bookingDict in ViewBag.BookingsWithDetails as List<Dictionary<string, object>>)
-                {
-                    var bookingId = bookingDict["Id"].ToString();
-                    var customerName = bookingDict.ContainsKey("CustomerName") ? bookingDict["CustomerName"].ToString() : "Unknown Customer";
-                    var customerEmail = bookingDict.ContainsKey("CustomerEmail") ? bookingDict["CustomerEmail"].ToString() : "";
-                    var customerPhone = bookingDict.ContainsKey("CustomerPhone") ? bookingDict["CustomerPhone"].ToString() : "";
-                    var serviceType = bookingDict.ContainsKey("ServiceType") ? bookingDict["ServiceType"].ToString() : "";
-                    var status = bookingDict["Status"].ToString();
-                    var eventDate = (DateTime)bookingDict["EventDate"];
-                    var vendorCost = (decimal)bookingDict["VendorCost"];
-                    var customerTotalCost = (decimal)bookingDict["CustomerTotalCost"];
-                    var advancePaid = (decimal)bookingDict["AdvancePaid"];
-                    var balanceAmount = (decimal)bookingDict["BalanceAmount"];
-                    var balancePaidOnApp = (bool)bookingDict["BalancePaidOnApp"];
-                    
-                    <div class="card mb-3 p-4 border-0 shadow-sm rounded-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div class="flex-grow-1">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <h5 class="fw-bold mb-0">Booking #@bookingId.Substring(0, 8)</h5>
-                                    @if (status == "Requested")
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0">Gallery (@(((ViewBag.Portfolio as List<PartyClap.Models.PortfolioItem>)?.Count ?? 0))) Items</h5>
+                    <div class="btn-group btn-group-sm rounded-pill p-1 bg-light">
+                        <button class="btn btn-white rounded-pill shadow-sm px-3">All</button>
+                        <button class="btn btn-light rounded-pill px-3">Photos</button>
+                        <button class="btn btn-light rounded-pill px-3">Videos</button>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    @{
+                        var portfolioItems = ViewBag.Portfolio as List<PartyClap.Models.PortfolioItem>;
+                    }
+                    @if (portfolioItems != null && portfolioItems.Any())
+                    {
+                        foreach (var item in portfolioItems)
+                        {
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="portfolio-card shadow-sm rounded-4 overflow-hidden position-relative group">
+                                    @if (item.MediaType == "Image")
                                     {
-                                        <span class="badge bg-warning text-dark">New Request</span>
-                                    }
-                                    else if (status == "Approved")
-                                    {
-                                        <span class="badge bg-success">Approved</span>
-                                    }
-                                    else if (status == "Rejected")
-                                    {
-                                        <span class="badge bg-danger">Rejected</span>
-                                    }
-                                    else if (status == "Cancelled")
-                                    {
-                                        <span class="badge bg-secondary">Cancelled & Refunded</span>
+                                        <div class="portfolio-img-wrapper" style="height: 200px;">
+                                            <img src="@item.MediaUrl" class="w-100 h-100 object-fit-cover transition-all">
+                                        </div>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-info">@status</span>
-                                    }
-                                </div>
-                                
-                                <!-- Customer Information -->
-                                <div class="bg-light rounded p-3 mb-3">
-                                    <h6 class="fw-semibold mb-2">
-                                        <i class="bi bi-person-circle text-primary me-2"></i>Customer Details
-                                    </h6>
-                                    <div class="row g-2 small">
-                                        <div class="col-md-6">
-                                            <strong>Name:</strong> @customerName
-                                        </div>
-                                        <div class="col-md-6">
-                                            <strong>Email:</strong> 
-                                            @if (!string.IsNullOrEmpty(customerEmail))
-                                            {
-                                                <a href="mailto:@customerEmail" class="text-decoration-none">@customerEmail</a>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted">Not provided</span>
-                                            }
-                                        </div>
-                                        <div class="col-md-6">
-                                            <strong>Phone:</strong> 
-                                            @if (!string.IsNullOrEmpty(customerPhone))
-                                            {
-                                                <a href="tel:@customerPhone" class="text-decoration-none">@customerPhone</a>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted">Not provided</span>
-                                            }
-                                        </div>
-                                        <div class="col-md-6">
-                                            <strong>Service:</strong> <span class="badge bg-primary">@serviceType</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex flex-wrap gap-2 mb-2">
-                                    <span class="badge bg-light text-dark border">
-                                        <i class="bi bi-calendar-event me-1"></i> Event: @eventDate.ToString("MMM dd, yyyy")
-                                        @if (eventDate.DayOfWeek == DayOfWeek.Saturday || eventDate.DayOfWeek == DayOfWeek.Sunday)
-                                        {
-                                            <span class="badge bg-warning text-dark ms-1">Weekend</span>
-                                        }
-                                    </span>
-                                    <span class="badge bg-light text-dark border">
-                                        <i class="bi bi-clock-history me-1"></i> Requested: @(((DateTime)bookingDict["BookingDate"]).ToString("MMM dd, yyyy"))
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="bg-primary text-white rounded p-3 mb-2" style="min-width: 180px;">
-                                    <div class="small opacity-75">Your Earnings</div>
-                                    <h4 class="mb-0 fw-bold">₹@vendorCost.ToString("N0")</h4>
-                                </div>
-                                <div class="small text-muted">
-                                    <div>Customer Pays: ₹@customerTotalCost.ToString("N0")</div>
-                                    <div class="text-success">Advance: ₹@advancePaid.ToString("N0") ✓</div>
-                                    <div class="text-danger">Balance: ₹@balanceAmount.ToString("N0")</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        @if (status == "Requested")
-                            {
-                            <hr class="my-3" />
-                            <div class="bg-warning-subtle rounded p-3">
-                                <h6 class="fw-semibold mb-3">
-                                    <i class="bi bi-exclamation-circle me-2"></i>Action Required
-                                </h6>
-                                <form asp-action="UpdateBookingStatus" method="post">
-                                    <input type="hidden" name="bookingId" value="@bookingId" />
-                                    <div class="row g-3 align-items-end">
-                                        <div class="col-md-6">
-                                            <label class="form-label fw-semibold small">Adjust Cost (Optional)</label>
-                                            <input type="number" name="adjustedCost" step="0.01" class="form-control" 
-                                                   placeholder="₹@vendorCost.ToString("N0")" value="@vendorCost" />
-                                            <small class="form-text text-muted">Leave blank to keep original price</small>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="d-grid gap-2">
-                                                <button type="submit" name="status" value="Approved" class="btn btn-success">
-                                                    <i class="bi bi-check-circle me-2"></i>Approve Request
-                                                </button>
-                                                <button type="submit" name="status" value="Rejected" class="btn btn-outline-danger">
-                                                    <i class="bi bi-x-circle me-2"></i>Reject Request
-                                                </button>
+                                        <div class="portfolio-img-wrapper bg-dark d-flex align-items-center justify-content-center" style="height: 200px;">
+                                            <video src="@item.MediaUrl" class="w-100 h-100 object-fit-cover" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
+                                            <div class="position-absolute top-50 start-50 translate-middle pointer-none">
+                                                <i class="bi bi-play-circle-fill text-white fs-1 opacity-75"></i>
                                             </div>
                                         </div>
+                                    }
+                                    
+                                    <div class="portfolio-overlay">
+                                        <p class="text-white small mb-2 px-3 text-truncate">@item.Description</p>
+                                        <form asp-action="DeletePortfolioItem" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Delete this item?')">
+                                            <button type="submit" class="btn btn-danger btn-sm rounded-circle">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="text-center py-5 glass-card">
+                                <div class="display-1 text-muted opacity-25 mb-3">🖼️</div>
+                                <p class="text-muted">Start building your showroom by uploading some work!</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+                break;
+
+            case "messages":
+                <div class="section-header">
+                    <h2 class="fw-bold mb-1">Messages</h2>
+                    <p class="text-muted">Reply to customers who reach out about your services.</p>
+                </div>
+                @await Html.PartialAsync("_MessagingPanel")
+                break;
+
+            case "wallet":
+                <div class="section-header">
+                    <h2 class="fw-bold mb-1">Wallet & Earnings</h2>
+                    <p class="text-muted">Track your balance, incentives, and payout history.</p>
+                </div>
+                
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="wallet-card-new mb-4 shadow">
+                            <div class="position-relative" style="z-index: 1;">
+                                <div class="d-flex justify-content-between mb-4">
+                                    <span class="text-white opacity-75">Available Balance</span>
+                                    <i class="bi bi-wallet2 fs-4"></i>
+                                </div>
+                                <h1 class="display-4 fw-bold mb-4">₹@Model.WalletBalance.ToString("N0")</h1>
+                                <div class="d-flex gap-2">
+                                    @if (Model.WalletBalance > 0)
+                                    {
+                                        <button type="button" class="btn btn-white bg-white text-primary rounded-pill fw-bold px-4 py-2"
+                                                data-bs-toggle="modal" data-bs-target="#payoutModal">
+                                            <i class="bi bi-cash-stack me-2"></i> Request Payout
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-white bg-white text-primary rounded-pill fw-bold px-4 py-2 disabled"
+                                                disabled aria-disabled="true" title="No balance available to withdraw">
+                                            <i class="bi bi-cash-stack me-2"></i> Request Payout
+                                        </button>
+                                    }
+                                </div>
+                                @if (Model.WalletBalance <= 0)
+                                {
+                                    <p class="text-white opacity-75 small mb-0 mt-3">
+                                        <i class="bi bi-info-circle me-1"></i> You can request a payout once you have earnings in your wallet.
+                                    </p>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <h5 class="fw-bold mb-3">Tier Benefits</h5>
+                            @{
+                                dynamic vStats = ViewBag.IncentiveStats;
+                            }
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="p-3 rounded-3 bg-light border border-light-subtle">
+                                        <div class="small text-muted mb-1">Commission</div>
+                                        <h5 class="fw-bold mb-0">@vStats.Commission</h5>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 rounded-3 bg-light border border-light-subtle">
+                                        <div class="small text-muted mb-1">Status</div>
+                                        <h5 class="fw-bold mb-0">@vStats.Tier</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <p class="small text-muted mb-0">
+                                    <i class="bi bi-info-circle me-1"></i> Your commission rate is determined by your monthly performance tier.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div class="glass-card h-100">
+                            <h5 class="fw-bold mb-4">Transaction History</h5>
+                            @{
+                                var transactions = ViewBag.WalletTransactions as List<PartyClap.Models.WalletTransaction>;
+                            }
+                            @if (transactions != null && transactions.Any())
+                            {
+                                <div class="list-group list-group-flush">
+                                    @foreach (var txn in transactions)
+                                    {
+                                        <div class="list-group-item px-0 py-3 border-light">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">@txn.Description</h6>
+                                                    <small class="text-muted">@txn.TransactionDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <div class="fw-bold fs-5 @(txn.TransactionType == "Credit" ? "text-success" : "text-danger")">
+                                                        @(txn.TransactionType == "Credit" ? "+" : "-")₹@txn.Amount.ToString("N0")
+                                                    </div>
+                                                    <small class="badge @(txn.TransactionType == "Credit" ? "bg-success" : "bg-danger") bg-opacity-10 @(txn.TransactionType == "Credit" ? "text-success" : "text-danger")">@txn.TransactionType</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center py-5">
+                                    <div class="display-1 text-muted opacity-25 mb-3">🧾</div>
+                                    <p class="text-muted">No transactions found.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.WalletBalance > 0)
+                {
+                    <div class="modal fade" id="payoutModal" tabindex="-1" aria-labelledby="payoutModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg rounded-4">
+                                <form asp-action="RequestPayout" method="post" id="payoutForm">
+                                    @Html.AntiForgeryToken()
+                                    <div class="modal-header border-0">
+                                        <h5 class="modal-title fw-bold" id="payoutModalLabel">Request Payout</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="text-muted small mb-3">
+                                            Available balance: <strong class="text-dark">₹@Model.WalletBalance.ToString("N0")</strong>.
+                                            Funds are transferred to your registered bank/UPI account.
+                                        </p>
+                                        <label for="payoutAmount" class="form-label fw-semibold">Amount to withdraw</label>
+                                        <div class="input-group input-group-lg mb-1">
+                                            <span class="input-group-text">₹</span>
+                                            <input type="number" class="form-control" id="payoutAmount" name="amount"
+                                                   min="1" max="@Model.WalletBalance" step="1" required
+                                                   value="@Model.WalletBalance.ToString("0")" />
+                                        </div>
+                                        <div id="payoutError" class="text-danger small" style="display:none;">
+                                            <i class="bi bi-exclamation-circle me-1"></i> Enter an amount between ₹1 and ₹@Model.WalletBalance.ToString("N0").
+                                        </div>
+                                        <button type="button" class="btn btn-link btn-sm px-0 mt-1" id="payoutMaxBtn">Withdraw full balance</button>
+                                    </div>
+                                    <div class="modal-footer border-0">
+                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-primary rounded-pill px-4" id="payoutSubmit">
+                                            <i class="bi bi-cash-stack me-1"></i> Submit Request
+                                        </button>
                                     </div>
                                 </form>
                             </div>
-                        }
-                        else if (status == "Approved" || status == "Confirmed")
-                        {
-                            <hr class="my-3" />
-                            <div class="d-flex justify-content-between align-items-center bg-light rounded p-3">
-                                <div>
-                                    @if (!balancePaidOnApp) {
-                                        <span class="text-muted small">
-                                            <i class="bi bi-info-circle me-1"></i>Encourage customer to pay balance via app for Trust Points!
-                                        </span>
-                                    } else {
-                                        <span class="text-success small fw-bold">
-                                            <i class="bi bi-check-circle-fill me-1"></i>Balance paid! All set.
-                                        </span>
+                        </div>
+                    </div>
+
+                    <script>
+                        (function () {
+                            var maxBalance = @Model.WalletBalance.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                            var form = document.getElementById('payoutForm');
+                            var input = document.getElementById('payoutAmount');
+                            var err = document.getElementById('payoutError');
+                            var maxBtn = document.getElementById('payoutMaxBtn');
+                            if (maxBtn) maxBtn.addEventListener('click', function () { input.value = Math.floor(maxBalance); err.style.display = 'none'; });
+                            if (form) {
+                                form.addEventListener('submit', function (e) {
+                                    var amt = parseFloat(input.value);
+                                    if (isNaN(amt) || amt <= 0 || amt > maxBalance) {
+                                        e.preventDefault();
+                                        err.style.display = 'block';
                                     }
-                                </div>
-                                <div class="d-flex gap-2">
-                                    @if (!balancePaidOnApp) {
-                                        <form asp-action="RequestBalance" method="post">
-                                            <input type="hidden" name="bookingId" value="@bookingId" />
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="bi bi-credit-card me-1"></i>Request Balance
-                                            </button>
-                                        </form>
-                                    }
-                                    
-                                    <form asp-action="UpdateBookingStatus" method="post">
-                                        <input type="hidden" name="bookingId" value="@bookingId" />
-                                        <input type="hidden" name="status" value="Cancelled" />
-                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Cancel Booking & Refund" data-confirm="Are you sure you want to cancel this booking? The customer will be fully refunded." data-confirm-title="Confirm Cancellation">
-                                            <i class="bi bi-trash"></i> Cancel
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        }
+                                });
+                            }
+                        })();
+                    </script>
+                }
+                break;
+
+            case "profile":
+                <div class="section-header">
+                    <h2 class="fw-bold mb-1">My Profile Settings</h2>
+                    <p class="text-muted">Update your public profile and financial information.</p>
+                </div>
+
+                @if (EmailRules.IsBlockedTestEmail(Model.Email))
+                {
+                    <div class="alert alert-warning border-0 rounded-3 mb-4">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Your email <strong>@Model.Email</strong> looks like test/placeholder data.
+                        Please update it to your real business email below.
                     </div>
                 }
-            }
-            else
-            {
-                <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
-                    <div class="display-4 text-muted mb-3 opacity-25">📋</div>
-                    <h5 class="text-muted">No customer requests yet</h5>
-                    <p class="text-muted small mb-0">Customer booking requests will appear here when they add your services to cart and proceed to checkout.</p>
-                </div>
-            }
-        </div>
-    </div>
+
+                <form asp-action="Profile" method="post" class="row">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="col-lg-8">
+                        <div class="glass-card mb-4">
+                            <h5 class="fw-bold mb-4">Basic Information</h5>
+                            
+                            <div class="text-center mb-4">
+                                <div class="user-avatar mx-auto position-relative" style="width: 120px; height: 120px; font-size: 3rem;">
+                                    <span id="charPrev">@Model.Name.Substring(0, 1).ToUpper()</span>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="btn btn-sm btn-outline-primary rounded-pill">
+                                        Change Photo
+                                        <input type="file" hidden accept="image/*" onchange="previewImage(this)">
+                                    </label>
+                                    <input type="hidden" name="ProfilePicture" value="">
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label small fw-bold">Full Name / Business Name</label>
+                                    <input asp-for="Name" class="form-control rounded-3" placeholder="Enter name" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Email Address</label>
+                                    <input asp-for="Email" class="form-control rounded-3" type="email" placeholder="you@business.com" required />
+                                    <small class="text-muted">Use your real business email — test addresses like customer@test.com are not allowed.</small>
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Phone Number</label>
+                                    <input asp-for="Phone" class="form-control rounded-3" placeholder="Enter phone" required />
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label small fw-bold">Business Address</label>
+                                    <textarea asp-for="Address" class="form-control rounded-3" rows="3" placeholder="Enter shop/office address"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Pin Code</label>
+                                    <input asp-for="PinCode" class="form-control rounded-3" placeholder="6-digit code" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card mb-4">
+                            <h5 class="fw-bold mb-2">Bank & Payment Details</h5>
+                            <p class="text-muted small mb-4">
+                                <i class="bi bi-shield-lock me-1"></i>
+                                Payout information is stored only after you sign in. It is never collected on the public registration form.
+                            </p>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label small fw-bold">Account Holder Name</label>
+                                    <input asp-for="AccountHolderName" class="form-control rounded-3" autocomplete="off"
+                                           minlength="2" maxlength="100" pattern="[A-Za-z\s.'-]{2,100}"
+                                           title="2–100 letters, as per bank records" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Account Number</label>
+                                    <input asp-for="AccountNumber" class="form-control rounded-3" autocomplete="off" inputmode="numeric"
+                                           minlength="9" maxlength="18" pattern="\d{9,18}"
+                                           title="9 to 18 digits" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">IFSC Code</label>
+                                    <input asp-for="IfscCode" class="form-control rounded-3" autocomplete="off"
+                                           minlength="11" maxlength="11" pattern="[A-Za-z]{4}0[A-Za-z0-9]{6}"
+                                           title="11-character IFSC, e.g., HDFC0001234" style="text-transform: uppercase;" />
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label small fw-bold">UPI ID (Alternative)</label>
+                                    <input asp-for="UpiId" class="form-control rounded-3" placeholder="username@@bank" autocomplete="off"
+                                           maxlength="256" pattern="[A-Za-z0-9._-]{2,256}@@[A-Za-z]{2,64}"
+                                           title="Valid UPI ID, e.g., name@@bank" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-end mb-4">
+                            <button type="submit" class="btn btn-primary-gradient px-5 py-3 rounded-pill shadow-lg fw-bold">
+                                <i class="bi bi-check2-circle me-2"></i> Save All Changes
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="glass-card position-sticky" style="top: 90px;">
+                            <div class="text-center p-2">
+                                <div class="display-6 mb-3">🛡️</div>
+                                <h6 class="fw-bold">Security & Trust</h6>
+                                <p class="text-muted small">A complete profile increases your chances of being booked by 40%.</p>
+                                <hr />
+                                <div class="text-start small">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-success-subtle text-success p-2 rounded-circle me-3">
+                                            <i class="bi bi-patch-check"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Verified Status</div>
+                                            <div class="text-muted">Identity verified</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="bg-primary-subtle text-primary p-2 rounded-circle me-3">
+                                            <i class="bi bi-award"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">@(((dynamic)ViewBag.IncentiveStats).Tier) Tier</div>
+                                            <div class="text-muted">Current performance level</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-warning-subtle text-warning p-2 rounded-circle me-3">
+                                            <i class="bi bi-shield-lock"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">Data Privacy</div>
+                                            <div class="text-muted">Your info is encrypted</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                break;
+        }
+    </main>
 </div>
 
-<style>
-    .service-card-hover {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+<script>
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        document.getElementById('mainSidebar').classList.toggle('collapsed');
+    });
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var avatarBox = document.querySelector('.user-avatar#charPrev') || document.querySelector('.user-avatar');
+                if (avatarBox) {
+                    avatarBox.innerHTML = '<img src="' + e.target.result + '" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">';
+                }
+                document.querySelector('input[name="ProfilePicture"]').value = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
     }
-    .service-card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-    }
-    .border-dashed {
-        border: 2px dashed #dee2e6;
-    }
-    .text-truncate-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    .bg-primary-gradient {
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        border: none;
-        color: white;
-    }
-    .bg-primary-gradient:hover {
-        color: white;
-        opacity: 0.9;
-    }
-</style>
+</script>

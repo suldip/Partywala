@@ -1,0 +1,144 @@
+@{
+    var conversations = ViewBag.Conversations as List<PartyClap.Models.MessageConversationSummary> ?? new List<PartyClap.Models.MessageConversationSummary>();
+    var chatHistory = ViewBag.ChatHistory as List<PartyClap.Models.Message> ?? new List<PartyClap.Models.Message>();
+    var chatPartnerId = ViewBag.ChatPartnerId as string;
+    var chatPartnerName = ViewBag.ChatPartnerName as string ?? "Conversation";
+    var currentUserId = ViewBag.CurrentUserId as string ?? string.Empty;
+    var inboxController = ViewBag.MessagingDashboardController as string ?? "Customer";
+    var inboxSection = ViewBag.MessagingDashboardSection as string ?? "Messages";
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="glass-card h-100">
+            <h5 class="fw-bold mb-3">Conversations</h5>
+            @if (conversations.Any())
+            {
+                <div class="list-group list-group-flush rounded-3 overflow-hidden border">
+                    @foreach (var conversation in conversations)
+                    {
+                        var isActive = string.Equals(conversation.OtherUserId, chatPartnerId, StringComparison.OrdinalIgnoreCase);
+                        <a href="@Url.Action("Dashboard", inboxController, new { section = inboxSection, chatWith = conversation.OtherUserId })"
+                           class="list-group-item list-group-item-action @(isActive ? "active" : "")">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div class="min-w-0">
+                                    <div class="fw-semibold text-truncate">@(conversation.OtherUserName ?? "Contact")</div>
+                                    <div class="small @(isActive ? "text-white-50" : "text-muted") text-truncate">@conversation.LastMessage</div>
+                                </div>
+                                <div class="text-end flex-shrink-0">
+                                    <small class="@(isActive ? "text-white-50" : "text-muted") d-block">@conversation.LastTimestamp.ToString("MMM dd")</small>
+                                    @if (conversation.UnreadCount > 0)
+                                    {
+                                        <span class="badge bg-danger rounded-pill mt-1">@conversation.UnreadCount</span>
+                                    }
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-chat-dots fs-2 d-block mb-2"></i>
+                    <p class="mb-0 small">No conversations yet. Message a vendor from their profile to start chatting.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="glass-card h-100 d-flex flex-column" style="min-height: 420px;">
+            @if (!string.IsNullOrWhiteSpace(chatPartnerId))
+            {
+                <div class="border-bottom pb-3 mb-3">
+                    <h5 class="fw-bold mb-0">@chatPartnerName</h5>
+                    <small class="text-muted">Secure messaging between you and your party professional</small>
+                </div>
+
+                <div class="flex-grow-1 overflow-auto mb-3 pe-1" id="chat-thread" style="max-height: 420px;">
+                    @if (chatHistory.Any())
+                    {
+                        foreach (var item in chatHistory)
+                        {
+                            var isMine = string.Equals(item.SenderId, currentUserId, StringComparison.OrdinalIgnoreCase);
+                            <div class="d-flex mb-3 @(isMine ? "justify-content-end" : "justify-content-start")">
+                                <div class="rounded-4 px-3 py-2 @(isMine ? "bg-primary text-white" : "bg-light border")" style="max-width: 80%;">
+                                    <div class="small">@item.Content</div>
+                                    <div class="small @(isMine ? "text-white-50" : "text-muted") mt-1">@item.Timestamp.ToString("MMM dd, hh:mm tt")</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5">
+                            <p class="mb-0">Start the conversation using the box below.</p>
+                        </div>
+                    }
+                </div>
+
+                <form id="chat-reply-form" class="mt-auto" onsubmit="return submitChatReply(event)">
+                    <input type="hidden" id="chat-receiver-id" value="@chatPartnerId" />
+                    <div class="input-group">
+                        <textarea id="chat-reply-content" class="form-control rounded-start-4" rows="2" maxlength="2000"
+                                  placeholder="Type your message..." required></textarea>
+                        <button type="submit" class="btn btn-primary rounded-end-4 px-4">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center text-center text-muted p-4">
+                    <div>
+                        <i class="bi bi-chat-left-text fs-1 d-block mb-3"></i>
+                        <h5 class="fw-bold text-dark">Select a conversation</h5>
+                        <p class="mb-0 small">Choose a thread on the left, or visit a vendor profile and click <strong>Send Message</strong>.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const thread = document.getElementById('chat-thread');
+        if (thread) {
+            thread.scrollTop = thread.scrollHeight;
+        }
+    })();
+
+    async function submitChatReply(event) {
+        event.preventDefault();
+        const receiverId = document.getElementById('chat-receiver-id')?.value;
+        const contentEl = document.getElementById('chat-reply-content');
+        const content = contentEl?.value?.trim();
+        if (!receiverId || !content) {
+            return false;
+        }
+
+        try {
+            const response = await fetch((window.basePath || '') + 'Message/SendMessage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `receiverId=${encodeURIComponent(receiverId)}&content=${encodeURIComponent(content)}`
+            });
+            const result = await response.json();
+            if (result.success) {
+                window.location.href = result.redirectUrl || window.location.href;
+            } else if (window.SmartPop?.toast) {
+                window.SmartPop.toast(result.message || 'Could not send message.', 'error');
+            } else {
+                alert(result.message || 'Could not send message.');
+            }
+        } catch (error) {
+            if (window.SmartPop?.toast) {
+                window.SmartPop.toast('Failed to send message.', 'error');
+            }
+        }
+        return false;
+    }
+</script>

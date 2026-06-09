@@ -1,124 +1,527 @@
 @model PartyClap.Models.Customer
+@{
+    ViewData["Title"] = "Create Account";
+    var showOtpRow = ViewBag.RegisterOtpSent as bool? == true;
+    var phoneVerifiedOnLoad = ViewBag.RegisterPhoneVerified as bool? == true;
+    var debugOtpOnLoad = ViewBag.RegisterDebugOtp as string ?? "";
+    var registerOtpError = ViewBag.RegisterOtpError as string;
+}
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-lg border-0 rounded-lg">
-                <div class="card-header bg-primary text-white text-center py-4">
-                    <h3 class="mb-0">Join PartyClap</h3>
-                    <p class="mb-0 text-white-50">Create your customer account</p>
-                </div>
-                <div class="card-body p-5">
-                    <!-- Google Login Simulation -->
-                    <div class="d-grid mb-4">
-                        <button type="button" class="btn btn-outline-dark btn-lg d-flex align-items-center justify-content-center gap-2" onclick="simulateGoogleLogin()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                                <path d="M5.84 14.11c-.22-.66-.35-1.36-.35-2.11s.13-1.45.35-2.11V7.05H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.95l3.66-2.84z" fill="#FBBC05"/>
-                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.84c.87-2.6 3.3-4.51 6.16-4.51z" fill="#EA4335"/>
-                            </svg>
-                            Sign up with Google
-                        </button>
-                    </div>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <!-- Brand / Benefits panel -->
+        <aside class="auth-aside">
+            <div class="auth-aside-inner">
+                <partial name="_BrandLogo" view-data='new ViewDataDictionary(ViewData) { { "LogoSize", 48 }, { "LogoClass", "brand-logo" }, { "LogoLight", true } }' />
 
-                    <div class="position-relative mb-4">
-                        <hr>
-                        <div class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">or</div>
-                    </div>
+                <h2 class="auth-aside-title">Plan unforgettable celebrations</h2>
+                <p class="auth-aside-sub">
+                    Join thousands of happy customers booking India's best party professionals — singers, chefs, magicians, decorators and more.
+                </p>
 
-                    <form asp-action="Register" method="post">
-                        <div class="form-floating mb-3">
-                            <input asp-for="Name" class="form-control" placeholder="Your Name" required />
-                            <label asp-for="Name">Full Name</label>
+                <ul class="auth-benefits">
+                    <li>
+                        <span class="auth-benefit-icon"><i class="bi bi-patch-check-fill"></i></span>
+                        <div>
+                            <strong>Verified vendors</strong>
+                            <span>Hand-picked, background-checked professionals.</span>
                         </div>
-                        <div class="form-floating mb-3">
-                            <input asp-for="Email" type="email" class="form-control" placeholder="name@example.com" required />
-                            <label asp-for="Email">Email Address</label>
+                    </li>
+                    <li>
+                        <span class="auth-benefit-icon"><i class="bi bi-shield-lock-fill"></i></span>
+                        <div>
+                            <strong>Secure payments</strong>
+                            <span>Pay just 20% advance — the rest after confirmation.</span>
                         </div>
-                        <div class="form-floating mb-3">
-                            <input asp-for="Phone" type="tel" class="form-control" placeholder="Phone Number" required />
-                            <label asp-for="Phone">Phone Number</label>
+                    </li>
+                    <li>
+                        <span class="auth-benefit-icon"><i class="bi bi-calendar2-check-fill"></i></span>
+                        <div>
+                            <strong>Easy booking &amp; tracking</strong>
+                            <span>Manage every booking from one dashboard.</span>
                         </div>
-                        <div class="form-floating mb-3">
-                            <input asp-for="Password" type="password" class="form-control" placeholder="Password" required />
-                            <label asp-for="Password">Password</label>
+                    </li>
+                    <li>
+                        <span class="auth-benefit-icon"><i class="bi bi-stars"></i></span>
+                        <div>
+                            <strong>Real reviews</strong>
+                            <span>Choose with confidence from genuine ratings.</span>
                         </div>
-                        
-                        <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="card-footer text-center py-3">
-                    <div class="small"><a href="#">Have an account? Go to Login</a></div>
+                    </li>
+                </ul>
+
+                <div class="auth-trust">
+                    <i class="bi bi-people-fill"></i> Trusted by customers across 25+ cities
                 </div>
             </div>
-        </div>
+        </aside>
+
+        <!-- Form panel -->
+        <section class="auth-form-panel">
+            <div class="auth-form-inner">
+                <div class="text-center text-lg-start mb-4">
+                    <h3 class="auth-form-title">Create your account</h3>
+                    <p class="auth-form-sub">It only takes a minute to get started.</p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(registerOtpError))
+                {
+                    <div class="alert alert-danger border-0 rounded-3 small mb-3">@registerOtpError</div>
+                }
+
+                <!-- Google sign up (real OAuth) -->
+                <a href="@Url.Action("ExternalLogin", "Account", new { returnUrl = Url.Action("Explore", "Customer") })"
+                   class="btn auth-google w-100 d-flex align-items-center justify-content-center gap-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.11c-.22-.66-.35-1.36-.35-2.11s.13-1.45.35-2.11V7.05H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.95l3.66-2.84z" fill="#FBBC05" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.84c.87-2.6 3.3-4.51 6.16-4.51z" fill="#EA4335" />
+                    </svg>
+                    Continue with Google
+                </a>
+
+                <div class="auth-divider"><span>or sign up with email</span></div>
+
+                <form asp-action="Register" method="post" novalidate id="registerForm">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div asp-validation-summary="All" class="alert alert-danger border-0 rounded-3 small mb-3" role="alert"></div>
+                    }
+                    <input type="hidden" name="phoneOtp" id="phoneOtpHidden" value="" />
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="auth-label">Full Name</label>
+                        <div class="auth-input-group">
+                            <i class="bi bi-person input-icon"></i>
+                            <input asp-for="Name" class="form-control auth-input" placeholder="e.g. Priya Sharma" autocomplete="name" />
+                        </div>
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="auth-label">Email Address</label>
+                        <div class="auth-input-group">
+                            <i class="bi bi-envelope input-icon"></i>
+                            <input asp-for="Email" type="email" class="form-control auth-input" placeholder="name@example.com" autocomplete="email" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Phone" class="auth-label">Phone Number</label>
+                        <div class="d-flex gap-2 align-items-stretch auth-phone-otp-row">
+                            <div class="auth-input-group flex-grow-1">
+                                <span class="input-prefix">+91</span>
+                                <input asp-for="Phone" id="phoneField" type="tel" class="form-control auth-input has-prefix" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" autocomplete="tel" />
+                            </div>
+                            <button type="button" id="sendOtpBtn" class="btn btn-light-purple px-3" style="border-radius:12px; white-space:nowrap;" @(phoneVerifiedOnLoad ? "disabled" : "")>
+                                @(phoneVerifiedOnLoad ? "Verified" : showOtpRow ? "OTP Sent" : "Send OTP")
+                            </button>
+                        </div>
+                        <span asp-validation-for="Phone" class="text-danger small"></span>
+                        <span id="phoneVerifiedBadge" class="verified-badge mt-2" style="@(phoneVerifiedOnLoad ? "" : "display:none;")">
+                            <i class="bi bi-check-circle-fill"></i> Phone verified
+                        </span>
+
+                        <!-- OTP entry -->
+                        <div id="otpRow" class="mt-2" style="@(showOtpRow && !phoneVerifiedOnLoad ? "" : "display:none;")">
+                            <div class="d-flex gap-2 align-items-stretch">
+                                <div class="auth-input-group flex-grow-1">
+                                    <i class="bi bi-shield-lock input-icon"></i>
+                                    <input type="text" id="otpField" class="form-control auth-input" placeholder="Enter 6-digit OTP" maxlength="6" inputmode="numeric" />
+                                </div>
+                                <button type="button" id="verifyOtpBtn" class="btn btn-primary-gradient px-3" style="white-space:nowrap;">Verify</button>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <span id="otpMsg" class="small text-muted">Enter the code sent to your phone. It expires in 1 minute.</span>
+                                <button type="button" id="resendOtpBtn" class="btn btn-link btn-sm p-0 text-purple" style="text-decoration:none;">Resend OTP</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="auth-label">Password</label>
+                        <div class="auth-input-group">
+                            <i class="bi bi-lock input-icon"></i>
+                            <input asp-for="Password" type="password" id="passwordField" class="form-control auth-input has-toggle" placeholder="At least 6 characters" autocomplete="new-password" />
+                            <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password" tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="agreeTerms" required />
+                        <label class="form-check-label small text-muted" for="agreeTerms">
+                            I agree to the
+                            <a asp-controller="Home" asp-action="TrustCenter" target="_blank">Terms</a> &amp;
+                            <a asp-controller="Home" asp-action="Privacy" target="_blank">Privacy Policy</a>.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-gradient w-100 py-2 fw-semibold">
+                        <i class="bi bi-person-plus me-2"></i>Create Account
+                    </button>
+                </form>
+
+                <form id="registerSendOtpForm" action="@Url.Action("SendOtp", "Account")" method="post" class="d-none">
+                    <input type="hidden" name="mobile" id="registerSendOtpMobile" value="" />
+                    <input type="hidden" name="forRegister" value="true" />
+                    <input type="hidden" name="draftName" id="registerDraftNameSend" value="" />
+                    <input type="hidden" name="draftEmail" id="registerDraftEmailSend" value="" />
+                </form>
+                <form id="registerVerifyForm" action="@Url.Action("VerifyOtp", "Account")" method="post" class="d-none">
+                    <input type="hidden" name="mobile" id="registerVerifyMobile" value="" />
+                    <input type="hidden" name="otp" id="registerVerifyOtp" value="" />
+                    <input type="hidden" name="forRegister" value="true" />
+                    <input type="hidden" name="draftName" id="registerDraftNameVerify" value="" />
+                    <input type="hidden" name="draftEmail" id="registerDraftEmailVerify" value="" />
+                </form>
+
+                <p class="text-center mt-4 mb-0 auth-form-sub">
+                    Already have an account?
+                    <a asp-controller="Account" asp-action="Login" class="fw-semibold text-purple">Log in</a>
+                </p>
+            </div>
+        </section>
     </div>
 </div>
 
-<script>
-    // Listen for the message from the popup
-    window.addEventListener("message", function(event) {
-        if (event.data === "google-login-success") {
-            window.location.href = "/PartyClap/Customer/Explore";
-        }
-    }, false);
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var phoneVerified = @(phoneVerifiedOnLoad ? "true" : "false");
+            var draftKey = 'partyclapRegisterDraft';
 
-    function simulateGoogleLogin() {
-        var w = 500;
-        var h = 600;
-        var left = (screen.width / 2) - (w / 2);
-        var top = (screen.height / 2) - (h / 2);
-        
-        var popup = window.open("", "Google Login", "width=" + w + ",height=" + h + ",top=" + top + ",left=" + left);
-        
-        if (popup) {
-            var doc = popup.document;
-            
-            // Set title
-            doc.title = "Google Sign In";
-            
-            // Create and append style
-            var style = doc.createElement("style");
-            style.textContent = "body { font-family: sans-serif; text-align: center; padding: 50px; }";
-            if (doc.head) {
-                doc.head.appendChild(style);
-            } else {
-                doc.body.appendChild(style);
+            var toggleBtn = document.getElementById('togglePassword');
+            var pwd = document.getElementById('passwordField');
+            var nameField = document.querySelector('[name="Name"]');
+            var emailField = document.querySelector('[name="Email"]');
+            var agreeTerms = document.getElementById('agreeTerms');
+
+            function saveDraft() {
+                try {
+                    sessionStorage.setItem(draftKey, JSON.stringify({
+                        name: nameField ? nameField.value : '',
+                        email: emailField ? emailField.value : '',
+                        password: pwd ? pwd.value : '',
+                        agreeTerms: agreeTerms ? agreeTerms.checked : false
+                    }));
+                } catch (e) { }
             }
-            
-            // Add Title
-            var h2 = doc.createElement("h2");
-            h2.textContent = "Google Sign In Simulation";
-            doc.body.appendChild(h2);
-            
-            // Add Description
-            var p = doc.createElement("p");
-            p.textContent = "Choose an account to continue to PartyClap";
-            doc.body.appendChild(p);
-            
-            // Add Button
-            var btn = doc.createElement("button");
-            btn.textContent = "Continue as User";
-            btn.style.padding = "10px 20px";
-            btn.style.fontSize = "16px";
-            btn.style.cursor = "pointer";
-            btn.style.background = "#4285F4";
-            btn.style.color = "white";
-            btn.style.border = "none";
-            btn.style.borderRadius = "4px";
-            btn.style.marginTop = "20px";
-            
-            btn.onclick = function() {
-                if (window.opener) {
-                    window.opener.postMessage("google-login-success", "*");
+
+            function restoreDraft() {
+                try {
+                    var raw = sessionStorage.getItem(draftKey);
+                    if (!raw) return;
+                    var draft = JSON.parse(raw);
+                    if (nameField && draft.name && !nameField.value) nameField.value = draft.name;
+                    if (emailField && draft.email && !emailField.value) emailField.value = draft.email;
+                    if (pwd && draft.password && !pwd.value) pwd.value = draft.password;
+                    if (agreeTerms && draft.agreeTerms) agreeTerms.checked = true;
+                } catch (e) { }
+            }
+
+            function syncDraftToOtpForms() {
+                saveDraft();
+                var nameVal = nameField ? nameField.value : '';
+                var emailVal = emailField ? emailField.value : '';
+                var sendName = document.getElementById('registerDraftNameSend');
+                var sendEmail = document.getElementById('registerDraftEmailSend');
+                var verifyName = document.getElementById('registerDraftNameVerify');
+                var verifyEmail = document.getElementById('registerDraftEmailVerify');
+                if (sendName) sendName.value = nameVal;
+                if (sendEmail) sendEmail.value = emailVal;
+                if (verifyName) verifyName.value = nameVal;
+                if (verifyEmail) verifyEmail.value = emailVal;
+            }
+
+            function clearDraft() {
+                try { sessionStorage.removeItem(draftKey); } catch (e) { }
+            }
+
+            restoreDraft();
+            if (nameField) nameField.addEventListener('input', saveDraft);
+            if (emailField) emailField.addEventListener('input', saveDraft);
+            if (pwd) pwd.addEventListener('input', saveDraft);
+            if (agreeTerms) agreeTerms.addEventListener('change', saveDraft);
+            if (toggleBtn && pwd) {
+                toggleBtn.addEventListener('click', function () {
+                    var show = pwd.type === 'password';
+                    pwd.type = show ? 'text' : 'password';
+                    toggleBtn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+                });
+            }
+
+            var phone = document.getElementById('phoneField');
+            var sendBtn = document.getElementById('sendOtpBtn');
+            var otpRow = document.getElementById('otpRow');
+            var otpField = document.getElementById('otpField');
+            var verifyBtn = document.getElementById('verifyOtpBtn');
+            var resendBtn = document.getElementById('resendOtpBtn');
+            var verifiedBadge = document.getElementById('phoneVerifiedBadge');
+            var form = document.getElementById('registerForm');
+            var sendOtpForm = document.getElementById('registerSendOtpForm');
+            var verifyForm = document.getElementById('registerVerifyForm');
+
+            function digitsOnly(el, max) {
+                el.value = el.value.replace(/[^0-9]/g, '').slice(0, max);
+            }
+
+            if (phone) {
+                phone.addEventListener('input', function () {
+                    digitsOnly(phone, 10);
+                    if (phoneVerified) {
+                        phoneVerified = false;
+                        if (verifiedBadge) verifiedBadge.style.display = 'none';
+                        if (otpRow) otpRow.style.display = 'none';
+                        if (sendBtn) {
+                            sendBtn.disabled = false;
+                            sendBtn.textContent = 'Send OTP';
+                        }
+                    }
+                });
+            }
+
+            if (otpField) {
+                otpField.addEventListener('input', function () { digitsOnly(otpField, 6); });
+            }
+
+            function sendOtp() {
+                var mobile = (phone && phone.value || '').trim();
+                if (mobile.length !== 10) {
+                    if (window.SmartPop) window.SmartPop.error('Invalid number', 'Enter a valid 10-digit phone number.');
+                    if (phone) phone.focus();
+                    return;
                 }
-                window.close();
-            };
-            
-            doc.body.appendChild(btn);
-        }
+
+                if (!sendOtpForm) {
+                    if (window.SmartPop) window.SmartPop.error('Error', 'Could not send OTP. Please refresh the page.');
+                    return;
+                }
+
+                document.getElementById('registerSendOtpMobile').value = mobile;
+                syncDraftToOtpForms();
+                if (sendBtn) {
+                    sendBtn.disabled = true;
+                    sendBtn.textContent = 'Sending...';
+                }
+                sendOtpForm.submit();
+            }
+
+            function verifyOtp() {
+                var mobile = (phone && phone.value || '').trim();
+                var otp = (otpField && otpField.value || '').trim();
+                if (otp.length < 4) {
+                    if (window.SmartPop) window.SmartPop.warning('OTP required', 'Enter the OTP you received.');
+                    return;
+                }
+
+                if (!verifyForm) {
+                    if (window.SmartPop) window.SmartPop.error('Error', 'Could not verify OTP. Please refresh the page.');
+                    return;
+                }
+
+                document.getElementById('registerVerifyMobile').value = mobile;
+                document.getElementById('registerVerifyOtp').value = otp;
+                syncDraftToOtpForms();
+                if (verifyBtn) {
+                    verifyBtn.disabled = true;
+                    verifyBtn.textContent = 'Verifying...';
+                }
+                verifyForm.submit();
+            }
+
+            if (sendBtn) sendBtn.addEventListener('click', sendOtp);
+            if (verifyBtn) verifyBtn.addEventListener('click', verifyOtp);
+            if (resendBtn) resendBtn.addEventListener('click', sendOtp);
+
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    var otpHidden = document.getElementById('phoneOtpHidden');
+                    var otpValue = otpField ? otpField.value.trim() : '';
+
+                    if (!phoneVerified) {
+                        if (otpValue.length === 6 && otpHidden) {
+                            otpHidden.value = otpValue;
+                            clearDraft();
+                            return;
+                        }
+
+                        e.preventDefault();
+                        if (otpValue.length > 0 && otpValue.length < 6) {
+                            if (window.SmartPop) {
+                                window.SmartPop.warning('Incomplete OTP', 'Enter all 6 digits of the verification code.');
+                            }
+                            if (otpField) otpField.focus();
+                            return;
+                        }
+
+                        if (window.SmartPop) {
+                            window.SmartPop.error(
+                                'Verify your phone',
+                                'Enter the 6-digit OTP shown above, then click Create Account (or click Verify first).');
+                        }
+                        if (otpRow && otpRow.style.display === 'none') {
+                            sendOtp();
+                        } else if (otpField) {
+                            otpField.focus();
+                        }
+                        return;
+                    }
+
+                    if (otpHidden) {
+                        otpHidden.value = '';
+                    }
+                    clearDraft();
+                });
+            }
+        })();
+    </script>
+}
+
+<style>
+    .auth-wrap {
+        min-height: calc(100vh - 76px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2.5rem 1rem;
+        background: linear-gradient(135deg, #FDF2F8 0%, #F5F3FF 100%);
     }
-</script>
+
+    .auth-card {
+        width: 100%;
+        max-width: 1000px;
+        background: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 30px 60px -20px rgba(139, 92, 246, 0.30);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Left aside */
+    .auth-aside {
+        background: var(--gradient);
+        color: #fff;
+        padding: 3rem 2.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .auth-aside::before {
+        content: '';
+        position: absolute;
+        width: 320px; height: 320px;
+        background: rgba(255, 255, 255, 0.10);
+        border-radius: 50%;
+        top: -120px; right: -120px;
+    }
+    .auth-aside::after {
+        content: '';
+        position: absolute;
+        width: 200px; height: 200px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+        bottom: -80px; left: -60px;
+    }
+    .auth-aside-inner { position: relative; z-index: 1; }
+
+    .auth-brand {
+        display: flex; align-items: center; gap: 0.6rem;
+        color: #fff; text-decoration: none; font-weight: 800; font-size: 1.35rem;
+        margin-bottom: 2rem;
+    }
+    .auth-brand img { border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.18); }
+
+    .auth-aside-title { font-size: 1.9rem; font-weight: 800; line-height: 1.25; margin-bottom: 0.75rem; }
+    .auth-aside-sub { font-size: 0.98rem; opacity: 0.92; line-height: 1.6; margin-bottom: 2rem; }
+
+    .auth-benefits { list-style: none; padding: 0; margin: 0; }
+    .auth-benefits li { display: flex; gap: 0.9rem; margin-bottom: 1.25rem; align-items: flex-start; }
+    .auth-benefit-icon {
+        flex-shrink: 0;
+        width: 40px; height: 40px; border-radius: 11px;
+        background: rgba(255, 255, 255, 0.18);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.15rem;
+    }
+    .auth-benefits strong { display: block; font-weight: 700; font-size: 0.98rem; }
+    .auth-benefits span { font-size: 0.85rem; opacity: 0.9; line-height: 1.45; }
+
+    .auth-trust {
+        margin-top: 2rem; padding-top: 1.25rem;
+        border-top: 1px solid rgba(255,255,255,0.25);
+        font-size: 0.85rem; font-weight: 600; opacity: 0.95;
+    }
+    .auth-trust i { margin-right: 0.4rem; }
+
+    /* Right form */
+    .auth-form-panel { padding: 3rem 2.75rem; display: flex; align-items: center; }
+    .auth-form-inner { width: 100%; }
+    .auth-form-title { font-weight: 800; color: var(--dark-color); font-size: 1.6rem; margin-bottom: 0.25rem; }
+    .auth-form-sub { color: #6b7280; font-size: 0.92rem; margin: 0; }
+
+    .auth-google {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        font-weight: 600;
+        border-radius: 12px;
+        padding: 0.7rem 1rem;
+        transition: all 0.2s ease;
+    }
+    .auth-google:hover { background: #f9fafb; border-color: #d1d5db; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+    .auth-divider {
+        display: flex; align-items: center; text-align: center;
+        color: #9ca3af; font-size: 0.8rem; margin: 1.5rem 0;
+    }
+    .auth-divider::before, .auth-divider::after {
+        content: ''; flex: 1; height: 1px; background: #e5e7eb;
+    }
+    .auth-divider span { padding: 0 0.85rem; white-space: nowrap; }
+
+    .auth-label { font-weight: 600; color: #374151; font-size: 0.85rem; margin-bottom: 0.4rem; display: block; }
+
+    .auth-input-group { position: relative; display: flex; align-items: center; }
+    .input-icon {
+        position: absolute; left: 14px; color: #9ca3af; font-size: 1rem; pointer-events: none;
+    }
+    .input-prefix {
+        position: absolute; left: 14px; color: #6b7280; font-weight: 600; font-size: 0.92rem;
+        pointer-events: none;
+    }
+    .auth-input {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.75rem 0.9rem 0.75rem 2.6rem;
+        font-size: 0.95rem;
+        width: 100%;
+        transition: all 0.2s ease;
+    }
+    .auth-input.has-prefix { padding-left: 3.1rem; }
+    .auth-input.has-toggle { padding-right: 2.8rem; }
+    .auth-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+    }
+    .password-toggle {
+        position: absolute; right: 8px;
+        background: transparent; border: none; color: #9ca3af;
+        padding: 0.4rem 0.5rem; cursor: pointer; font-size: 1rem;
+    }
+    .password-toggle:hover { color: var(--primary-color); }
+
+    /* Responsive */
+    @@media (max-width: 991px) {
+        .auth-card { grid-template-columns: 1fr; max-width: 480px; }
+        .auth-aside { display: none; }
+        .auth-form-panel { padding: 2.25rem 1.75rem; }
+        .auth-wrap { padding: 1.5rem 1rem; min-height: auto; }
+    }
+</style>

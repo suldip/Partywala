@@ -10,6 +10,13 @@ namespace PartyClap.Models
         public string ServiceId { get; set; }
         public DateTime BookingDate { get; set; } = DateTime.Now;
         public DateTime EventDate { get; set; }
+        public DateTime? EventEndDate { get; set; }
+        public string EventStartTime { get; set; }
+        public string EventEndTime { get; set; }
+        public string PartyLocation { get; set; }
+        public string PartyPinCode { get; set; }
+        public decimal? PartyLatitude { get; set; }
+        public decimal? PartyLongitude { get; set; }
         
         public decimal VendorCost { get; set; }
         public decimal CustomerTotalCost { get; set; } // VendorCost + 10%

@@ -1,0 +1,89 @@
+.party-location-picker {
+    margin-top: 0.75rem;
+}
+
+.party-location-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.party-location-section-title i {
+    color: #7c3aed;
+}
+
+.party-location-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 0.3rem;
+}
+
+.party-location-picker .form-control {
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    min-height: 42px;
+    font-size: 0.875rem;
+}
+
+.party-location-picker .form-control:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.party-location-hint {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.party-location-display {
+    padding: 0.75rem 1rem;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-top: 0.5rem;
+}
+
+.party-location-display-address {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.party-location-display-address i {
+    color: #dc2626;
+    margin-right: 0.35rem;
+}
+
+.party-location-display-pin {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 0.35rem;
+}
+
+.party-location-display-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.party-location-address.is-invalid,
+.party-location-pincode.is-invalid {
+    border-color: #dc2626;
+}
+
+.party-location-pin-feedback {
+    line-height: 1.35;
+}

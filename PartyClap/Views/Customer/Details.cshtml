@@ -1,4 +1,7 @@
 @model PartyClap.Models.ServiceListing
+@{
+    ViewData["Title"] = "Service Details";
+}
 
 <div class="container mt-5">
     <div class="row">
@@ -54,9 +57,6 @@
                             <input type="hidden" name="vendorId" value="@Model.VendorId" />
                             <button type="submit" class="btn btn-success btn-lg w-100">Add to Cart (Pay Later)</button>
                         </form>
-                        <button type="button" class="btn btn-outline-primary btn-lg" onclick="openServiceRequestDialog('@Model.VendorId', '@Model.Id', '@Model.ServiceType')">
-                            <i class="bi bi-send"></i> Request Service
-                        </button>
                     </div>
                 </div>
             </div>
@@ -64,145 +64,3 @@
     </div>
 </div>
 
-<!-- Service Request Modal -->
-<div class="modal fade" id="service-request-modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header border-bottom-0 pb-0">
-                <h5 class="modal-title fw-bold">Request Service</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="service-request-form" onsubmit="submitServiceRequest(event)">
-                <div class="modal-body pt-4">
-                    <input type="hidden" id="request-vendor-id" name="vendorId">
-                    <input type="hidden" id="request-service-id" name="serviceId">
-                    <div class="alert alert-light border mb-4 d-flex align-items-center gap-3">
-                        <div class="bg-primary-subtle text-primary rounded-circle p-2">
-                            <i class="bi bi-person-fill fs-5"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Requesting service:</small>
-                            <strong id="request-service-name" class="text-dark"></strong>
-                        </div>
-                    </div>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold small text-muted">Event Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="request-event-date" name="eventDate" required style="border-radius: 8px;" min="@DateTime.Now.ToString("yyyy-MM-dd")">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold small text-muted">Event Type <span class="text-danger">*</span></label>
-                            <select class="form-select" id="request-event-type" name="eventType" required style="border-radius: 8px;">
-                                <option value="">Select type...</option>
-                                <option value="wedding">Wedding</option>
-                                <option value="birthday">Birthday</option>
-                                <option value="corporate">Corporate</option>
-                                <option value="anniversary">Anniversary</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold small text-muted">Number of Guests <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="request-guest-count" name="guestCount" min="1" placeholder="e.g. 50" required style="border-radius: 8px;">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold small text-muted">Additional Details</label>
-                            <textarea class="form-control" id="request-details" name="details" rows="3" 
-                                      placeholder="Tell us more about your event requirements..." style="border-radius: 8px;"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
-                    <button type="button" class="btn btn-light w-100 mb-2" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
-                    <button type="submit" class="btn btn-primary w-100 m-0" style="border-radius: 8px;" id="submit-request-btn">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                        Send Request
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-function openServiceRequestDialog(vendorId, serviceId, serviceName) {
-    // Check if user is logged in
-    if (!window.isUserLoggedIn) {
-        window.location.href = (window.basePath || '') + 'Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
-        return;
-    }
-    
-    document.getElementById('request-vendor-id').value = vendorId;
-    document.getElementById('request-service-id').value = serviceId;
-    document.getElementById('request-service-name').textContent = serviceName;
-    
-    // Reset form
-    document.getElementById('service-request-form').reset();
-    document.getElementById('request-vendor-id').value = vendorId;
-    document.getElementById('request-service-id').value = serviceId;
-    
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('service-request-modal'));
-    modal.show();
-}
-
-function submitServiceRequest(event) {
-    event.preventDefault();
-    
-    const form = event.target;
-    const submitBtn = document.getElementById('submit-request-btn');
-    const spinner = submitBtn.querySelector('.spinner-border');
-    
-    // Disable button and show spinner
-    submitBtn.disabled = true;
-    spinner.classList.remove('d-none');
-    
-    const requestData = {
-        serviceId: document.getElementById('request-service-id').value,
-        vendorId: document.getElementById('request-vendor-id').value,
-        eventDate: document.getElementById('request-event-date').value,
-        eventType: document.getElementById('request-event-type').value,
-        guestCount: parseInt(document.getElementById('request-guest-count').value),
-        additionalDetails: document.getElementById('request-details').value
-    };
-    
-    console.log('Sending request data:', requestData);
-    
-    fetch((window.basePath || '') + 'Customer/RequestService', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Hide spinner and enable button
-        spinner.classList.add('d-none');
-        submitBtn.disabled = false;
-        
-        if (data.success) {
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('service-request-modal'));
-            if (modal) {
-                modal.hide();
-            }
-            
-            // Show success message
-            SmartPop.success('Request Sent', data.message || 'Service request submitted successfully! The vendor will contact you soon.');
-            
-            // Reset form
-            form.reset();
-        } else {
-            SmartPop.error('Submission Failed', data.message || 'Error submitting request. Please try again.');
-        }
-    })
-    .catch(error => {
-        spinner.classList.add('d-none');
-        submitBtn.disabled = false;
-        console.error('Error:', error);
-        SmartPop.error('Network Error', 'Error submitting request. Please try again.');
-    });
-}
-</script>

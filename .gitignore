@@ -1,0 +1,53 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+build/
+bld/
+publish/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Publish profiles with machine-specific paths
+**/PublishProfiles/*.pubxml.user
+
+# .NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.nuget.props
+*.nuget.targets
+
+# Logs & scratch files
+*.log
+build_log*.txt
+build_output*.txt
+build_error*.txt
+build_errors*.txt
+errors.log
+Untitled-*.js
+reference_app.js
+
+# Secrets / local config
+appsettings.*.local.json
+secrets.json
+*.pfx
+
+# OS files
+.DS_Store
+Thumbs.db

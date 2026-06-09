@@ -1,0 +1,44 @@
+@model PartyClap.Models.Booking
+@{
+    ViewData["Title"] = "Complete Payment";
+    var vendor = ViewBag.Vendor as PartyClap.Models.Vendor;
+    var service = ViewBag.Service as PartyClap.Models.ServiceListing;
+    var amountDue = (decimal)ViewBag.AmountDue;
+    var canPay = (bool)ViewBag.CanPay;
+    var dayCount = (int)ViewBag.DayCount;
+    var dateRange = Model.EventEndDate.HasValue && Model.EventEndDate.Value.Date != Model.EventDate.Date
+        ? $"{Model.EventDate:MMM dd, yyyy} – {Model.EventEndDate.Value:MMM dd, yyyy}"
+        : Model.EventDate.ToString("MMM dd, yyyy");
+    var timeRange = (!string.IsNullOrEmpty(Model.EventStartTime) || !string.IsNullOrEmpty(Model.EventEndTime))
+        ? $"{Model.EventStartTime}–{Model.EventEndTime}" : null;
+    var isPaid = Model.Status == "Confirmed" && Model.AdvancePaid >= Model.CustomerTotalCost;
+
+    ViewData["PayBackUrl"] = Url.Action("ViewCart", "Customer");
+    ViewData["PayBackLabel"] = "Back to Accepted cart";
+    ViewData["PayVendorName"] = vendor?.Name ?? "Vendor";
+    ViewData["PayServiceType"] = service?.ServiceType ?? "Service";
+    ViewData["PayDateRange"] = dateRange;
+    ViewData["PayTimeRange"] = timeRange;
+    ViewData["PayDayCount"] = dayCount;
+    ViewData["PayBookingId"] = Model.Id;
+    ViewData["PayAmountDue"] = amountDue;
+    ViewData["PayServiceTotal"] = Model.CustomerTotalCost;
+    ViewData["PayAlreadyPaid"] = Model.AdvancePaid;
+    ViewData["PayFormAction"] = "PayBookingAdvance";
+    ViewData["PaySubmitLabel"] = $"Pay ₹{amountDue:N0} securely";
+    ViewData["PayHiddenFields"] = new[] { new KeyValuePair<string, string>("bookingId", Model.Id) };
+    ViewData["PayIsSuccess"] = isPaid;
+    ViewData["PaySuccessTitle"] = "Payment Complete";
+    ViewData["PaySuccessMessage"] = $"Your booking with {vendor?.Name ?? "the vendor"} is confirmed.";
+    ViewData["PaySuccessAmount"] = Model.AdvancePaid;
+    ViewData["PaySuccessPrimaryUrl"] = Url.Action("ViewCart", "Customer");
+    ViewData["PaySuccessPrimaryLabel"] = "Back to Cart";
+    ViewData["PaySuccessSecondaryUrl"] = Url.Action("Invoice", new { bookingId = Model.Id });
+    ViewData["PaySuccessSecondaryLabel"] = "View Invoice";
+    ViewData["PayIsBlocked"] = !canPay && !isPaid;
+    ViewData["PayBlockedMessage"] = Model.Status == "Requested"
+        ? "Your booking is still awaiting vendor approval. You can pay once it appears in your Accepted cart."
+        : "Payment is not available for this booking right now.";
+}
+
+<partial name="_PaymentCheckoutLayout" />

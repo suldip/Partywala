@@ -1,5 +1,5 @@
+using PartyClap.DAL;
 using PartyClap.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,50 +7,43 @@ namespace PartyClap.Services
 {
     public class NotificationService : INotificationService
     {
-        private static List<Notification> _notifications = new List<Notification>();
+        private readonly NotificationDAL _notificationDAL;
+
+        public NotificationService(NotificationDAL notificationDAL)
+        {
+            _notificationDAL = notificationDAL;
+        }
 
         public void CreateNotification(Notification notification)
         {
-            _notifications.Add(notification);
+            _notificationDAL.CreateNotification(notification);
         }
 
         public List<Notification> GetUserNotifications(string userId, string userType)
         {
-            return _notifications
-                .Where(n => n.UserId == userId && n.UserType == userType)
+            return _notificationDAL.GetUserNotifications(userId, userType)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToList();
         }
 
         public int GetUnreadCount(string userId, string userType)
         {
-            return _notifications
-                .Count(n => n.UserId == userId && n.UserType == userType && !n.IsRead);
+            return _notificationDAL.GetUnreadCount(userId, userType);
         }
 
         public void MarkAsRead(string notificationId)
         {
-            var notification = _notifications.FirstOrDefault(n => n.Id == notificationId);
-            if (notification != null)
-            {
-                notification.IsRead = true;
-            }
+            _notificationDAL.MarkAsRead(notificationId);
         }
 
         public void MarkAllAsRead(string userId, string userType)
         {
-            var userNotifications = _notifications
-                .Where(n => n.UserId == userId && n.UserType == userType);
-            
-            foreach (var notification in userNotifications)
-            {
-                notification.IsRead = true;
-            }
+            _notificationDAL.MarkAllAsRead(userId, userType);
         }
 
         public Notification GetNotification(string notificationId)
         {
-            return _notifications.FirstOrDefault(n => n.Id == notificationId);
+            return _notificationDAL.GetNotification(notificationId);
         }
     }
 }

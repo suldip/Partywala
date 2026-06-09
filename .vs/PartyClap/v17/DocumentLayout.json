@@ -3,12 +3,71 @@
   "WorkspaceRootPath": "D:\\BabuSir\\PartyClap\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\customer\\explore.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\customer\\explore.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\appsettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\appsettings.production.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\dal\\vendordal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\dal\\vendordal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\wwwroot\\js\\cart-manager.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\wwwroot\\js\\cart-manager.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\controllers\\customercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\controllers\\customercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\controllers\\vendorcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\controllers\\vendorcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A20861A9-411E-6150-BF5C-69E8196E5D22}|BenchmarkSuite1\\BenchmarkSuite1.csproj|c:\\users\\admin\\.nuget\\packages\\microsoft.visualstudio.diagnosticshub.benchmarkdotnetdiagnosers\\18.0.36421.1\\contentfiles\\cs\\any\\benchmarkprofileragentconfig.g.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A20861A9-411E-6150-BF5C-69E8196E5D22}|BenchmarkSuite1\\BenchmarkSuite1.csproj|d:\\babusir\\partyclap\\benchmarksuite1\\partypointsbenchmark.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A20861A9-411E-6150-BF5C-69E8196E5D22}|BenchmarkSuite1\\BenchmarkSuite1.csproj|solutionrelative:benchmarksuite1\\partypointsbenchmark.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\wwwroot\\manifest.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\wwwroot\\manifest.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\dal\\customerdal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\dal\\customerdal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\vendor\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\vendor\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -27,24 +86,8 @@
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\services\\adonetdataservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\controllers\\customercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\controllers\\customercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\vendor\\registrationsuccess.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\vendor\\registrationsuccess.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\wwwroot\\js\\cart-manager.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\wwwroot\\js\\cart-manager.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -59,28 +102,12 @@
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\vendor\\portfolio.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\vendor\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\vendor\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\customer\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\customer\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\reference_app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\reference_app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\customer\\explore.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\customer\\explore.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\wwwroot\\js\\customer-explore.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -93,10 +120,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\shared\\_bookingtimeline.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\shared\\_bookingtimeline.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\views\\customer\\vendorprofile.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -131,24 +154,12 @@
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\views\\account\\signup.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\services\\inmemorydataservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\services\\inmemorydataservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\wwwroot\\css\\premium.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
       "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\wwwroot\\css\\premium.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\wwwroot\\css\\premium.css.backup||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\wwwroot\\css\\premium.css.backup||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|d:\\babusir\\partyclap\\partyclap\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{2E94C6C4-CF49-4CCC-B0BC-283E0D07EA4D}|PartyClap\\PartyClap.csproj|solutionrelative:partyclap\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\BabuSir\\PartyClap\\PartyClap\\reference_app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:PartyClap\\reference_app.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     }
   ],
   "DocumentGroupContainers": [
@@ -158,7 +169,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Bookmark",
@@ -166,69 +177,32 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "VendorDAL.cs",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\DAL\\VendorDAL.cs",
-              "RelativeDocumentMoniker": "PartyClap\\DAL\\VendorDAL.cs",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\DAL\\VendorDAL.cs",
-              "RelativeToolTip": "PartyClap\\DAL\\VendorDAL.cs",
-              "ViewState": "AgIAAI8AAAAAAAAAAAAgwJsAAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-21T06:47:23.776Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "CustomerController.cs",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\CustomerController.cs",
-              "RelativeDocumentMoniker": "PartyClap\\Controllers\\CustomerController.cs",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\CustomerController.cs",
-              "RelativeToolTip": "PartyClap\\Controllers\\CustomerController.cs",
-              "ViewState": "AgIAAEEAAAAAAAAAAAAjwCUAAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-26T09:26:40.529Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "cart-manager.js",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\js\\cart-manager.js",
-              "RelativeDocumentMoniker": "PartyClap\\wwwroot\\js\\cart-manager.js",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\js\\cart-manager.js",
-              "RelativeToolTip": "PartyClap\\wwwroot\\js\\cart-manager.js",
-              "ViewState": "AgIAAB8AAAAAAAAAAAAQwDoAAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2025-12-18T13:13:54.728Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "VendorController.cs",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\VendorController.cs",
-              "RelativeDocumentMoniker": "PartyClap\\Controllers\\VendorController.cs",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\VendorController.cs",
-              "RelativeToolTip": "PartyClap\\Controllers\\VendorController.cs",
-              "ViewState": "AgIAAFUAAAAAAAAAAAAgwF0AAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-18T13:53:11.354Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Register.cshtml",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Register.cshtml",
-              "RelativeDocumentMoniker": "PartyClap\\Views\\Vendor\\Register.cshtml",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Register.cshtml",
-              "RelativeToolTip": "PartyClap\\Views\\Vendor\\Register.cshtml",
-              "ViewState": "AgIAAAoBAAAAAAAAAAAAAP8AAABnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-18T13:01:28.258Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 3,
+              "Title": "appsettings.Production.json",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.Production.json",
+              "RelativeDocumentMoniker": "PartyClap\\appsettings.Production.json",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.Production.json",
+              "RelativeToolTip": "PartyClap\\appsettings.Production.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvxcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-08T04:09:55.153Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "AdminController.cs",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\AdminController.cs",
+              "RelativeDocumentMoniker": "PartyClap\\Controllers\\AdminController.cs",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\AdminController.cs",
+              "RelativeToolTip": "PartyClap\\Controllers\\AdminController.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-16T17:33:53.458Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
               "Title": "vendor-registration.js",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\js\\vendor-registration.js",
               "RelativeDocumentMoniker": "PartyClap\\wwwroot\\js\\vendor-registration.js",
@@ -240,19 +214,210 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "AdminController.cs",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\AdminController.cs",
-              "RelativeDocumentMoniker": "PartyClap\\Controllers\\AdminController.cs",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\AdminController.cs",
-              "RelativeToolTip": "PartyClap\\Controllers\\AdminController.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 5,
+              "Title": "VendorDAL.cs",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\DAL\\VendorDAL.cs",
+              "RelativeDocumentMoniker": "PartyClap\\DAL\\VendorDAL.cs",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\DAL\\VendorDAL.cs",
+              "RelativeToolTip": "PartyClap\\DAL\\VendorDAL.cs",
+              "ViewState": "AgIAADcDAAAAAAAAAAAAADcDAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T17:33:53.458Z"
+              "WhenOpened": "2025-12-21T06:47:23.776Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "VendorController.cs",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\VendorController.cs",
+              "RelativeDocumentMoniker": "PartyClap\\Controllers\\VendorController.cs",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\VendorController.cs",
+              "RelativeToolTip": "PartyClap\\Controllers\\VendorController.cs",
+              "ViewState": "AgIAANkAAAAAAAAAAADwv+cAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-18T13:53:11.354Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "PartyClap\\Views\\Home\\Index.cshtml",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "PartyClap\\Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAABQAAAAAAAAAAAAAACYAAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-20T17:45:01.1Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Explore.cshtml",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\Explore.cshtml",
+              "RelativeDocumentMoniker": "PartyClap\\Views\\Customer\\Explore.cshtml",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\Explore.cshtml",
+              "RelativeToolTip": "PartyClap\\Views\\Customer\\Explore.cshtml",
+              "ViewState": "AgIAALwBAAAAAAAAAAAkwM0BAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-11-25T11:51:34.423Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{56df62a4-05a3-4e5b-aa1a-99371ccfb997}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "PartyClap\\appsettings.Development.json",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.Development.json",
+              "RelativeToolTip": "PartyClap\\appsettings.Development.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-08T04:10:18.367Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.json",
+              "RelativeDocumentMoniker": "PartyClap\\appsettings.json",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.json",
+              "RelativeToolTip": "PartyClap\\appsettings.json",
+              "ViewState": "AgIAAAkAAAAAAAAAAADwvxEAAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-08T04:10:02.36Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "CustomerController.cs",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\CustomerController.cs",
+              "RelativeDocumentMoniker": "PartyClap\\Controllers\\CustomerController.cs",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\CustomerController.cs",
+              "RelativeToolTip": "PartyClap\\Controllers\\CustomerController.cs",
+              "ViewState": "AgIAACUBAAAAAAAAAAAIwAgBAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-26T09:26:40.529Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "cart-manager.js",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\js\\cart-manager.js",
+              "RelativeDocumentMoniker": "PartyClap\\wwwroot\\js\\cart-manager.js",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\js\\cart-manager.js",
+              "RelativeToolTip": "PartyClap\\wwwroot\\js\\cart-manager.js",
+              "ViewState": "AgIAALQBAAAAAAAAAAAQwC0AAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-12-18T13:13:54.728Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Dashboard.cshtml",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Dashboard.cshtml",
+              "RelativeDocumentMoniker": "PartyClap\\Views\\Vendor\\Dashboard.cshtml",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Dashboard.cshtml",
+              "RelativeToolTip": "PartyClap\\Views\\Vendor\\Dashboard.cshtml",
+              "ViewState": "AgIAAGwCAAAAAAAAAAAWwHsCAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-18T13:00:07.14Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Register.cshtml",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Register.cshtml",
+              "RelativeDocumentMoniker": "PartyClap\\Views\\Vendor\\Register.cshtml",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Register.cshtml",
+              "RelativeToolTip": "PartyClap\\Views\\Vendor\\Register.cshtml",
+              "ViewState": "AgIAAAoBAAAAAAAAAAAAAP8AAABnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-12-18T13:01:28.258Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "PartyPointsBenchmark.cs",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\BenchmarkSuite1\\PartyPointsBenchmark.cs",
+              "RelativeDocumentMoniker": "BenchmarkSuite1\\PartyPointsBenchmark.cs",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\BenchmarkSuite1\\PartyPointsBenchmark.cs",
+              "RelativeToolTip": "BenchmarkSuite1\\PartyPointsBenchmark.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T09:07:39.45Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Program.cs",
+              "RelativeDocumentMoniker": "PartyClap\\Program.cs",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Program.cs",
+              "RelativeToolTip": "PartyClap\\Program.cs",
+              "ViewState": "AgIAAAMBAAAAAAAAAAAAAA0BAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T15:21:01.99Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "BenchmarkProfilerAgentConfig.g.cs",
+              "DocumentMoniker": "C:\\Users\\admin\\.nuget\\packages\\microsoft.visualstudio.diagnosticshub.benchmarkdotnetdiagnosers\\18.0.36421.1\\contentFiles\\cs\\any\\BenchmarkProfilerAgentConfig.g.cs",
+              "ToolTip": "C:\\Users\\admin\\.nuget\\packages\\microsoft.visualstudio.diagnosticshub.benchmarkdotnetdiagnosers\\18.0.36421.1\\contentFiles\\cs\\any\\BenchmarkProfilerAgentConfig.g.cs [Read Only]",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-30T09:07:41.04Z",
+              "EditorCaption": " [Read Only]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "manifest.json",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\manifest.json",
+              "RelativeDocumentMoniker": "PartyClap\\wwwroot\\manifest.json",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\manifest.json",
+              "RelativeToolTip": "PartyClap\\wwwroot\\manifest.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-08T13:16:21.372Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "CustomerDAL.cs",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\DAL\\CustomerDAL.cs",
+              "RelativeDocumentMoniker": "PartyClap\\DAL\\CustomerDAL.cs",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\DAL\\CustomerDAL.cs",
+              "RelativeToolTip": "PartyClap\\DAL\\CustomerDAL.cs",
+              "ViewState": "AgIAAOwCAAAAAAAAAAAgwPYCAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-29T07:08:05.693Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "AccountController.cs",
+              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\AccountController.cs",
+              "RelativeDocumentMoniker": "PartyClap\\Controllers\\AccountController.cs",
+              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\AccountController.cs",
+              "RelativeToolTip": "PartyClap\\Controllers\\AccountController.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAgwBAAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-18T13:38:11.981Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
               "Title": "_Layout.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Shared\\_Layout.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Shared\\_Layout.cshtml",
@@ -264,31 +429,19 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 20,
               "Title": "AdoNetDataService.cs",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Services\\AdoNetDataService.cs",
               "RelativeDocumentMoniker": "PartyClap\\Services\\AdoNetDataService.cs",
               "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Services\\AdoNetDataService.cs",
               "RelativeToolTip": "PartyClap\\Services\\AdoNetDataService.cs",
-              "ViewState": "AgIAABwAAAAAAAAAAAAAABwAAAAwAAAAAAAAAA==",
+              "ViewState": "AgIAAHkAAAAAAAAAAGBwwB4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-21T06:47:06.987Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "AccountController.cs",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\AccountController.cs",
-              "RelativeDocumentMoniker": "PartyClap\\Controllers\\AccountController.cs",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\AccountController.cs",
-              "RelativeToolTip": "PartyClap\\Controllers\\AccountController.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABAAAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-18T13:38:11.981Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 22,
               "Title": "Login.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Account\\Login.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Account\\Login.cshtml",
@@ -300,7 +453,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 21,
               "Title": "RegistrationSuccess.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\RegistrationSuccess.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Vendor\\RegistrationSuccess.cshtml",
@@ -312,7 +465,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 23,
               "Title": "Profile.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Profile.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Vendor\\Profile.cshtml",
@@ -324,7 +477,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 24,
               "Title": "Portfolio.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Portfolio.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Vendor\\Portfolio.cshtml",
@@ -336,19 +489,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "Dashboard.cshtml",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Dashboard.cshtml",
-              "RelativeDocumentMoniker": "PartyClap\\Views\\Vendor\\Dashboard.cshtml",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\Dashboard.cshtml",
-              "RelativeToolTip": "PartyClap\\Views\\Vendor\\Dashboard.cshtml",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-18T13:00:07.14Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 25,
               "Title": "Register.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\Register.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Customer\\Register.cshtml",
@@ -360,7 +501,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 39,
               "Title": "reference_app.js",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\reference_app.js",
               "RelativeDocumentMoniker": "PartyClap\\reference_app.js",
@@ -372,19 +513,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
-              "Title": "Explore.cshtml",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\Explore.cshtml",
-              "RelativeDocumentMoniker": "PartyClap\\Views\\Customer\\Explore.cshtml",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\Explore.cshtml",
-              "RelativeToolTip": "PartyClap\\Views\\Customer\\Explore.cshtml",
-              "ViewState": "AgIAAB0BAAAAAAAAAAAAADMBAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-25T11:51:34.423Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 26,
               "Title": "HomeController.cs",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Controllers\\HomeController.cs",
               "RelativeDocumentMoniker": "PartyClap\\Controllers\\HomeController.cs",
@@ -396,19 +525,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 19,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Program.cs",
-              "RelativeDocumentMoniker": "PartyClap\\Program.cs",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Program.cs",
-              "RelativeToolTip": "PartyClap\\Program.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAkwDoAAAAaAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-16T16:55:21.132Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 20,
+              "DocumentIndex": 27,
               "Title": "customer-explore.js",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\js\\customer-explore.js",
               "RelativeDocumentMoniker": "PartyClap\\wwwroot\\js\\customer-explore.js",
@@ -420,7 +537,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 21,
+              "DocumentIndex": 28,
               "Title": "AddService.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Vendor\\AddService.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Vendor\\AddService.cshtml",
@@ -432,7 +549,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 22,
+              "DocumentIndex": 29,
               "Title": "_BookingTimeline.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Shared\\_BookingTimeline.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Shared\\_BookingTimeline.cshtml",
@@ -444,7 +561,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 24,
+              "DocumentIndex": 30,
               "Title": "VendorProfile.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\VendorProfile.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Customer\\VendorProfile.cshtml",
@@ -456,7 +573,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 25,
+              "DocumentIndex": 31,
               "Title": "Details.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\Details.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Customer\\Details.cshtml",
@@ -468,7 +585,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 26,
+              "DocumentIndex": 32,
               "Title": "Dashboard.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\Dashboard.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Customer\\Dashboard.cshtml",
@@ -480,7 +597,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 27,
+              "DocumentIndex": 33,
               "Title": "Cart.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\Cart.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Customer\\Cart.cshtml",
@@ -492,7 +609,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 28,
+              "DocumentIndex": 34,
               "Title": "BookingConfirmation.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Customer\\BookingConfirmation.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Customer\\BookingConfirmation.cshtml",
@@ -504,7 +621,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 29,
+              "DocumentIndex": 35,
               "Title": "Register.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Admin\\Register.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Admin\\Register.cshtml",
@@ -516,19 +633,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 23,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Home\\Index.cshtml",
-              "RelativeDocumentMoniker": "PartyClap\\Views\\Home\\Index.cshtml",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Home\\Index.cshtml",
-              "RelativeToolTip": "PartyClap\\Views\\Home\\Index.cshtml",
-              "ViewState": "AgIAAAQBAAAAAAAAAAAAAPUAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-11-20T17:45:01.1Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 30,
+              "DocumentIndex": 36,
               "Title": "Dashboard.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Admin\\Dashboard.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Admin\\Dashboard.cshtml",
@@ -540,7 +645,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 31,
+              "DocumentIndex": 37,
               "Title": "Signup.cshtml",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Views\\Account\\Signup.cshtml",
               "RelativeDocumentMoniker": "PartyClap\\Views\\Account\\Signup.cshtml",
@@ -552,19 +657,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 34,
-              "Title": "premium.css.backup",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\css\\premium.css.backup",
-              "RelativeDocumentMoniker": "PartyClap\\wwwroot\\css\\premium.css.backup",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\css\\premium.css.backup",
-              "RelativeToolTip": "PartyClap\\wwwroot\\css\\premium.css.backup",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-11-24T16:28:47.919Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 33,
+              "DocumentIndex": 38,
               "Title": "premium.css",
               "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\wwwroot\\css\\premium.css",
               "RelativeDocumentMoniker": "PartyClap\\wwwroot\\css\\premium.css",
@@ -573,42 +666,6 @@
               "ViewState": "AgIAAHMBAAAAAAAAAAAIwIIBAAAUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
               "WhenOpened": "2025-11-24T16:26:59.323Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 32,
-              "Title": "InMemoryDataService.cs",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\Services\\InMemoryDataService.cs",
-              "RelativeDocumentMoniker": "PartyClap\\Services\\InMemoryDataService.cs",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\Services\\InMemoryDataService.cs",
-              "RelativeToolTip": "PartyClap\\Services\\InMemoryDataService.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAA3wA0AAAAPAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-21T14:21:38.455Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 35,
-              "Title": "appsettings.Development.json",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.Development.json",
-              "RelativeDocumentMoniker": "PartyClap\\appsettings.Development.json",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.Development.json",
-              "RelativeToolTip": "PartyClap\\appsettings.Development.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-11-20T12:58:45.455Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 36,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.json",
-              "RelativeDocumentMoniker": "PartyClap\\appsettings.json",
-              "ToolTip": "D:\\BabuSir\\PartyClap\\PartyClap\\appsettings.json",
-              "RelativeToolTip": "PartyClap\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-11-20T12:58:09.161Z"
             }
           ]
         }

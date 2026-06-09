@@ -1,0 +1,148 @@
+@model IEnumerable<PartyClap.Models.State>
+@{
+    ViewData["Title"] = "Manage States";
+    Layout = "_Layout";
+    var states = Model?.ToList() ?? new List<PartyClap.Models.State>();
+    var enabledCount = states.Count(s => s.IsEnabled);
+}
+
+<div class="container py-5">
+    <div class="row mb-4 align-items-center g-3">
+        <div class="col">
+            <h1 class="fw-bold mb-1">Manage States</h1>
+            <p class="text-muted mb-0">
+                Toggle a state to control where PartyClap is serviceable. A PIN code is bookable
+                only if its state is <strong>enabled</strong>; disabling a state hides its vendors
+                and blocks new bookings there.
+            </p>
+        </div>
+        <div class="col-auto">
+            <a href="@Url.Action("ManagePinCodes", "Admin")" class="btn btn-outline-secondary rounded-pill me-2">
+                <i class="bi bi-pin-map me-1"></i> PIN Codes
+            </a>
+            <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-outline-secondary rounded-pill">
+                <i class="bi bi-arrow-left me-1"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small">Enabled states</span>
+                        <span class="badge bg-success rounded-pill">@enabledCount / @states.Count</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <form asp-action="SetAllStates" method="post" class="flex-fill">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="enabled" value="true" />
+                            <button type="submit" class="btn btn-sm btn-outline-success w-100 rounded-pill">Enable all</button>
+                        </form>
+                        <form asp-action="SetAllStates" method="post" class="flex-fill">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="enabled" value="false" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100 rounded-pill">Disable all</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-2"><i class="bi bi-upload me-2"></i>Import PIN-code data</h5>
+                    <p class="text-muted small">
+                        Upload a CSV of India's cities &amp; PIN codes (e.g. the India Post pincode
+                        directory). Columns are auto-detected: <code>Pincode</code>,
+                        <code>OfficeName</code>/<code>AreaName</code>, <code>District</code>/<code>City</code>,
+                        <code>StateName</code>/<code>State</code>. New states are added and enabled automatically.
+                    </p>
+                    <form asp-action="ImportLocations" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="file" name="file" accept=".csv,text/csv" class="form-control rounded-3 mb-3" required />
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">
+                            <i class="bi bi-cloud-arrow-up me-1"></i> Import locations
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>State / UT</th>
+                                    <th class="text-center">Code</th>
+                                    <th class="text-center">Cities</th>
+                                    <th class="text-center">PIN codes</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var state in states)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@state.Name</td>
+                                        <td class="text-center"><span class="badge bg-light text-dark">@state.Code</span></td>
+                                        <td class="text-center">@state.CityCount.ToString("N0")</td>
+                                        <td class="text-center">@state.PinCodeCount.ToString("N0")</td>
+                                        <td class="text-center">
+                                            @if (state.IsEnabled)
+                                            {
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle">Enabled</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Disabled</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            <form asp-action="ToggleState" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@state.Id" />
+                                                <input type="hidden" name="enabled" value="@((!state.IsEnabled).ToString().ToLower())" />
+                                                @if (state.IsEnabled)
+                                                {
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                                        <i class="bi bi-toggle-off me-1"></i> Disable
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="submit" class="btn btn-sm btn-outline-success rounded-pill">
+                                                        <i class="bi bi-toggle-on me-1"></i> Enable
+                                                    </button>
+                                                }
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

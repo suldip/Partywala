@@ -1,0 +1,39 @@
+@{
+    var prefix = ViewData["Prefix"] as string ?? "party";
+    var locationValue = ViewData["LocationValue"] as string ?? "";
+    var pincodeValue = ViewData["PincodeValue"] as string ?? "";
+    var required = ViewData["Required"] as bool? ?? true;
+}
+<div class="party-location-picker" data-prefix="@prefix">
+    <div class="party-location-section-title">
+        <i class="bi bi-geo-alt-fill"></i> Party venue
+    </div>
+    <div class="row g-2">
+        <div class="col-12">
+            <label class="party-location-label" for="@(prefix)-location-address">
+                Full address @(required ? Html.Raw("<span class=\"text-danger\">*</span>") : "")
+            </label>
+            <input type="text"
+                   id="@(prefix)-location-address"
+                   class="form-control party-location-address"
+                   placeholder="House / building, street, area, city"
+                   value="@locationValue"
+                   @(required ? "required" : "")>
+        </div>
+        <div class="col-12 col-sm-5 col-md-4">
+            <label class="party-location-label" for="@(prefix)-location-pincode">
+                PIN code @(required ? Html.Raw("<span class=\"text-danger\">*</span>") : "")
+            </label>
+            <input type="text"
+                   id="@(prefix)-location-pincode"
+                   class="form-control party-location-pincode"
+                   placeholder="e.g. 400001"
+                   value="@pincodeValue"
+                   maxlength="6"
+                   inputmode="numeric"
+                   pattern="\d{6}"
+                   @(required ? "required" : "")>
+            <div class="party-location-pin-feedback text-danger small mt-1" style="display:none;"></div>
+        </div>
+    </div>
+</div>

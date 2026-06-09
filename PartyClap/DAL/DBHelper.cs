@@ -12,6 +12,12 @@ namespace PartyClap.DAL
         public DBHelper(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrWhiteSpace(_connectionString))
+            {
+                throw new InvalidOperationException(
+                    "Connection string 'DefaultConnection' is not configured. " +
+                    "Set it via user secrets (development) or the ConnectionStrings__DefaultConnection environment variable (production).");
+            }
         }
 
         public IDbConnection CreateConnection()

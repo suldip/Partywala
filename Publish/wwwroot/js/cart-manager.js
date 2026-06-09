@@ -1,14 +1,13 @@
-// Cart Management System
+// Cart Management System — server-backed for signed-in customers (B041).
+// localStorage is only a UI cache; GetCartJson is the source of truth.
 class CartManager {
     constructor() {
-        // Check if user is logged in
         this.isLoggedIn = window.isUserLoggedIn || false;
 
         if (this.isLoggedIn) {
-            this.items = this.loadCart();
-            this.syncWithServer(); // Sync with server on load
+            this.items = [];
+            this.syncWithServer();
         } else {
-            // Clear cart if user is not logged in
             this.items = [];
             this.clearLocalStorage();
         }
@@ -49,22 +48,21 @@ class CartManager {
                 if (!data) return; // Handled in catch/401 case
 
                 if (data.success && data.items) {
-                    // Map server items to local format - use serviceId as unique identifier
-                    // since a vendor can have multiple services
                     this.items = data.items.map(item => ({
-                        id: item.vendorId || item.VendorId, // UUID string
-                        serviceId: item.serviceId || item.ServiceId, // Unique service identifier
+                        id: item.vendorId || item.VendorId,
+                        serviceId: item.serviceId || item.ServiceId,
                         name: item.vendorName || item.VendorName,
                         category: item.serviceType || item.ServiceType,
                         basePrice: item.cost || item.Cost,
-                        // Add other fields if available from server or keep minimal
+                        pricingModel: item.unit || item.Unit || 'event',
+                        image: item.mediaUrl || item.MediaUrl || '',
+                        location: item.address || item.Address || ''
                     }));
 
                     this.saveCart();
                     this.updateCartUI();
                     this.updateAddToCartButtons();
-                } else {
-                    // If sync fails, clear items to avoid showing wrong state
+                } else if (data.success) {
                     this.items = [];
                     this.saveCart();
                     this.updateAddToCartButtons();
@@ -72,9 +70,6 @@ class CartManager {
             })
             .catch(err => {
                 console.error('Failed to sync cart:', err);
-                // If error, don't show items as added
-                this.items = [];
-                this.updateAddToCartButtons();
             });
     }
 

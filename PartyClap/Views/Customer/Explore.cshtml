@@ -1,129 +1,278 @@
 @model List<PartyClap.Models.ServiceListing>
+@using PartyClap.Services
 
 @{
     ViewData["Title"] = "Explore Services";
+    var activeCategory = ViewBag.Category as string ?? "all";
+    var activeSort = ViewBag.SortBy as string ?? "rating";
+    var reviewSummaries = ViewBag.ReviewSummaries as Dictionary<string, PartyClap.Models.ReviewSummary>
+        ?? new Dictionary<string, PartyClap.Models.ReviewSummary>();
+    var minRatingValue = ViewBag.MinRating as decimal?;
+    var eventDateValue = ViewBag.EventDate as string ?? DateTime.Today.ToString("yyyy-MM-dd");
+    var dateFilterActive = ViewBag.DateFilterActive as bool? == true;
+    var minPartyDate = DateTime.Today.ToString("yyyy-MM-dd");
+    var vendorSchedules = ViewBag.VendorSchedules as Dictionary<string, List<PartyClap.Models.VendorScheduleEntry>>
+        ?? new Dictionary<string, List<PartyClap.Models.VendorScheduleEntry>>();
 }
 
-<!-- Page Header -->
-<div class="py-5 bg-white">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h1 class="fw-bold mb-3" style="font-size: 2rem;">Find Perfect Party Professionals</h1>
-            <p class="text-muted mx-auto" style="max-width: 650px; font-size: 0.95rem;">
-                Browse verified vendors, compare prices, and book your ideal party services. Pay only 20% advance to get contact details.
+@section Styles {
+    <link rel="stylesheet" href="~/css/explore.css" asp-append-version="true" />
+}
+
+<!-- Page Header / Hero -->
+<div class="explore-hero">
+    <div class="explore-hero-bg" aria-hidden="true">
+        <span class="blob blob-1"></span>
+        <span class="blob blob-2"></span>
+        <span class="blob blob-3"></span>
+    </div>
+    <div class="container position-relative">
+        <div class="text-center mb-2">
+            <span class="explore-eyebrow">
+                <i class="bi bi-stars"></i> India's trusted party marketplace
+            </span>
+            <h1 class="explore-title">
+                Find Perfect <span class="explore-title-accent">Party Professionals</span>
+            </h1>
+            <p class="explore-subtitle">
+                Browse verified vendors, compare prices, and book your ideal party services.
+                Pay only <strong>20% advance</strong> to unlock contact details.
             </p>
+            <div class="explore-trust">
+                <span><i class="bi bi-patch-check-fill"></i> Verified vendors</span>
+                <span><i class="bi bi-shield-lock-fill"></i> Secure payments</span>
+                <span><i class="bi bi-headset"></i> Dedicated support</span>
+            </div>
         </div>
 
-        <!-- Search Bar Row -->
-        <div class="row g-3 mb-3">
-            <div class="col-12">
-                <div class="position-relative">
-                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                    <input type="text" id="search-input" class="form-control form-control-lg ps-5" 
-                           placeholder="Search vendors, services, cities, or areas..."
-                           style="border-radius: 8px; border: 1px solid #e5e7eb; font-size: 0.95rem;">
+        <!-- Search + Filters Panel -->
+        <form id="explore-filter-form" method="get" asp-controller="Customer" asp-action="Explore" class="explore-search-card">
+            <input type="hidden" name="category" id="filter-category-hidden" value="@activeCategory" />
+            <input type="hidden" name="filterByDate" id="filter-by-date" value="@(dateFilterActive ? "1" : "0")" />
+
+            <!-- Unified search bar -->
+            <div class="explore-search-unified">
+                <div class="explore-search-segment">
+                    <label for="search-input">What are you looking for?</label>
+                    <input type="text" id="search-input" name="search"
+                           value="@ViewBag.Search"
+                           placeholder="Singers, decorators, caterers…"
+                           autocomplete="off">
                 </div>
+                <div class="explore-search-divider" aria-hidden="true"></div>
+                <div class="explore-search-segment position-relative">
+                    <label for="location-search">Where</label>
+                    <input type="text" id="location-search"
+                           placeholder="City, area, or PIN code"
+                           autocomplete="off">
+                    <div id="location-results" class="position-absolute w-100 bg-white border mt-1"
+                         style="display: none; max-height: 220px; overflow-y: auto; z-index: 1050;">
+                    </div>
+                </div>
+                <div class="explore-search-divider" aria-hidden="true"></div>
+                <div class="explore-search-segment">
+                    <label for="party-date-input">Party date</label>
+                    <input type="date" id="party-date-input" name="eventDate"
+                           value="@eventDateValue" min="@minPartyDate">
+                </div>
+                <button type="submit" class="explore-search-btn">
+                    <i class="bi bi-search"></i> Search
+                </button>
             </div>
-        </div>
 
-        <!-- Location Filters -->
-        <div class="row g-3 mb-4">
-            <div class="col-12 col-md-3">
-                <select id="filter-state" class="form-select" style="border-radius: 8px; border-color: #e5e7eb;">
-                    <option value="all-states">All States</option>
-                    <option value="Maharashtra">Maharashtra</option>
-                    <option value="Delhi">Delhi</option>
-                    <option value="Karnataka">Karnataka</option>
-                    <option value="Gujarat">Gujarat</option>
-                    <option value="Tamil Nadu">Tamil Nadu</option>
-                    <option value="Haryana">Haryana</option>
-                    <option value="Telangana">Telangana</option>
-                </select>
-            </div>
-            <div class="col-12 col-md-3">
-                <select id="filter-city" class="form-select" style="border-radius: 8px; border-color: #e5e7eb;">
-                    <option value="all-cities">All Cities</option>
-                    @if (ViewBag.Locations != null)
-                    {
-                        foreach (var loc in ViewBag.Locations)
-                        {
-                            <option value="@loc.PinCode">@loc.DisplayName</option>
-                        }
-                    }
-                </select>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="position-relative">
-                    <i class="bi bi-geo-alt position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                    <input type="text" id="location-search" class="form-control ps-5" 
-                           placeholder="Quick search: city, area, pin code..."
-                           style="border-radius: 8px; border-color: #e5e7eb;">
-                    <div id="location-results" class="position-absolute w-100 bg-white border rounded shadow-sm mt-1" 
-                         style="display: none; max-height: 200px; overflow-y: auto; z-index: 1000;">
+            <!-- Refine filters -->
+            <div class="explore-filters-panel">
+                <div class="explore-filters-header">
+                    <span><i class="bi bi-sliders me-1"></i> Refine results</span>
+                    <button type="button" class="explore-filters-toggle d-md-none"
+                            data-bs-toggle="collapse" data-bs-target="#exploreFiltersCollapse"
+                            aria-expanded="false" aria-controls="exploreFiltersCollapse">
+                        Show filters <i class="bi bi-chevron-down ms-1"></i>
+                    </button>
+                </div>
+                <div id="exploreFiltersCollapse" class="collapse d-md-block">
+                    <div class="row g-2 g-md-3 align-items-end">
+                        <div class="col-6 col-lg-2">
+                            <label class="explore-field-label" for="filter-state">State</label>
+                            <select id="filter-state" class="form-select explore-control">
+                                <option value="all-states">All States</option>
+                                <option value="Maharashtra">Maharashtra</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Karnataka">Karnataka</option>
+                                <option value="Gujarat">Gujarat</option>
+                                <option value="Tamil Nadu">Tamil Nadu</option>
+                                <option value="Haryana">Haryana</option>
+                                <option value="Telangana">Telangana</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <label class="explore-field-label" for="filter-city">City / PIN</label>
+                            <select id="filter-city" name="pinCode" class="form-select explore-control">
+                                <option value="">All Cities</option>
+                                @if (ViewBag.Locations != null)
+                                {
+                                    foreach (var loc in ViewBag.Locations)
+                                    {
+                                        <option value="@loc.PinCode" selected="@(ViewBag.PinCode as string == loc.PinCode)">@loc.DisplayName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <label class="explore-field-label" for="filter-min-price">Min price (₹)</label>
+                            <input type="number" id="filter-min-price" name="minPrice" min="0" step="100"
+                                   value="@ViewBag.MinPrice" class="form-control explore-control" placeholder="0">
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <label class="explore-field-label" for="filter-max-price">Max price (₹)</label>
+                            <input type="number" id="filter-max-price" name="maxPrice" min="0" step="100"
+                                   value="@ViewBag.MaxPrice" class="form-control explore-control" placeholder="Any">
+                        </div>
+                        <div class="col-6 col-lg-2">
+                            <label class="explore-field-label" for="filter-min-rating">Min rating</label>
+                            <select id="filter-min-rating" name="minRating" class="form-select explore-control">
+                                <option value="">Any rating</option>
+                                @if (minRatingValue == 3)
+                                {
+                                    <option value="3" selected>3+ stars</option>
+                                }
+                                else
+                                {
+                                    <option value="3">3+ stars</option>
+                                }
+                                @if (minRatingValue == 4)
+                                {
+                                    <option value="4" selected>4+ stars</option>
+                                }
+                                else
+                                {
+                                    <option value="4">4+ stars</option>
+                                }
+                                @if (minRatingValue == 4.5m)
+                                {
+                                    <option value="4.5" selected>4.5+ stars</option>
+                                }
+                                else
+                                {
+                                    <option value="4.5">4.5+ stars</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="explore-filter-actions">
+                                <button type="submit" class="btn explore-apply-btn">
+                                    <i class="bi bi-funnel me-1"></i> Apply
+                                </button>
+                                <button type="button" class="btn explore-clear-btn" onclick="clearAllFilters()">
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-2">
-                <button class="btn btn-outline-secondary w-100" onclick="clearAllFilters()" style="border-radius: 8px;">
-                    Clear Location
+        </form>
+
+        <!-- Category scroller -->
+        <div class="explore-categories-wrap">
+            <div class="category-pills">
+                <button type="button" class="btn category-quick-btn @(activeCategory == "all" ? "active" : "")" data-category="all">
+                    <span class="cat-icon"><i class="bi bi-grid-fill"></i></span>
+                    All Services
+                </button>
+                <button type="button" class="btn category-quick-btn @(activeCategory == "singer" ? "active" : "")" data-category="singer">
+                    <span class="cat-icon"><i class="bi bi-music-note-beamed"></i></span>
+                    Singers
+                </button>
+                <button type="button" class="btn category-quick-btn @(activeCategory == "magician" ? "active" : "")" data-category="magician">
+                    <span class="cat-icon"><i class="bi bi-stars"></i></span>
+                    Magicians
+                </button>
+                <button type="button" class="btn category-quick-btn @(activeCategory == "chef" ? "active" : "")" data-category="chef">
+                    <span class="cat-icon"><i class="bi bi-cup-hot"></i></span>
+                    Chefs
+                </button>
+                <button type="button" class="btn category-quick-btn @(activeCategory == "decorator" ? "active" : "")" data-category="decorator">
+                    <span class="cat-icon"><i class="bi bi-palette"></i></span>
+                    Decorators
+                </button>
+                <button type="button" class="btn category-quick-btn @(activeCategory == "event-manager" ? "active" : "")" data-category="event-manager">
+                    <span class="cat-icon"><i class="bi bi-people-fill"></i></span>
+                    Events
+                </button>
+                <button type="button" class="btn category-quick-btn @(activeCategory == "photographer" ? "active" : "")" data-category="photographer">
+                    <span class="cat-icon"><i class="bi bi-camera-fill"></i></span>
+                    Photo
+                </button>
+                <button type="button" class="btn category-quick-btn @(activeCategory == "casino" ? "active" : "")" data-category="casino">
+                    <span class="cat-icon"><i class="bi bi-dice-5"></i></span>
+                    Casino
                 </button>
             </div>
-        </div>
-
-        <!-- Category Pills (Quick Access) -->
-        <div class="d-flex gap-2 overflow-auto pb-3 category-pills mb-2 hide-scrollbar">
-            <button class="btn btn-primary category-quick-btn active" data-category="all" 
-                    style="border-radius: 20px; padding: 8px 20px; white-space: nowrap; font-size: 0.9rem;">
-                🎉 All Services
-            </button>
-            <button class="btn btn-outline-secondary category-quick-btn" data-category="singer" 
-                    style="border-radius: 20px; padding: 8px 20px; white-space: nowrap; border-color: #e5e7eb; font-size: 0.9rem;">
-                🎵 Singers
-            </button>
-            <button class="btn btn-outline-secondary category-quick-btn" data-category="magician" 
-                    style="border-radius: 20px; padding: 8px 20px; white-space: nowrap; border-color: #e5e7eb; font-size: 0.9rem;">
-                ✨ Magicians
-            </button>
-            <button class="btn btn-outline-secondary category-quick-btn" data-category="chef" 
-                    style="border-radius: 20px; padding: 8px 20px; white-space: nowrap; border-color: #e5e7eb; font-size: 0.9rem;">
-                🍽️ Chefs & Caterers
-            </button>
-            <button class="btn btn-outline-secondary category-quick-btn" data-category="decorator" 
-                    style="border-radius: 20px; padding: 8px 20px; white-space: nowrap; border-color: #e5e7eb; font-size: 0.9rem;">
-                🎨 Decorators
-            </button>
-            <button class="btn btn-outline-secondary category-quick-btn" data-category="event-manager" 
-                    style="border-radius: 20px; padding: 8px 20px; white-space: nowrap; border-color: #e5e7eb; font-size: 0.9rem;">
-                👥 Event Managers
-            </button>
-            <button class="btn btn-outline-secondary category-quick-btn" data-category="photographer" 
-                    style="border-radius: 20px; padding: 8px 20px; white-space: nowrap; border-color: #e5e7eb; font-size: 0.9rem;">
-                📸 Photographers
-            </button>
-            <button class="btn btn-outline-secondary category-quick-btn" data-category="casino" 
-                    style="border-radius: 20px; padding: 8px 20px; white-space: nowrap; border-color: #e5e7eb; font-size: 0.9rem;">
-                ✨ Casino Games
-            </button>
         </div>
     </div>
 </div>
 
 <!-- Results Section -->
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    @if (dateFilterActive)
+    {
+        <div class="alert alert-success border-0 rounded-4 mb-4 py-2 px-3 small">
+            <i class="bi bi-calendar-check me-2"></i>
+            Showing vendors <strong>available on @DateTime.Parse(eventDateValue).ToString("dddd, MMM dd, yyyy")</strong>.
+            Use the calendar on each card to pick a date, then <strong>Book Vendor</strong>.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info border-0 rounded-4 mb-4 py-2 px-3 small">
+            <i class="bi bi-people me-2"></i>
+            Showing <strong>all vendors</strong>. Party date is set to today — click <strong>Search</strong> to filter by availability.
+        </div>
+    }
+    <div class="results-toolbar explore-results-toolbar mb-4">
         <div>
             <h2 class="h5 mb-0 fw-bold"><span id="results-count">@Model.Count</span> Party Professionals Available</h2>
+            <p class="text-muted small mb-0">@(dateFilterActive ? "Filtered by your selected party date" : "Browse all professionals — search to filter by date")</p>
         </div>
-        <div class="d-flex gap-2 align-items-center">
-            <div class="btn-group" role="group">
-                <button id="view-compact" class="btn btn-outline-primary btn-sm">Compact</button>
-                <button id="view-detailed" class="btn btn-primary btn-sm active">Detailed</button>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <div class="btn-group results-view-toggle" role="group">
+                <button id="view-compact" class="btn btn-sm">Compact</button>
+                <button id="view-detailed" class="btn btn-sm active">Detailed</button>
             </div>
-            <select id="filter-sort" class="form-select form-select-sm" style="width: auto; border-radius: 6px; border-color: #e5e7eb;">
-                <option value="rating">Sort by</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="reviews">Most Reviews</option>
+            <select id="filter-sort" name="sortBy" form="explore-filter-form" class="form-select form-select-sm explore-control" style="width: auto;">
+                @if (activeSort == "rating")
+                {
+                    <option value="rating" selected>Highest rated</option>
+                }
+                else
+                {
+                    <option value="rating">Highest rated</option>
+                }
+                @if (activeSort == "price-low")
+                {
+                    <option value="price-low" selected>Price: Low to High</option>
+                }
+                else
+                {
+                    <option value="price-low">Price: Low to High</option>
+                }
+                @if (activeSort == "price-high")
+                {
+                    <option value="price-high" selected>Price: High to Low</option>
+                }
+                else
+                {
+                    <option value="price-high">Price: High to Low</option>
+                }
+                @if (activeSort == "reviews")
+                {
+                    <option value="reviews" selected>Most Reviews</option>
+                }
+                else
+                {
+                    <option value="reviews">Most Reviews</option>
+                }
             </select>
         </div>
     </div>
@@ -135,6 +284,9 @@
             @foreach (var service in Model)
             {
                 var vendorId = service.VendorId;
+                var vendorSchedule = vendorSchedules.ContainsKey(vendorId)
+                    ? vendorSchedules[vendorId]
+                    : new List<PartyClap.Models.VendorScheduleEntry>();
                 var categoryId = service.ServiceType.ToLower().Replace(" ", "-");
                 var searchText = $"{service.VendorName} {service.ServiceType} {service.Description}".ToLower();
                 
@@ -157,9 +309,13 @@
                     ? service.MediaUrl 
                     : $"https://ui-avatars.com/api/?name={service.VendorName}&size=80&background=8B5CF6&color=fff&bold=true&font-size=0.4";
                 
-                // Parse Attributes JSON for rating, reviews, specialties
-                var rating = "4.8";
-                var reviews = "156";
+                var ratingValue = ExploreFilterHelper.GetRating(service, reviewSummaries);
+                var reviewCount = ExploreFilterHelper.GetReviewCount(service, reviewSummaries);
+                var rating = reviewCount > 0 ? ratingValue.ToString("0.0") : "New";
+                var reviews = reviewCount > 0 ? reviewCount.ToString() : "0";
+                var categorySlugs = ExploreFilterHelper.GetCategorySlugs(service.ServiceType);
+                
+                // Parse Attributes JSON for specialties (rating/reviews already resolved above)
                 var specialties = new List<string> { "Professional", "Experienced", "Verified" };
                 
                 if (!string.IsNullOrEmpty(service.Attributes))
@@ -167,10 +323,6 @@
                     try
                     {
                         var json = System.Text.Json.JsonDocument.Parse(service.Attributes);
-                        if (json.RootElement.TryGetProperty("rating", out var ratingProp))
-                            rating = ratingProp.GetDouble().ToString("0.0");
-                        if (json.RootElement.TryGetProperty("reviews", out var reviewsProp))
-                            reviews = reviewsProp.GetInt32().ToString();
                         if (json.RootElement.TryGetProperty("specialties", out var specialtiesProp) && specialtiesProp.ValueKind == System.Text.Json.JsonValueKind.Array)
                         {
                             specialties = new List<string>();
@@ -186,21 +338,25 @@
                 <div class="col-12 vendor-card" 
                      data-vendor-id="@vendorId"
                      data-category="@categoryId"
+                     data-categories="@categorySlugs"
                      data-state="@state"
                      data-city="@cityFilterValue"
+                     data-price="@service.Cost"
+                     data-rating="@ratingValue.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                     data-reviews="@reviewCount"
                      data-search-text="@searchText">
                     
                     <div class="card border h-100 shadow-sm hover-shadow" style="border-radius: 12px; border-color: #f3f4f6 !important; transition: all 0.3s ease;">
                         <div class="card-body p-4">
                             <div class="row">
                                 <!-- Left Info -->
-                                <div class="col-12 col-md-9 border-end">
+                                <div class="col-12 col-md-9 border-end vendor-card-main">
                                     <div class="d-flex gap-3 mb-3">
                                         <div class="flex-shrink-0">
                                             <img src="@avatarUrl" alt="@service.VendorName" class="vendor-card-img shadow-sm">
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="d-flex align-items-center gap-2 mb-1 vendor-card-header-row">
                                                 <h3 class="h6 mb-0 fw-bold text-dark">@service.VendorName</h3>
                                                 <span class="verified-badge">
                                                     <i class="bi bi-patch-check-fill"></i> Verified
@@ -208,7 +364,7 @@
                                             </div>
                                             <p class="text-purple fw-semibold mb-1" style="font-size: 0.85rem;">@service.ServiceType</p>
                                             <div class="d-flex flex-wrap gap-3 text-muted mb-2" style="font-size: 0.75rem;">
-                                                <span class="d-flex align-items-center gap-1"><i class="bi bi-star-fill text-warning"></i> @rating (@reviews reviews)</span>
+                                                <span class="d-flex align-items-center gap-1"><i class="bi bi-star-fill text-warning"></i> @(reviewCount > 0 ? $"{rating} ({reviews} reviews)" : "No reviews yet")</span>
                                                 <span class="d-flex align-items-center gap-1"><i class="bi bi-geo-alt"></i> @city</span>
                                                 <span class="d-flex align-items-center gap-1"><i class="bi bi-clock"></i> 8+ years</span>
                                             </div>
@@ -238,44 +394,49 @@
                                             <div class="mb-3">
                                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                                     <span class="text-muted small fw-bold">Portfolio</span>
-                                                    <a href="#" class="text-purple small text-decoration-none fw-semibold">View Profile ></a>
+                                                    <a href="@Url.Action("VendorProfile", "Customer", new { vendorId = vendorId, eventDate = eventDateValue })" class="text-purple small text-decoration-none fw-semibold">View Profile ></a>
                                                 </div>
-                                                <div class="row g-2">
+                                                <div class="row g-2 portfolio-gallery-@vendorId">
                                                     <div class="col-4">
-                                                        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=300&h=200&fit=crop" class="portfolio-thumb" alt="Portfolio">
+                                                        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=300&h=200&fit=crop" class="portfolio-thumb portfolio-gallery-item" alt="Portfolio" onclick="openLightbox('@vendorId', 0)">
                                                     </div>
                                                     <div class="col-4">
-                                                        <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&h=200&fit=crop" class="portfolio-thumb" alt="Portfolio">
+                                                        <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=300&h=200&fit=crop" class="portfolio-thumb portfolio-gallery-item" alt="Portfolio" onclick="openLightbox('@vendorId', 1)">
                                                     </div>
                                                     <div class="col-4">
-                                                        <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&h=200&fit=crop" class="portfolio-thumb" alt="Portfolio">
+                                                        <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&h=200&fit=crop" class="portfolio-thumb portfolio-gallery-item" alt="Portfolio" onclick="openLightbox('@vendorId', 2)">
                                                     </div>
                                                 </div>
                                             </div>
                                             
-                                            <!-- Highlights -->
-                                            <div class="bg-light rounded p-2 d-flex gap-4">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <i class="bi bi-shield-check text-success"></i>
-                                                    <span class="small text-muted">Verified Party Professional</span>
-                                                </div>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <i class="bi bi-calendar-check text-primary"></i>
-                                                    <span class="small text-muted">50+ bookings this year</span>
-                                                </div>
+                                            <!-- Availability calendar -->
+                                            <button class="btn btn-sm btn-outline-secondary rounded-pill explore-availability-toggle d-md-none mb-2"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#explore-avail-@vendorId"
+                                                    aria-expanded="false">
+                                                <i class="bi bi-calendar3 me-1"></i> Show availability
+                                            </button>
+                                            <div class="collapse d-md-block" id="explore-avail-@vendorId">
+                                                <partial name="_VendorAvailabilityCalendar" view-data='@(new ViewDataDictionary(ViewData) {
+                                                    { "CalendarVendorId", vendorId },
+                                                    { "CalendarInitialDate", eventDateValue },
+                                                    { "CalendarSchedule", vendorSchedule }
+                                                })' />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Right Actions -->
-                                <div class="col-12 col-md-3 ps-md-4 d-flex flex-column justify-content-between">
+                                <div class="col-12 col-md-3 ps-md-4 d-flex flex-column justify-content-between vendor-card-actions-col">
                                     <div class="text-end mb-3">
                                         <div class="h3 fw-bold text-purple mb-0">₹ @service.Cost.ToString("N0")</div>
                                         <p class="text-muted small mb-0">per hour</p>
                                         <p class="text-muted small mb-0">All-inclusive pricing</p>
                                     </div>
                                     
+                                    <p class="small text-muted text-end mb-2 vac-book-hint">Pick a <span class="text-success fw-semibold">green</span> date, then book</p>
                                     <div class="btn-action-stack">
                                         <button class="btn btn-light-purple btn-add-to-cart" 
                                                 data-vendor-id="@vendorId"
@@ -284,22 +445,21 @@
                                                 data-vendor-category="@service.ServiceType"
                                                 data-vendor-price="@service.Cost"
                                                 data-vendor-pricing="per hour">
-                                            <i class="bi bi-cart-plus"></i> Add to Cart
+                                            <i class="bi bi-calendar-check"></i> Book Vendor
                                         </button>
-                                        <button class="btn btn-primary" onclick="openServiceRequestDialog(@vendorId, '@service.VendorName')">
-                                            <i class="bi bi-telephone"></i> Get Contact - ₹1,000
-                                        </button>
-                                        <button class="btn btn-outline-secondary" onclick="openServiceRequestDialog('@vendorId', '@service.Id', '@service.VendorName')">
+                                        <button type="button" class="btn btn-primary btn-request-service"
+                                                data-vendor-id="@vendorId"
+                                                data-service-id="@service.Id"
+                                                data-vendor-name="@service.VendorName"
+                                                data-service-cost="@service.Cost"
+                                                data-weekend-cost="@(service.WeekendCost?.ToString() ?? "")"
+                                                title="Request a quote for your selected date">
                                             <i class="bi bi-send"></i> Request Service
                                         </button>
-                                        <button class="btn btn-outline-secondary" onclick="openMessageModal('@vendorId', '@service.VendorName')">
-                                            <i class="bi bi-chat"></i> Send Message
-                                        </button>
+                                     
                                     </div>
                                     
-                                    <p class="text-muted text-center mt-2 mb-0" style="font-size: 0.65rem;">
-                                        Pay only 20% advance to get contact details
-                                    </p>
+                                  
                                 </div>
                             </div>
                         </div>
@@ -310,82 +470,53 @@
     </div>
 
     <!-- Empty State -->
-    <div id="empty-state" class="text-center py-5" style="display: none;">
+    <div id="empty-state" class="text-center py-5" style="@(Model == null || !Model.Any() ? "" : "display: none;")">
         <div class="mb-4 text-muted" style="font-size: 4rem; opacity: 0.5;">🔍</div>
         <h3 class="fw-bold mb-2">No vendors found</h3>
-        <p class="text-muted mb-4">Try adjusting your search or filters</p>
-        <button class="btn btn-primary" onclick="clearAllFilters()">Show All Services</button>
+        <p class="text-muted mb-4">@(dateFilterActive ? "No vendors are available on this date. Try another date or adjust your filters." : "Try adjusting your search or filters.")</p>
+        <button class="btn btn-primary" onclick="clearAllFilters()">Clear Filters</button>
     </div>
 
-    <!-- Load More -->
+    <!-- Pagination -->
     @if (Model != null && Model.Any())
     {
-        <div class="text-center mt-5">
-            <button class="btn btn-outline-primary btn-lg px-5" style="border-radius: 8px;">Load More Vendors</button>
-        </div>
+        <nav id="pagination-wrapper" class="mt-5" aria-label="Vendor results pages">
+            <ul id="pagination-controls" class="pagination justify-content-center flex-wrap mb-2"></ul>
+            <p id="pagination-summary" class="text-center text-muted small mb-0"></p>
+        </nav>
     }
 </div>
 
-<!-- Service Request Modal -->
-<div class="modal fade" id="service-request-modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-            <div class="modal-header border-bottom-0 pb-0">
-                <h5 class="modal-title fw-bold">Request Service</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- Image Lightbox Modal -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content bg-transparent border-0 shadow-none">
+      <div class="modal-body p-0 position-relative text-center">
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal" aria-label="Close"></button>
+        
+        <div class="lightbox-navigation">
+            <button class="nav-btn prev-btn" onclick="changeImage(-1)">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            
+            <div class="image-container">
+                <img id="lightboxImage" src="" class="img-fluid rounded shadow-lg animate__animated animate__fadeIn" style="max-height: 85vh;" alt="Portfolio Item">
+                <div class="caption-overlay">
+                    <p id="lightboxCaption" class="text-white m-0 fw-semibold"></p>
+                    <small id="lightboxCounter" class="text-white-50"></small>
+                </div>
             </div>
-            <form onsubmit="submitServiceRequest(event)">
-                <div class="modal-body pt-4">
-                    <input type="hidden" id="request-vendor-id" name="vendorId">
-                    <input type="hidden" id="request-service-id" name="serviceId">
-                    <div class="alert alert-light border mb-4 d-flex align-items-center gap-3">
-                        <div class="bg-primary-subtle text-primary rounded-circle p-2">
-                            <i class="bi bi-person-fill fs-5"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block">Sending request to:</small>
-                            <strong id="request-vendor-name" class="text-dark"></strong>
-                        </div>
-                    </div>
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold small text-muted">Event Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" name="eventDate" required style="border-radius: 8px;" min="@DateTime.Now.ToString("yyyy-MM-dd")">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold small text-muted">Event Type <span class="text-danger">*</span></label>
-                            <select class="form-select" name="eventType" required style="border-radius: 8px;">
-                                <option value="">Select type...</option>
-                                <option value="wedding">Wedding</option>
-                                <option value="birthday">Birthday</option>
-                                <option value="corporate">Corporate</option>
-                                <option value="anniversary">Anniversary</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold small text-muted">Number of Guests <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" name="guestCount" min="1" placeholder="e.g. 50" required style="border-radius: 8px;">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold small text-muted">Additional Details</label>
-                            <textarea class="form-control" name="details" rows="3" 
-                                      placeholder="Tell us more about your event requirements..." style="border-radius: 8px;"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
-                    <button type="button" class="btn btn-light w-100 mb-2" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
-                    <button type="submit" class="btn btn-primary w-100 m-0" style="border-radius: 8px;" id="submit-request-btn">
-                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                        Send Request
-                    </button>
-                </div>
-            </form>
+
+            <button class="nav-btn next-btn" onclick="changeImage(1)">
+                <i class="bi bi-chevron-right"></i>
+            </button>
         </div>
+      </div>
     </div>
+  </div>
 </div>
+
+<partial name="_ServiceRequestModal" />
 
 <!-- Message Modal -->
 <div class="modal fade" id="message-modal" tabindex="-1">
@@ -414,7 +545,7 @@
             </div>
             <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
                 <button type="button" class="btn btn-light w-100 mb-2" data-bs-dismiss="modal" style="border-radius: 8px;">Cancel</button>
-                <button type="button" class="btn btn-primary w-100 m-0" style="border-radius: 8px;" onclick="submitMessage()">
+                <button type="button" class="btn btn-primary w-100 m-0" id="btn-submit-message" style="border-radius: 8px;">
                     Send Message
                 </button>
             </div>
@@ -423,10 +554,82 @@
 </div>
 
 <!-- Scripts -->
-<script src="~/js/customer-explore.js?v=@DateTime.Now.Ticks"></script>
-<script src="~/js/cart-manager.js?v=@DateTime.Now.Ticks"></script>
+<script>
+    window.exploreInitialFilters = {
+        category: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(activeCategory)),
+        searchQuery: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Search as string ?? "")),
+        sortBy: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(activeSort)),
+        minPrice: @(ViewBag.MinPrice != null ? ViewBag.MinPrice.ToString() : "null"),
+        maxPrice: @(ViewBag.MaxPrice != null ? ViewBag.MaxPrice.ToString() : "null"),
+        minRating: @(ViewBag.MinRating != null ? ViewBag.MinRating.ToString() : "null"),
+        eventDate: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(eventDateValue))
+    };
+</script>
+<script src="~/js/vendor-availability-calendar.js" asp-append-version="true"></script>
+<script src="~/js/customer-explore.js" asp-append-version="true"></script>
+<script src="~/js/messaging.js" asp-append-version="true"></script>
 
 <script>
+// Lightbox Logic
+let currentImgIndex = 0;
+let galleryImages = [];
+
+function openLightbox(vendorId, index) {
+    const galleryContainer = document.querySelector(`.portfolio-gallery-${vendorId}`);
+    if (!galleryContainer) return;
+
+    galleryImages = Array.from(galleryContainer.querySelectorAll('.portfolio-gallery-item')).map(img => ({
+        src: img.src,
+        caption: img.alt || 'Portfolio Item'
+    }));
+    
+    currentImgIndex = index;
+    updateLightbox();
+    
+    const modal = new bootstrap.Modal(document.getElementById('lightboxModal'));
+    modal.show();
+}
+
+function updateLightbox() {
+    const img = galleryImages[currentImgIndex];
+    if (!img) return;
+
+    const imageElement = document.getElementById('lightboxImage');
+    const captionElement = document.getElementById('lightboxCaption');
+    const counterElement = document.getElementById('lightboxCounter');
+    
+    imageElement.src = img.src;
+    captionElement.textContent = img.caption;
+    counterElement.textContent = `${currentImgIndex + 1} / ${galleryImages.length}`;
+
+    // Handle nav visibility
+    document.querySelector('.prev-btn').style.visibility = (currentImgIndex > 0) ? 'visible' : 'hidden';
+    document.querySelector('.next-btn').style.visibility = (currentImgIndex < galleryImages.length - 1) ? 'visible' : 'hidden';
+}
+
+function changeImage(step) {
+    currentImgIndex += step;
+    if (currentImgIndex < 0) currentImgIndex = 0;
+    if (currentImgIndex >= galleryImages.length) currentImgIndex = galleryImages.length - 1;
+    
+    const imgElement = document.getElementById('lightboxImage');
+    imgElement.classList.remove('animate__fadeIn');
+    void imgElement.offsetWidth; // Trigger reflow
+    imgElement.classList.add('animate__fadeIn');
+    
+    updateLightbox();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    const modal = document.getElementById('lightboxModal');
+    if (modal && modal.classList.contains('show')) {
+        if (e.key === "ArrowLeft") changeImage(-1);
+        if (e.key === "ArrowRight") changeImage(1);
+        if (e.key === "Escape") bootstrap.Modal.getInstance(modal).hide();
+    }
+});
+
 // Update portfolio toggle
 function togglePortfolio(vendorId) {
     const portfolio = document.getElementById(`portfolio-full-${vendorId}`);
@@ -446,74 +649,5 @@ function togglePortfolio(vendorId) {
     }
 }
 
-// Messaging logic
-function openMessageModal(vendorId, vendorName) {
-    if (!window.isUserLoggedIn) {
-        window.location.href = (window.basePath || '') + 'Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname + window.location.search);
-        return;
-    }
-    document.getElementById('msg-vendor-id').value = vendorId;
-    document.getElementById('msg-vendor-name').textContent = vendorName;
-    document.getElementById('msg-content').value = "";
-    new bootstrap.Modal(document.getElementById('message-modal')).show();
-}
-
-async function submitMessage() {
-    const vendorId = document.getElementById('msg-vendor-id').value;
-    const content = document.getElementById('msg-content').value;
-    
-    if (!content.trim()) {
-        window.SmartPop.toast('Please enter a message.', 'error');
-        return;
-    }
-
-    try {
-        const response = await fetch((window.basePath || '') + 'Message/SendInitialMessage', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `vendorId=${vendorId}&content=${encodeURIComponent(content)}`
-        });
-
-        const result = await response.json();
-        if (result.success) {
-            window.SmartPop.toast(result.message, 'success');
-            bootstrap.Modal.getInstance(document.getElementById('message-modal')).hide();
-        } else {
-            window.SmartPop.toast(result.message, 'error');
-        }
-    } catch (error) {
-        window.SmartPop.toast('Failed to send message.', 'error');
-    }
-}
 </script>
 
-<style>
-/* Responsive adjustments */
-@@media (min-width: 992px) {
-    .border-start-lg {
-        border-left: 1px solid #f3f4f6 !important;
-    }
-}
-
-.hover-shadow:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-    border-color: #e9d5ff !important;
-}
-
-.category-quick-btn {
-    transition: all 0.2s ease;
-}
-
-.category-quick-btn:hover {
-    transform: translateY(-1px);
-}
-
-.category-quick-btn.active {
-    background-color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
-    color: white !important;
-}
-</style>

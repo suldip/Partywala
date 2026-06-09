@@ -1,0 +1,161 @@
+@model PartyClap.Models.PaymentCheckoutViewModel
+@{
+    ViewData["Title"] = "Secure Checkout";
+}
+
+<link rel="stylesheet" href="~/css/payment-checkout.css" asp-append-version="true" />
+
+<div class="container py-5 pay-checkout-page">
+    <a href="@Url.Action("ViewCart", "Customer")" class="pay-checkout-back">
+        <i class="bi bi-arrow-left"></i> Back to Cart
+    </a>
+
+    @if (Model.IsSuccess)
+    {
+        <div class="pay-card pay-success-card">
+            <div class="pay-success-icon"><i class="bi bi-check-lg"></i></div>
+            <h2 class="fw-bold mb-2">Payment Complete</h2>
+            <p class="text-muted mb-3">@(Model.SuccessMessage ?? "Your bookings are confirmed.")</p>
+            <div class="h3 fw-bold text-success mb-4">₹@Model.PaidAmount.ToString("N0") paid</div>
+            <a href="@Url.Action("ViewCart", "Customer")" class="btn btn-primary rounded-pill px-4">Back to Cart</a>
+        </div>
+    }
+    else
+    {
+        <div class="pay-checkout-grid">
+            <div class="pay-checkout-main">
+                <div class="pay-card">
+                    <div class="pay-card-header"><i class="bi bi-bag-check"></i> Order items (@Model.Items.Count)</div>
+                    <div class="pay-card-body">
+                        @foreach (var item in Model.Items)
+                        {
+                            <div class="pay-service-row">
+                                <div class="pay-service-icon"><i class="bi bi-stars"></i></div>
+                                <div class="flex-grow-1">
+                                    <div class="pay-service-name">@item.ServiceType</div>
+                                    <div class="pay-service-vendor">@item.VendorName</div>
+                                    <div class="small text-muted mt-1">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        @item.EventDate.ToString("MMM dd, yyyy")@(item.EventEndDate.HasValue && item.EventEndDate.Value.Date != item.EventDate.Date ? " – " + item.EventEndDate.Value.ToString("MMM dd, yyyy") : "")
+                                        · @item.DayCount day@(item.DayCount == 1 ? "" : "s")
+                                        @if (!string.IsNullOrEmpty(item.EventStartTime))
+                                        {
+                                            <span> · @item.EventStartTime@(string.IsNullOrEmpty(item.EventEndTime) ? "" : "–" + item.EventEndTime)</span>
+                                        }
+                                    </div>
+                                    <div class="small fw-semibold text-primary mt-1">₹@item.GrandTotal.ToString("N0") incl. GST</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="pay-card" data-pay-checkout>
+                    <div class="pay-card-header"><i class="bi bi-wallet2"></i> Payment method</div>
+                    <div class="pay-card-body">
+                        <div class="pay-methods">
+                            <label class="pay-method-option active" data-method="upi">
+                                <input type="radio" name="payMethod" value="upi" checked>
+                                <span class="pay-method-icon"><i class="bi bi-phone"></i></span>
+                                <span class="pay-method-text">
+                                    <strong>UPI</strong>
+                                    <span>Google Pay, PhonePe, Paytm & more</span>
+                                </span>
+                            </label>
+                            <div class="pay-method-panel active" data-method="upi">
+                                <div class="small text-muted mb-2">Pay instantly using your UPI app</div>
+                                <div class="pay-upi-apps">
+                                    <span class="pay-upi-chip">Google Pay</span>
+                                    <span class="pay-upi-chip">PhonePe</span>
+                                    <span class="pay-upi-chip">Paytm</span>
+                                    <span class="pay-upi-chip">BHIM UPI</span>
+                                </div>
+                            </div>
+
+                            <label class="pay-method-option" data-method="card">
+                                <input type="radio" name="payMethod" value="card">
+                                <span class="pay-method-icon"><i class="bi bi-credit-card"></i></span>
+                                <span class="pay-method-text">
+                                    <strong>Credit / Debit Card</strong>
+                                    <span>Visa, Mastercard, RuPay</span>
+                                </span>
+                            </label>
+                            <div class="pay-method-panel" data-method="card">
+                                <div class="small text-muted">You will be redirected to a secure card payment page.</div>
+                            </div>
+
+                            <label class="pay-method-option" data-method="netbanking">
+                                <input type="radio" name="payMethod" value="netbanking">
+                                <span class="pay-method-icon"><i class="bi bi-bank"></i></span>
+                                <span class="pay-method-text">
+                                    <strong>Net Banking</strong>
+                                    <span>All major Indian banks</span>
+                                </span>
+                            </label>
+                            <div class="pay-method-panel" data-method="netbanking">
+                                <div class="small text-muted">Select your bank on the next step.</div>
+                            </div>
+
+                            <label class="pay-method-option" data-method="wallet">
+                                <input type="radio" name="payMethod" value="wallet">
+                                <span class="pay-method-icon"><i class="bi bi-wallet"></i></span>
+                                <span class="pay-method-text">
+                                    <strong>Wallets</strong>
+                                    <span>PartyClap wallet & other options</span>
+                                </span>
+                            </label>
+                            <div class="pay-method-panel" data-method="wallet">
+                                <div class="small text-muted">Use your PartyClap wallet balance if available.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="pay-summary-card">
+                <div class="pay-summary-header">
+                    <h2>Order summary</h2>
+                    <p>@Model.Items.Count item@(Model.Items.Count == 1 ? "" : "s") · Review before you pay</p>
+                </div>
+                <div class="pay-summary-body">
+                    @foreach (var item in Model.Items)
+                    {
+                        <div class="pay-summary-line">
+                            <span class="label">@item.ServiceType · @item.VendorName</span>
+                            <span class="amount">₹@item.TotalCost.ToString("N0")</span>
+                        </div>
+                    }
+                    <hr class="pay-summary-divider">
+                    <div class="pay-summary-line">
+                        <span class="label">Subtotal</span>
+                        <span class="amount">₹@Model.Subtotal.ToString("N0")</span>
+                    </div>
+                    <div class="pay-summary-line">
+                        <span class="label">GST (@Model.GstPercent.ToString("0.##")%)</span>
+                        <span class="amount">₹@Model.GstAmount.ToString("N0")</span>
+                    </div>
+                    <hr class="pay-summary-divider">
+                    <div class="pay-summary-total">
+                        <span class="label">Total payable</span>
+                        <span class="amount">₹@Model.GrandTotal.ToString("N0")</span>
+                    </div>
+
+                    <form asp-action="PayAcceptedCart" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="pay-btn-primary">
+                            <i class="bi bi-shield-lock"></i> Pay ₹@Model.GrandTotal.ToString("N0") securely
+                        </button>
+                    </form>
+
+                    <div class="pay-trust-row">
+                        <span class="pay-trust-item"><i class="bi bi-shield-check"></i> 256-bit SSL</span>
+                        <span class="pay-trust-item"><i class="bi bi-lock-fill"></i> Secure checkout</span>
+                        <span class="pay-trust-item"><i class="bi bi-patch-check"></i> GST invoice</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    }
+</div>
+
+<script src="~/js/payment-checkout.js" asp-append-version="true"></script>

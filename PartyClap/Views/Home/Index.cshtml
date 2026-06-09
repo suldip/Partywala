@@ -1,10 +1,15 @@
-﻿@{
-    ViewData["Title"] = "Home";
+@{
+    ViewData["Title"] = "Book Party Vendors & Event Services";
 }
 
 <!-- Hero Section -->
 <section class="hero-section">
-    <div class="container">
+    <div class="hero-blob hero-blob-1" aria-hidden="true"></div>
+    <div class="hero-blob hero-blob-2" aria-hidden="true"></div>
+    <div class="container position-relative">
+        <span class="hero-badge animate__animated animate__fadeInDown">
+            <i class="bi bi-stars"></i> India's most-loved party booking platform
+        </span>
         <h1 class="hero-title">
             <span class="text-gradient">Make Your Party</span><br>
             <span class="text-gradient">Unforgettable!</span>
@@ -14,25 +19,49 @@
         </p>
 
         <!-- Smart Search Bar -->
-        <div class="search-container mx-auto mb-5 animate__animated animate__fadeInUp animate__delay-1s">
-            <form asp-controller="Customer" asp-action="Explore" method="get" class="search-glass d-flex align-items-center p-2 rounded-pill shadow-lg bg-white bg-opacity-75 blur-md">
-                <div class="flex-grow-1 px-3 d-flex align-items-center border-end">
+        <div class="search-container mx-auto mb-3 animate__animated animate__fadeInUp animate__delay-1s">
+            <form asp-controller="Customer" asp-action="Explore" method="get" class="search-glass d-flex align-items-center flex-wrap p-2 rounded-pill shadow-lg bg-white bg-opacity-75 blur-md">
+                <div class="flex-grow-1 px-3 d-flex align-items-center border-end search-input-group">
                     <i class="bi bi-search text-muted me-2"></i>
-                    <input type="text" name="searchTerm" class="form-control border-0 bg-transparent shadow-none" placeholder="Search for singers, magicians, chefs..." style="min-width: 250px;">
+                    <input type="text" name="search" class="form-control border-0 bg-transparent shadow-none" placeholder="Search for singers, magicians, chefs...">
                 </div>
-                <div class="px-3 d-none d-md-flex align-items-center">
+               @*  <div class="px-3 d-none d-md-flex align-items-center location-input-group border-end">
                     <i class="bi bi-geo-alt text-muted me-2"></i>
-                    <input type="text" name="pinCode" class="form-control border-0 bg-transparent shadow-none" placeholder="Location/PIN" style="max-width: 120px;">
-                </div>
+                    <input type="text" name="pinCode" class="form-control border-0 bg-transparent shadow-none" placeholder="PIN code" style="max-width: 120px;" pattern="[0-9]{6}" title="Enter a 6-digit PIN code" inputmode="numeric" maxlength="6">
+                </div> *@
                 <button type="submit" class="btn btn-primary-gradient rounded-pill px-4 ms-2 py-2">
                     <span class="d-none d-sm-inline">Find Vendors</span>
                     <i class="bi bi-arrow-right d-sm-none"></i>
                 </button>
             </form>
         </div>
-        <div class="d-flex justify-content-center gap-3">
+
+        <!-- Popular search chips -->
+        <div class="hero-chips mb-4">
+            <span class="hero-chips-label">Popular:</span>
+            <a asp-controller="Customer" asp-action="Explore" asp-route-category="Music" class="hero-chip">🎤 Singers</a>
+            <a asp-controller="Customer" asp-action="Explore" asp-route-category="Catering" class="hero-chip">👨‍🍳 Caterers</a>
+            <a asp-controller="Customer" asp-action="Explore" asp-route-category="Decoration" class="hero-chip">🎈 Decorators</a>
+            <a asp-controller="Customer" asp-action="Explore" asp-route-category="Photography" class="hero-chip">📸 Photographers</a>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 hero-btns">
             <a asp-controller="Customer" asp-action="Explore" class="btn btn-primary-gradient btn-lg px-5">Book Now</a>
             <a asp-controller="Vendor" asp-action="Register" class="btn btn-outline-dark-custom btn-lg px-5">Join as Vendor</a>
+        </div>
+
+        <!-- Social proof -->
+        <div class="hero-trust">
+            <div class="hero-trust-avatars">
+                <img src="https://ui-avatars.com/api/?name=P+S&background=8B5CF6&color=fff&bold=true" alt="">
+                <img src="https://ui-avatars.com/api/?name=R+K&background=EC4899&color=fff&bold=true" alt="">
+                <img src="https://ui-avatars.com/api/?name=A+P&background=2563EB&color=fff&bold=true" alt="">
+                <img src="https://ui-avatars.com/api/?name=S+M&background=16A34A&color=fff&bold=true" alt="">
+            </div>
+            <div class="hero-trust-text">
+                <span class="hero-trust-stars">★★★★★</span>
+                <span><strong>4.8/5</strong> from 10,000+ happy customers</span>
+            </div>
         </div>
     </div>
 </section>
@@ -41,10 +70,12 @@
 <section class="py-5">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold mb-3">Why Choose PrivateParty Wala?</h2>
+            <span class="section-eyebrow">Why us</span>
+            <h2 class="fw-bold mb-2">Why Choose PartyClap?</h2>
+            <p class="text-muted mx-auto" style="max-width: 560px;">Everything you need to plan a stress-free celebration, all in one place.</p>
         </div>
         <div class="row g-4">
-            <div class="col-md-3">
+            <div class="col-md-3 col-6">
                 <div class="feature-card">
                     <div class="feature-icon">
                         <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -53,7 +84,7 @@
                     <p class="text-muted small mb-0">Verified professionals for all your party needs.</p>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-6">
                 <div class="feature-card">
                     <div class="feature-icon">
                         <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -62,7 +93,7 @@
                     <p class="text-muted small mb-0">Top-rated services with customer reviews.</p>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-6">
                 <div class="feature-card">
                     <div class="feature-icon">
                         <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
@@ -71,7 +102,7 @@
                     <p class="text-muted small mb-0">Safe and secure payment processing.</p>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 col-6">
                 <div class="feature-card">
                     <div class="feature-icon">
                         <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -84,22 +115,67 @@
     </div>
 </section>
 
-<!-- Services Section -->
+<!-- How It Works -->
 <section class="py-5 bg-light">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold mb-3">Our Services</h2>
+            <span class="section-eyebrow">Simple &amp; quick</span>
+            <h2 class="fw-bold mb-2">How It Works</h2>
+            <p class="text-muted mx-auto" style="max-width: 560px;">From search to celebration in four easy steps.</p>
+        </div>
+        <div class="row g-4 how-steps">
+            <div class="col-md-3 col-sm-6">
+                <div class="how-step">
+                    <div class="how-step-num">1</div>
+                    <div class="how-step-icon">🔍</div>
+                    <h6 class="fw-bold mb-1">Search</h6>
+                    <p class="text-muted small mb-0">Find vendors by service, city, or PIN code.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="how-step">
+                    <div class="how-step-num">2</div>
+                    <div class="how-step-icon">⚖️</div>
+                    <h6 class="fw-bold mb-1">Compare</h6>
+                    <p class="text-muted small mb-0">Check ratings, portfolios, and transparent pricing.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="how-step">
+                    <div class="how-step-num">3</div>
+                    <div class="how-step-icon">💳</div>
+                    <h6 class="fw-bold mb-1">Book</h6>
+                    <p class="text-muted small mb-0">Pay just 20% advance to unlock contact details.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="how-step">
+                    <div class="how-step-num">4</div>
+                    <div class="how-step-icon">🎉</div>
+                    <h6 class="fw-bold mb-1">Celebrate</h6>
+                    <p class="text-muted small mb-0">Enjoy a worry-free, unforgettable event.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-eyebrow">Categories</span>
+            <h2 class="fw-bold mb-2">Our Services</h2>
+            <p class="text-muted mx-auto" style="max-width: 560px;">Handpicked professionals across every party essential.</p>
         </div>
         <div class="row g-4 horizontal-scroll-mobile">
             <!-- Service 1 -->
             <div class="col-md-4">
                 <div class="service-card">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-light p-3 me-3">
-                            <span class="fs-4">🎤</span>
-                        </div>
+                        <div class="service-emoji me-3">🎤</div>
                         <div>
-                            <h5 class="fw-bold mb-0">Singers & Musicians</h5>
+                            <h5 class="fw-bold mb-0">Singers &amp; Musicians</h5>
                             <span class="badge bg-danger-subtle text-danger rounded-pill">Popular</span>
                         </div>
                     </div>
@@ -111,11 +187,9 @@
             <div class="col-md-4">
                 <div class="service-card">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-light p-3 me-3">
-                            <span class="fs-4">👨‍🍳</span>
-                        </div>
+                        <div class="service-emoji me-3">👨‍🍳</div>
                         <div>
-                            <h5 class="fw-bold mb-0">Chefs & Caterers</h5>
+                            <h5 class="fw-bold mb-0">Chefs &amp; Caterers</h5>
                             <span class="badge bg-warning-subtle text-warning rounded-pill">Popular</span>
                         </div>
                     </div>
@@ -127,9 +201,7 @@
             <div class="col-md-4">
                 <div class="service-card">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-light p-3 me-3">
-                            <span class="fs-4">🎩</span>
-                        </div>
+                        <div class="service-emoji me-3">🎩</div>
                         <div>
                             <h5 class="fw-bold mb-0">Magicians</h5>
                         </div>
@@ -142,9 +214,7 @@
             <div class="col-md-4">
                 <div class="service-card">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-light p-3 me-3">
-                            <span class="fs-4">📋</span>
-                        </div>
+                        <div class="service-emoji me-3">📋</div>
                         <div>
                             <h5 class="fw-bold mb-0">Event Managers</h5>
                             <span class="badge bg-primary-subtle text-primary rounded-pill">Popular</span>
@@ -158,9 +228,7 @@
             <div class="col-md-4">
                 <div class="service-card">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-light p-3 me-3">
-                            <span class="fs-4">🎈</span>
-                        </div>
+                        <div class="service-emoji me-3">🎈</div>
                         <div>
                             <h5 class="fw-bold mb-0">Decorators</h5>
                             <span class="badge bg-success-subtle text-success rounded-pill">Popular</span>
@@ -174,9 +242,7 @@
             <div class="col-md-4">
                 <div class="service-card">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="rounded-circle bg-light p-3 me-3">
-                            <span class="fs-4">📸</span>
-                        </div>
+                        <div class="service-emoji me-3">📸</div>
                         <div>
                             <h5 class="fw-bold mb-0">Photographers</h5>
                             <span class="badge bg-info-subtle text-info rounded-pill">Popular</span>
@@ -196,18 +262,24 @@
 <!-- Stats Section -->
 <section class="py-5">
     <div class="container">
-        <div class="row text-center">
-            <div class="col-md-4">
-                <div class="stat-number">500+</div>
-                <p class="text-muted">Verified Vendors</p>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-number">10,000+</div>
-                <p class="text-muted">Happy Customers</p>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-number">50+</div>
-                <p class="text-muted">Cities Covered</p>
+        <div class="stats-band">
+            <div class="row text-center g-4">
+                <div class="col-md-3 col-6 stat-cell">
+                    <div class="stat-number">500+</div>
+                    <p class="text-muted mb-0">Verified Vendors</p>
+                </div>
+                <div class="col-md-3 col-6 stat-cell">
+                    <div class="stat-number">10,000+</div>
+                    <p class="text-muted mb-0">Happy Customers</p>
+                </div>
+                <div class="col-md-3 col-6 stat-cell">
+                    <div class="stat-number">50+</div>
+                    <p class="text-muted mb-0">Cities Covered</p>
+                </div>
+                <div class="col-md-3 col-6 stat-cell">
+                    <div class="stat-number">4.8★</div>
+                    <p class="text-muted mb-0">Average Rating</p>
+                </div>
             </div>
         </div>
     </div>
@@ -217,7 +289,8 @@
 <section class="py-5" style="background-color: #FFF1F2;">
     <div class="container py-4">
         <div class="text-center mb-5">
-            <h2 class="fw-bold mb-3" style="font-size: 2.5rem; color: var(--dark-color);">What Our Customers Say</h2>
+            <span class="section-eyebrow">Loved by customers</span>
+            <h2 class="fw-bold mb-2" style="font-size: 2.5rem; color: var(--dark-color);">What Our Customers Say</h2>
         </div>
         <div class="row g-4 horizontal-scroll-mobile">
             <div class="col-md-4">
@@ -270,10 +343,165 @@
             <svg width="48" height="48" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
         </div>
         <h2 class="fw-bold mb-3">Ready to Plan Your Perfect Party?</h2>
-        <p class="mb-4 opacity-75">Join thousands of satisfied customers who trust PrivateParty Wala for their celebrations.</p>
-        <div class="d-flex justify-content-center gap-3">
+        <p class="mb-4 opacity-75">Join thousands of satisfied customers who trust PartyClap for their celebrations.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
             <a asp-controller="Customer" asp-action="Explore" class="btn btn-light text-primary fw-bold px-4">Start Planning</a>
             <a asp-controller="Vendor" asp-action="Register" class="btn btn-outline-light fw-bold px-4">Join as Vendor</a>
         </div>
     </div>
 </section>
+
+@section Styles {
+<style>
+/* ===== Home page polish (attractive + user-friendly) ===== */
+.hero-section { position: relative; overflow: hidden; }
+.hero-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: .5;
+    pointer-events: none;
+    z-index: 0;
+}
+.hero-blob-1 { width: 360px; height: 360px; top: -120px; left: -90px; background: radial-gradient(circle, #ddd6fe, transparent 70%); }
+.hero-blob-2 { width: 380px; height: 380px; top: -100px; right: -120px; background: radial-gradient(circle, #fbcfe8, transparent 70%); }
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    background: rgba(139, 92, 246, .12);
+    color: #7c3aed;
+    font-weight: 600;
+    font-size: .85rem;
+    padding: .4rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+}
+
+.hero-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+}
+.hero-chips-label { color: #6b7280; font-size: .85rem; font-weight: 600; margin-right: .25rem; }
+.hero-chip {
+    background: #fff;
+    border: 1px solid #ececf3;
+    border-radius: 999px;
+    padding: .4rem .9rem;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #4b5563;
+    text-decoration: none;
+    box-shadow: 0 2px 8px -4px rgba(0,0,0,.15);
+    transition: all .2s ease;
+}
+.hero-chip:hover {
+    color: #7c3aed;
+    border-color: #c4b5fd;
+    transform: translateY(-2px);
+}
+
+.hero-trust {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-top: 1.75rem;
+}
+.hero-trust-avatars { display: flex; }
+.hero-trust-avatars img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    margin-left: -10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+.hero-trust-avatars img:first-child { margin-left: 0; }
+.hero-trust-text { color: #4b5563; font-size: .9rem; }
+.hero-trust-stars { color: #f59e0b; letter-spacing: 1px; margin-right: .35rem; }
+
+/* Section eyebrow label */
+.section-eyebrow {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-size: .75rem;
+    font-weight: 700;
+    color: #ec4899;
+    background: #fdf2f8;
+    padding: .3rem .8rem;
+    border-radius: 999px;
+    margin-bottom: .85rem;
+}
+
+/* Service emoji badge */
+.service-emoji {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
+    flex-shrink: 0;
+}
+
+/* How it works */
+.how-step {
+    background: #fff;
+    border: 1px solid #f1f0f7;
+    border-radius: 18px;
+    padding: 2rem 1.25rem 1.5rem;
+    text-align: center;
+    height: 100%;
+    position: relative;
+    transition: all .3s ease;
+}
+.how-step:hover { transform: translateY(-5px); box-shadow: 0 16px 30px -18px rgba(124,58,237,.4); border-color: #e9d5ff; }
+.how-step-num {
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px -6px rgba(236,72,153,.7);
+}
+.how-step-icon { font-size: 2rem; margin: .5rem 0 .75rem; }
+
+/* Stats band */
+.stats-band {
+    background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
+    border: 1px solid #f3e8ff;
+    border-radius: 24px;
+    padding: 2.5rem 1.5rem;
+}
+.stats-band .stat-cell { position: relative; }
+@@media (min-width: 768px) {
+    .stats-band .stat-cell:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 48px;
+        width: 1px;
+        background: #eaddff;
+    }
+}
+</style>
+}

@@ -1,0 +1,138 @@
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<section class="contact-hero">
+    <div class="container text-center">
+        <span class="contact-eyebrow">We're here to help</span>
+        <h1 class="contact-title">Get in Touch</h1>
+        <p class="contact-subtitle">
+            Questions about bookings, vendors, or payments? Our team usually responds within a few hours.
+        </p>
+    </div>
+</section>
+
+<div class="container" style="margin-top: -3rem; position: relative; z-index: 2;">
+    <div class="row g-4 justify-content-center pb-5">
+        <div class="col-lg-4 col-md-6">
+            <div class="contact-card h-100">
+                <div class="contact-icon"><i class="bi bi-envelope-fill"></i></div>
+                <h5 class="fw-bold mb-1">Email Us</h5>
+                <p class="text-muted small mb-3">For general enquiries and support</p>
+                <a href="mailto:support@partyclap.in" class="contact-value">support@partyclap.in</a>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="contact-card h-100">
+                <div class="contact-icon"><i class="bi bi-telephone-fill"></i></div>
+                <h5 class="fw-bold mb-1">Call Us</h5>
+                <p class="text-muted small mb-3">Mon–Sat, 10:00 AM – 7:00 PM IST</p>
+                <a href="tel:+911800123456" class="contact-value">1800-123-456</a>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="contact-card h-100">
+                <div class="contact-icon"><i class="bi bi-geo-alt-fill"></i></div>
+                <h5 class="fw-bold mb-1">Visit Us</h5>
+                <p class="text-muted small mb-3">PartyClap HQ</p>
+                <span class="contact-value">Mumbai, Maharashtra, India</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center pb-5">
+        <div class="col-lg-8">
+            <div class="form-card">
+                <h3 class="fw-bold mb-1">Send us a message</h3>
+                <p class="text-muted mb-4">Fill in the form and we'll get back to you shortly.</p>
+                <form id="contactForm" onsubmit="return false;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="vendor-form-label">Your Name</label>
+                            <input type="text" class="form-control vendor-form-input" id="cName" placeholder="John Doe" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="vendor-form-label">Email Address</label>
+                            <input type="email" class="form-control vendor-form-input" id="cEmail" placeholder="name@example.com" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="vendor-form-label">Subject</label>
+                            <input type="text" class="form-control vendor-form-input" id="cSubject" placeholder="How can we help?" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="vendor-form-label">Message</label>
+                            <textarea class="form-control vendor-form-input" id="cMessage" rows="5" placeholder="Write your message..." required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" id="cSubmit" class="btn btn-primary-gradient px-4 py-2">
+                                <i class="bi bi-send me-2"></i>Send Message
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function () {
+            var name = document.getElementById('cName').value.trim();
+            var email = document.getElementById('cEmail').value.trim();
+            var subject = document.getElementById('cSubject').value.trim();
+            var message = document.getElementById('cMessage').value.trim();
+            if (!name || !email || !subject || !message) {
+                window.SmartPop ? window.SmartPop.error('Missing details', 'Please fill in all fields.') : alert('Please fill in all fields.');
+                return false;
+            }
+            if (window.SmartPop) {
+                window.SmartPop.toast('Thanks ' + name + '! Your message has been received.', 'success');
+            } else {
+                alert('Thanks! Your message has been received.');
+            }
+            document.getElementById('contactForm').reset();
+            return false;
+        });
+    </script>
+}
+
+<style>
+    .contact-hero {
+        background: var(--gradient);
+        padding: 5rem 0 6rem;
+        color: #fff;
+        text-align: center;
+    }
+    .contact-eyebrow {
+        display: inline-block;
+        background: rgba(255,255,255,0.18);
+        padding: 0.35rem 1rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 1rem;
+    }
+    .contact-title { font-size: 2.75rem; font-weight: 800; margin-bottom: 0.75rem; }
+    .contact-subtitle { font-size: 1.05rem; max-width: 620px; margin: 0 auto; opacity: 0.95; }
+    .contact-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        border: 1px solid #f3f4f6;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .contact-card:hover { transform: translateY(-6px); box-shadow: 0 20px 35px -10px rgba(139,92,246,0.25); }
+    .contact-icon {
+        width: 60px; height: 60px; border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1rem; font-size: 1.5rem; color: #fff;
+        background: var(--gradient);
+    }
+    .contact-value { color: var(--primary-color); font-weight: 700; text-decoration: none; }
+    .contact-value:hover { text-decoration: underline; }
+    @@media (max-width: 767px) { .contact-title { font-size: 2rem; } }
+</style>

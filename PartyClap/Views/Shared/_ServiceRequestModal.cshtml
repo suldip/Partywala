@@ -1,0 +1,261 @@
+<!-- Service Request Modal — shared by Explore & Vendor Profile -->
+<div class="modal fade" id="service-request-modal" tabindex="-1" aria-labelledby="serviceRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg sr-modal-dialog">
+        <div class="modal-content border-0 shadow-lg sr-modal">
+            <div class="modal-header sr-modal-header border-0 flex-shrink-0">
+                <div>
+                    <h5 class="modal-title fw-bold mb-0" id="serviceRequestModalLabel">Request Service</h5>
+                    <p class="text-white-50 small mb-0 mt-1">Free quote — pay only after vendor approves</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 p-md-5 sr-modal-body">
+                <form id="service-request-form" onsubmit="submitServiceRequest(event); return false;">
+                    <input type="hidden" name="vendorId" id="request-vendor-id">
+                    <input type="hidden" name="serviceId" id="request-service-id">
+                    <input type="hidden" id="request-daily-cost" value="0">
+                    <input type="hidden" id="request-weekend-cost" value="">
+
+                    <div class="sr-vendor-card mb-4">
+                        <div class="sr-vendor-icon">
+                            <i class="bi bi-shop"></i>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <span class="sr-label">Requesting from</span>
+                            <h6 id="request-vendor-name" class="fw-bold mb-0 text-truncate"></h6>
+                        </div>
+                    </div>
+
+                    <div class="sr-section-title">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>When is your event?</span>
+                    </div>
+                    <div class="row g-3 mb-2">
+                        <div class="col-sm-6">
+                            <label class="sr-field-label" for="request-event-start">Start date</label>
+                            <div class="sr-input-wrap">
+                                <i class="bi bi-calendar3"></i>
+                                <input type="date" name="eventDate" id="request-event-start" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="sr-field-label" for="request-event-end">End date</label>
+                            <div class="sr-input-wrap">
+                                <i class="bi bi-calendar-check"></i>
+                                <input type="date" name="eventEndDate" id="request-event-end" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="sr-field-label" for="request-event-start-time">Start time</label>
+                            <div class="sr-input-wrap">
+                                <i class="bi bi-clock"></i>
+                                <input type="time" name="eventStartTime" id="request-event-start-time" class="form-control" value="10:00" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="sr-field-label" for="request-event-end-time">End time</label>
+                            <div class="sr-input-wrap">
+                                <i class="bi bi-clock-history"></i>
+                                <input type="time" name="eventEndTime" id="request-event-end-time" class="form-control" value="18:00" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="request-time-error" class="sr-inline-error" style="display:none;">
+                        <i class="bi bi-exclamation-circle me-1"></i> End time must be after start time on the same day.
+                    </div>
+
+                    <div class="sr-section-title mt-3">
+                        <i class="bi bi-geo-alt"></i>
+                        <span>Party location</span>
+                    </div>
+                    <div id="request-party-location-wrap" data-vendor-id="">
+                        <partial name="_PartyLocationPicker" view-data='new ViewDataDictionary(ViewData) { { "Prefix", "request" }, { "Required", false } }' />
+                    </div>
+
+                    <div class="sr-pricing-card mt-3 mb-4" id="request-pricing-summary" style="display:none;">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <span class="sr-pricing-days"><span id="request-day-count">1</span> day(s)</span>
+                                <div class="sr-pricing-rate" id="request-daily-rate-label"></div>
+                            </div>
+                            <div class="text-end">
+                                <span class="sr-pricing-label">Estimated total</span>
+                                <div class="sr-pricing-total" id="request-total-cost">₹0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sr-section-title">
+                        <i class="bi bi-stars"></i>
+                        <span>Event details</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="sr-field-label" for="request-event-type">Event type</label>
+                            <select name="eventType" id="request-event-type" class="form-select" required>
+                                <option value="">Select event</option>
+                                <option value="Birthday">Birthday Party</option>
+                                <option value="Wedding">Wedding</option>
+                                <option value="Corporate">Corporate Event</option>
+                                <option value="Anniversary">Anniversary</option>
+                                <option value="Kitty Party">Kitty Party</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="sr-field-label" for="request-guest-count">Guest count</label>
+                            <div class="sr-input-wrap">
+                                <i class="bi bi-people"></i>
+                                <input type="number" name="guestCount" id="request-guest-count" class="form-control" placeholder="e.g. 50" required min="1">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="sr-field-label" for="request-details">Additional requirements</label>
+                            <textarea name="details" id="request-details" class="form-control" rows="3" placeholder="Theme, venue access, dietary needs, setup preferences…"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer sr-modal-footer border-0 flex-shrink-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="service-request-form" class="btn btn-primary rounded-pill px-4 fw-bold">
+                    <span class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                    <i class="bi bi-send me-1"></i> Send Request to Vendor
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Scrollable modal: cap height and scroll body only; keep header/footer visible */
+    #service-request-modal .sr-modal-dialog {
+        max-height: calc(100vh - 2rem);
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    #service-request-modal .sr-modal {
+        border-radius: 20px;
+        max-height: calc(100vh - 2rem);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    #service-request-modal .sr-modal-body {
+        overflow-y: auto !important;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+    #service-request-modal .sr-modal-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+    }
+    @@media (max-width: 576px) {
+        #service-request-modal .sr-modal-dialog {
+            max-height: calc(100vh - 1rem);
+            margin: 0.5rem;
+        }
+        #service-request-modal .sr-modal {
+            max-height: calc(100vh - 1rem);
+        }
+    }
+    .sr-modal-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+        color: #fff;
+        padding: 1.25rem 1.5rem;
+    }
+    .sr-vendor-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, rgba(124,58,237,.06), rgba(236,72,153,.06));
+        border: 1px solid rgba(124,58,237,.12);
+        border-radius: 14px;
+    }
+    .sr-vendor-icon {
+        width: 48px; height: 48px; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #7c3aed, #ec4899);
+        color: #fff; font-size: 1.25rem;
+    }
+    .sr-label {
+        display: block; font-size: .7rem; text-transform: uppercase;
+        letter-spacing: .06em; color: #6b7280; font-weight: 600;
+    }
+    .sr-section-title {
+        display: flex; align-items: center; gap: .5rem;
+        font-size: .8rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .05em; color: #374151;
+        margin-bottom: .75rem; margin-top: .25rem;
+    }
+    .sr-section-title i { color: #7c3aed; font-size: 1rem; }
+    .sr-field-label {
+        display: block; font-size: .8rem; font-weight: 600;
+        color: #4b5563; margin-bottom: .35rem;
+    }
+    .sr-input-wrap {
+        position: relative;
+    }
+    .sr-input-wrap > i {
+        position: absolute; left: 12px; top: 50%;
+        transform: translateY(-50%); color: #9ca3af;
+        pointer-events: none; z-index: 2; font-size: .95rem;
+    }
+    .sr-input-wrap .form-control {
+        padding-left: 2.35rem; border-radius: 10px;
+        border: 1px solid #e5e7eb; min-height: 44px;
+    }
+    .sr-input-wrap .form-control:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+    }
+    .sr-modal .form-select {
+        border-radius: 10px; border: 1px solid #e5e7eb; min-height: 44px;
+    }
+    .sr-modal .form-select:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+    }
+    .sr-modal textarea.form-control {
+        border-radius: 10px; border: 1px solid #e5e7eb;
+    }
+    .sr-pricing-card {
+        padding: 1rem 1.25rem;
+        border-radius: 14px;
+        background: #fafafa;
+        border: 1px solid #e5e7eb;
+        border-left: 4px solid #7c3aed;
+    }
+    .sr-pricing-days { font-weight: 600; color: #374151; font-size: .9rem; }
+    .sr-pricing-rate { font-size: .75rem; color: #6b7280; margin-top: 2px; }
+    .sr-pricing-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: #6b7280; }
+    .sr-pricing-total { font-size: 1.35rem; font-weight: 800; color: #7c3aed; line-height: 1.2; }
+    .sr-inline-error {
+        font-size: .8rem; color: #dc2626;
+        padding: .35rem 0;
+    }
+    .sr-modal-footer {
+        padding: 1rem 1.5rem 1.5rem;
+        background: #f9fafb;
+        gap: .75rem;
+    }
+    .sr-modal-footer .btn-primary {
+        background: linear-gradient(135deg, #7c3aed, #ec4899);
+        border: 0;
+    }
+    .sr-modal-footer .btn-primary:hover {
+        filter: brightness(1.05);
+    }
+    .sr-input-wrap .form-control.is-invalid,
+    .sr-modal .form-select.is-invalid {
+        border-color: #dc2626;
+    }
+</style>
+<link rel="stylesheet" href="~/css/party-location.css" asp-append-version="true" />
+<script src="~/js/party-location.js" asp-append-version="true"></script>

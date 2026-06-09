@@ -1,0 +1,98 @@
+@model PartyClap.Models.ServiceListing
+@{
+    ViewData["Title"] = "Edit Service";
+}
+
+<div class="container py-4">
+    <partial name="_VendorMenu" />
+
+    <div class="card p-4 col-md-6 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-0">Edit Service</h3>
+            <a href="@Url.Action("Dashboard", new { section = "services" })" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+        <form asp-action="EditService" method="post" enctype="multipart/form-data">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="VendorId" />
+            <input type="hidden" asp-for="MediaUrl" />
+            
+            <div class="mb-3">
+                <label class="form-label">Service Type</label>
+                <select asp-for="ServiceType" class="form-select">
+                    <option>Singer</option>
+                    <option>Magician</option>
+                    <option>Chef</option>
+                    <option>Caterer</option>
+                    <option>Decorator</option>
+                    <option>Event Manager</option>
+                    <option>Cleaner</option>
+                    <option>Casino Games Host</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <!-- Main Image -->
+            <div class="mb-3">
+                <label class="form-label">Main Service Image (Thumbnail)</label>
+                @if (!string.IsNullOrEmpty(Model.MediaUrl))
+                {
+                    <div class="mb-2">
+                        <img src="@Model.MediaUrl" alt="Current Image" class="img-thumbnail" style="max-height: 200px;" />
+                    </div>
+                }
+                <input type="file" name="MediaFile" class="form-control" accept="image/*" />
+                <div class="form-text">Upload to replace the current image.</div>
+            </div>
+
+            <!-- Dynamic Fields -->
+            <div id="chefFields" class="mb-3" style="display:none;">
+                <label class="form-label">Cuisines (Comma separated)</label>
+                <input asp-for="Attributes" class="form-control" placeholder="e.g. Italian, Mexican, Indian" />
+            </div>
+            
+            <script>
+                function toggleFields() {
+                    var type = document.getElementById('ServiceType').value;
+                    document.getElementById('chefFields').style.display = 'none';
+                    
+                    if (type === 'Chef' || type === 'Caterer') {
+                        document.getElementById('chefFields').style.display = 'block';
+                    }
+                }
+
+                document.getElementById('ServiceType').addEventListener('change', toggleFields);
+                // Run on load
+                toggleFields();
+            </script>
+            
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Weekday Cost (₹)</label>
+                    <input asp-for="Cost" type="number" step="0.01" min="1" class="form-control" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Weekend Cost (₹)</label>
+                    <input asp-for="WeekendCost" type="number" step="0.01" min="1" class="form-control" placeholder="Optional" />
+                    <div class="form-text">Leave blank if same as weekday</div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Per Unit</label>
+                    <select asp-for="Unit" class="form-select">
+                        <option>Hour</option>
+                        <option>Event</option>
+                        <option>Person</option>
+                        <option>plate</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100">Update Service</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,37 @@
+{
+    "name": "PartyClap",
+    "short_name": "PartyClap",
+    "description": "Premium Party Planning & Vendor Booking Platform",
+    "start_url": "/PartyClap/",
+    "scope": "/PartyClap/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#8B5CF6",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/PartyClap/images/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/PartyClap/images/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "lifestyle",
+        "entertainment"
+    ],
+    "screenshots": [
+        {
+            "src": "/PartyClap/images/screenshot-mobile.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "label": "Home Screen on Mobile"
+        }
+    ]
+}

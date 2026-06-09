@@ -132,7 +132,7 @@ namespace PartyClap.DAL
             return cities;
         }
 
-        public List<Location> GetPinCodesByCity(string city)
+        public List<Location> GetPinCodesByCity(string city, string state = null)
         {
             var locations = new List<Location>();
             if (string.IsNullOrWhiteSpace(city))
@@ -147,8 +147,19 @@ namespace PartyClap.DAL
                     connection.Open();
                     using (var command = (MySqlCommand)connection.CreateCommand())
                     {
-                        command.CommandText = "SELECT PinCode, AreaName, City, State FROM Locations WHERE City = @City ORDER BY PinCode";
-                        command.Parameters.AddWithValue("@City", city);
+                        command.CommandText = @"SELECT PinCode, AreaName, City, State
+                                              FROM Locations
+                                              WHERE TRIM(UPPER(City)) = TRIM(UPPER(@City))";
+                        command.Parameters.AddWithValue("@City", city.Trim());
+
+                        if (!string.IsNullOrWhiteSpace(state))
+                        {
+                            command.CommandText += " AND TRIM(UPPER(State)) = TRIM(UPPER(@State))";
+                            command.Parameters.AddWithValue("@State", state.Trim());
+                        }
+
+                        command.CommandText += " ORDER BY PinCode";
+
                         using (var reader = command.ExecuteReader())
                         {
                             while (reader.Read())

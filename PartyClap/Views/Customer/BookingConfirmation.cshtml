@@ -1,4 +1,7 @@
 @model IEnumerable<PartyClap.Models.Booking>
+@{
+    ViewData["Title"] = "Booking Confirmation";
+}
 
 <div class="container mt-5">
     <div class="text-center mb-5">
@@ -6,7 +9,7 @@
         <h2 class="mb-4">Booking Confirmed!</h2>
         <p class="lead">You have successfully booked the following services.</p>
         
-        <!-- Global Timeline (assuming all are at same stage for now) -->
+        <!-- Booking timeline -->
         <div class="w-75 mx-auto">
             <partial name="_BookingTimeline" model="@("Advance Paid")" />
         </div>

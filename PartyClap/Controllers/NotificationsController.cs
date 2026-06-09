@@ -18,8 +18,8 @@ namespace PartyClap.Controllers
         [HttpGet("unread")]
         public IActionResult GetUnreadNotifications()
         {
-            var userId = HttpContext.Session.GetString("UserId");
-            var userType = HttpContext.Session.GetString("UserType");
+            var userId = HttpContext.GetUserId();
+            var userType = HttpContext.GetUserRole();
 
             if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userType))
             {
@@ -57,8 +57,8 @@ namespace PartyClap.Controllers
         [HttpPost("mark-all-read")]
         public IActionResult MarkAllAsRead()
         {
-            var userId = HttpContext.Session.GetString("UserId");
-            var userType = HttpContext.Session.GetString("UserType");
+            var userId = HttpContext.GetUserId();
+            var userType = HttpContext.GetUserRole();
 
             if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(userType))
             {

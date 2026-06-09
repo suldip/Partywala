@@ -1,44 +1,291 @@
+@using System.Text.Json
+@using PartyClap.Models
+@using PartyClap.Services
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Admin Dashboard";
+    var calendarSummaries = ViewBag.VendorCalendarSummaries as List<AdminVendorCalendarSummary> ?? new List<AdminVendorCalendarSummary>();
+    var selectedVendorId = ViewBag.SelectedVendorId as string ?? "";
+    var selectedVendor = ViewBag.SelectedVendor as Vendor;
+    var selectedSchedule = ViewBag.SelectedVendorSchedule as List<VendorScheduleEntry> ?? new List<VendorScheduleEntry>();
+    var selectedBlocks = ViewBag.SelectedVendorBlocks as List<VendorCalendarBlock> ?? new List<VendorCalendarBlock>();
+    var scheduleJson = JsonSerializer.Serialize(VendorScheduleHelper.ToCalendarPayload(selectedSchedule));
+    var adminCalendarVm = new VendorAvailabilityCalendarViewModel
+    {
+        ElementId = "admin-vendor-calendar",
+        ScheduleJson = scheduleJson,
+        ScheduleEntries = selectedSchedule,
+        ManualBlocks = selectedBlocks,
+        ReadOnly = true,
+        ShowStatCards = true,
+        ShowDayPanel = true,
+        ShowManualEntries = true
+    };
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4">Admin Dashboard</h2>
-    
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card bg-primary text-white shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Total Vendors</h5>
-                    <p class="display-4">@ViewBag.TotalVendors</p>
+<div class="admin-dash">
+    <div class="container py-4 py-lg-5">
+        <!-- Header -->
+        <div class="admin-dash-header">
+            <div>
+                <span class="admin-eyebrow"><i class="bi bi-speedometer2"></i> Control Center</span>
+                <h1 class="admin-dash-title">Admin Dashboard</h1>
+                <p class="text-muted mb-0">Monitor performance and manage your marketplace at a glance.</p>
+            </div>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary rounded-pill">
+                <i class="bi bi-box-arrow-up-right me-1"></i> View Site
+            </a>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-purple"><i class="bi bi-shop"></i></div>
+                    <div>
+                        <div class="stat-value">@ViewBag.TotalVendors</div>
+                        <div class="stat-label">Total Vendors</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-green"><i class="bi bi-calendar-check"></i></div>
+                    <div>
+                        <div class="stat-value">@ViewBag.TotalBookings</div>
+                        <div class="stat-label">Total Bookings</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-amber"><i class="bi bi-currency-rupee"></i></div>
+                    <div>
+                        <div class="stat-value">₹@ViewBag.TotalRevenue.ToString("N0")</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-blue"><i class="bi bi-geo-alt"></i></div>
+                    <div>
+                        <div class="stat-value">@ViewBag.EnabledStateCount<span class="stat-sub">/ @ViewBag.TotalStateCount</span></div>
+                        <div class="stat-label">States Enabled</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <a href="@Url.Action("Settings", "Admin")" class="stat-card stat-card-link text-decoration-none">
+                    <div class="stat-icon stat-icon-purple"><i class="bi bi-percent"></i></div>
+                    <div>
+                        <div class="stat-value">@(((decimal)ViewBag.PlatformFeePercent).ToString("0.##"))%</div>
+                        <div class="stat-label">Platform Fee <small class="text-primary">Edit</small></div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <h2 class="admin-section-title">Quick Actions</h2>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <a href="@Url.Action("ManageStates", "Admin")" class="action-card">
+                    <div class="action-icon action-icon-purple"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div class="action-body">
+                        <h5>Manage States</h5>
+                        <p>Enable or disable serviceable states across India.</p>
+                    </div>
+                    <i class="bi bi-chevron-right action-arrow"></i>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="@Url.Action("ManagePinCodes", "Admin")" class="action-card">
+                    <div class="action-icon action-icon-pink"><i class="bi bi-pin-map-fill"></i></div>
+                    <div class="action-body">
+                        <h5>Manage PIN Codes</h5>
+                        <p>Curate the serviceable PIN-code whitelist.</p>
+                    </div>
+                    <i class="bi bi-chevron-right action-arrow"></i>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="@Url.Action("Explore", "Customer")" class="action-card">
+                    <div class="action-icon action-icon-blue"><i class="bi bi-search"></i></div>
+                    <div class="action-body">
+                        <h5>Browse Vendors</h5>
+                        <p>See the marketplace the way customers do.</p>
+                    </div>
+                    <i class="bi bi-chevron-right action-arrow"></i>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="@Url.Action("Settings", "Admin")" class="action-card">
+                    <div class="action-icon action-icon-purple"><i class="bi bi-sliders"></i></div>
+                    <div class="action-body">
+                        <h5>Platform Settings</h5>
+                        <p>Platform fee is <strong>@(((decimal)ViewBag.PlatformFeePercent).ToString("0.##"))%</strong> &mdash; tap to change without redeploy.</p>
+                    </div>
+                    <i class="bi bi-chevron-right action-arrow"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- All Vendor Availability Calendars -->
+        <h2 class="admin-section-title mt-2"><i class="bi bi-calendar3 me-2 text-primary"></i>Vendor Availability Calendars</h2>
+        <p class="text-muted small mb-3">Teams-style view of every vendor — booked, under process, and open days for the next 60 days.</p>
+
+        <div id="admin-vendor-calendars" class="admin-panel mb-5" data-selected-vendor-id="@selectedVendorId">
+            <div class="row g-0">
+                <div class="col-lg-4 col-xl-3 border-end">
+                    <div class="p-3 border-bottom bg-light-subtle">
+                        <input type="search" id="admin-vendor-search" class="form-control form-control-sm rounded-pill" placeholder="Search vendors..." />
+                    </div>
+                    <div class="admin-vendor-list" style="max-height: 520px; overflow-y: auto;">
+                        @if (calendarSummaries.Any())
+                        {
+                            foreach (var summary in calendarSummaries)
+                            {
+                                var isActive = summary.VendorId == selectedVendorId;
+                                var searchText = $"{summary.VendorName} {summary.PinCode} {summary.Phone}".Trim();
+                                <button type="button"
+                                        class="admin-vendor-item w-100 text-start border-0 border-bottom px-3 py-3 @(isActive ? "active" : "")"
+                                        data-vendor-id="@summary.VendorId"
+                                        data-search="@searchText">
+                                    <div class="fw-semibold text-dark">@summary.VendorName</div>
+                                    <div class="small text-muted">@(string.IsNullOrWhiteSpace(summary.PinCode) ? "No PIN" : summary.PinCode) · @summary.ServiceCount service@(summary.ServiceCount == 1 ? "" : "s")</div>
+                                    <div class="mt-2 d-flex flex-wrap gap-1">
+                                        <span class="badge bg-danger-subtle text-danger">@summary.BookedDays booked</span>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis">@summary.UnderProcessDays pending</span>
+                                        <span class="badge bg-success-subtle text-success">@summary.AvailableDays open</span>
+                                    </div>
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <div class="p-4 text-center text-muted small">No vendors registered yet.</div>
+                        }
+                    </div>
+                </div>
+                <div class="col-lg-8 col-xl-9">
+                    <div class="vendor-calendar-panel p-3 p-lg-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1" id="admin-selected-vendor-name">@(selectedVendor?.Name ?? "Select a vendor")</h5>
+                                <p class="text-muted small mb-0" id="admin-selected-vendor-meta">
+                                    @if (selectedVendor != null)
+                                    {
+                                        @($"{selectedVendor.Phone}{(string.IsNullOrWhiteSpace(selectedVendor.PinCode) ? "" : " · PIN " + selectedVendor.PinCode)}{(string.IsNullOrWhiteSpace(selectedVendor.Address) ? "" : " · " + selectedVendor.Address)}")
+                                    }
+                                </p>
+                            </div>
+                            @if (selectedVendor != null)
+                            {
+                                <a href="@Url.Action("VendorProfile", "Customer", new { vendorId = selectedVendor.Id })" class="btn btn-sm btn-outline-primary rounded-pill" target="_blank" rel="noopener" id="admin-vendor-profile-link">
+                                    View public profile
+                                </a>
+                            }
+                            else
+                            {
+                                <a href="#" class="btn btn-sm btn-outline-primary rounded-pill d-none" target="_blank" rel="noopener" id="admin-vendor-profile-link">View public profile</a>
+                            }
+                        </div>
+
+                        <partial name="_VendorAvailabilityCalendarView" model="adminCalendarVm" />
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-success text-white shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Total Bookings</h5>
-                    <p class="display-4">@ViewBag.TotalBookings</p>
-                </div>
+
+        <!-- Pending Approvals -->
+        <div class="admin-panel">
+            <div class="admin-panel-header">
+                <h5 class="mb-0"><i class="bi bi-hourglass-split me-2 text-warning"></i>Pending Approvals</h5>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-info text-white shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Total Revenue</h5>
-                    <p class="display-4">₹@ViewBag.TotalRevenue</p>
-                </div>
+            <div class="admin-panel-body text-center py-5">
+                <div class="empty-illustration"><i class="bi bi-check2-circle"></i></div>
+                <p class="text-muted mb-0">You're all caught up — no pending vendor approvals.</p>
             </div>
-        </div>
-    </div>
-    
-    <div class="card shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Pending Approvals</h5>
-        </div>
-        <div class="card-body">
-            <p class="text-muted">No pending vendor approvals.</p>
         </div>
     </div>
 </div>
+
+@section Styles {
+<style>
+.admin-dash { background: linear-gradient(180deg, #faf7ff 0%, #f8f9fb 220px); min-height: calc(100vh - 70px); }
+.admin-dash-header {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;
+}
+.admin-eyebrow {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: rgba(139,92,246,.12); color: #7c3aed;
+    font-weight: 600; font-size: .8rem; padding: .35rem .9rem;
+    border-radius: 999px; margin-bottom: .6rem;
+}
+.admin-dash-title { font-weight: 800; font-size: clamp(1.6rem, 3vw, 2.2rem); margin-bottom: .3rem; }
+
+.stat-card {
+    background: #fff; border: 1px solid #f0eef7; border-radius: 18px;
+    padding: 1.5rem; display: flex; align-items: center; gap: 1rem; height: 100%;
+    box-shadow: 0 10px 30px -20px rgba(80,40,160,.45);
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 18px 36px -20px rgba(80,40,160,.5); }
+.stat-card-link { color: inherit; cursor: pointer; }
+.stat-card-link:hover { color: inherit; }
+.stat-icon {
+    width: 56px; height: 56px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff;
+}
+.stat-icon-purple { background: linear-gradient(135deg,#8b5cf6,#7c3aed); }
+.stat-icon-green  { background: linear-gradient(135deg,#34d399,#16a34a); }
+.stat-icon-amber  { background: linear-gradient(135deg,#fbbf24,#f59e0b); }
+.stat-icon-blue   { background: linear-gradient(135deg,#60a5fa,#2563eb); }
+.stat-value { font-size: 1.75rem; font-weight: 800; line-height: 1.1; color: #1f2937; }
+.stat-sub { font-size: 1rem; font-weight: 600; color: #9ca3af; margin-left: .15rem; }
+.stat-label { color: #6b7280; font-size: .85rem; font-weight: 500; }
+
+.admin-section-title { font-weight: 700; font-size: 1.15rem; margin-bottom: 1rem; }
+
+.action-card {
+    background: #fff; border: 1px solid #f0eef7; border-radius: 18px;
+    padding: 1.35rem; display: flex; align-items: center; gap: 1rem; height: 100%;
+    text-decoration: none; color: inherit;
+    box-shadow: 0 10px 30px -22px rgba(80,40,160,.4);
+    transition: all .25s ease;
+}
+.action-card:hover { transform: translateY(-4px); border-color: #e9d5ff; box-shadow: 0 18px 34px -20px rgba(124,58,237,.45); color: inherit; }
+.action-icon {
+    width: 48px; height: 48px; border-radius: 13px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #fff;
+}
+.action-icon-purple { background: linear-gradient(135deg,#8b5cf6,#7c3aed); }
+.action-icon-pink   { background: linear-gradient(135deg,#f472b6,#ec4899); }
+.action-icon-blue   { background: linear-gradient(135deg,#60a5fa,#2563eb); }
+.action-body { flex-grow: 1; }
+.action-body h5 { font-weight: 700; font-size: 1rem; margin-bottom: .2rem; }
+.action-body p { color: #6b7280; font-size: .82rem; margin: 0; }
+.action-arrow { color: #c4b5fd; font-size: 1.1rem; transition: transform .2s ease; }
+.action-card:hover .action-arrow { transform: translateX(4px); color: #7c3aed; }
+
+.admin-panel {
+    background: #fff; border: 1px solid #f0eef7; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 10px 30px -22px rgba(80,40,160,.35);
+}
+.admin-panel-header { padding: 1.1rem 1.5rem; border-bottom: 1px solid #f3f1f9; }
+.admin-panel-body { padding: 1.5rem; }
+.empty-illustration { font-size: 3rem; color: #34d399; margin-bottom: .5rem; }
+
+.admin-vendor-item { background: #fff; transition: background .15s ease; }
+.admin-vendor-item:hover, .admin-vendor-item.active { background: #f5f3ff; }
+.admin-vendor-item.active { box-shadow: inset 3px 0 0 #7c3aed; }
+</style>
+<link rel="stylesheet" href="~/css/vendor-calendar.css" asp-append-version="true" />
+}
+
+@section Scripts {
+<script src="~/js/vendor-calendar.js" asp-append-version="true"></script>
+<script src="~/js/admin-vendor-calendars.js" asp-append-version="true"></script>
+}

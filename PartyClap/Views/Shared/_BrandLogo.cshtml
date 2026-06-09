@@ -1,0 +1,19 @@
+@{
+    var size = ViewData["LogoSize"] as int? ?? 40;
+    var showText = ViewData["LogoShowText"] as bool? ?? true;
+    var cssClass = ViewData["LogoClass"] as string ?? "brand-logo me-2 flex-shrink-0";
+    var centered = ViewData["LogoCentered"] as bool? ?? false;
+    var light = ViewData["LogoLight"] as bool? ?? false;
+    var primaryTextColor = light ? "#ffffff" : "#111827";
+    var accentColor = light ? "#c4b5fd" : "#8B5CF6";
+    var wrapperClass = centered ? "d-flex flex-column align-items-center text-decoration-none" : "d-flex align-items-center text-decoration-none";
+}
+<a class="@wrapperClass @(centered ? "" : "navbar-brand me-0")" asp-controller="Home" asp-action="Index">
+    <img src="~/images/logo.png" alt="PartyClap logo" class="@cssClass" width="@size" height="@size" style="border-radius: @(size >= 44 ? "12px" : "9px");" />
+    @if (showText)
+    {
+        <span class="brand-text @(centered ? "mt-2" : "")">
+            <span style="color: @primaryTextColor;">Party</span><span style="color: @accentColor;">Clap</span>
+        </span>
+    }
+</a>

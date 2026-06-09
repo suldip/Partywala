@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace PartyClap.Models
 {
@@ -9,8 +10,11 @@ namespace PartyClap.Models
         public string CustomerId { get; set; }
         public string VendorId { get; set; }
         public string ServiceId { get; set; }
-        
+
+        [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5.")]
         public int Rating { get; set; } // 1-5
+
+        [StringLength(1000)]
         public string Comment { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         

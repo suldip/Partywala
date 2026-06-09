@@ -218,10 +218,28 @@ const stepData = [
     { title: 'Service Category', description: 'Choose your main service category and specializations', stepDesc: '🎯 Select your service category and specializations' },
     { title: 'Portfolio & Showcase', description: 'Upload your work samples to attract customers', stepDesc: '📁 Upload voice samples, photos, and showcase your work' },
     { title: 'Pricing & Payment', description: 'Set your rates and pricing model', stepDesc: '💰 Set your rates and pricing model' },
-    { title: 'Payment Account Setup', description: 'Add your bank accounts and UPI details for receiving payments', stepDesc: '🏦 Add your bank accounts and UPI for receiving payments' }
+    { title: 'Review & Submit', description: 'Confirm your details and complete registration', stepDesc: '✅ Review your information and accept the terms to register' }
 ];
 let selectedCategory = null;
 let selectedSubCategories = [];
+
+function notifyUser(type, title, message) {
+    if (window.SmartPop) {
+        if (type === 'error') return SmartPop.error(title, message);
+        if (type === 'warning') return SmartPop.warning(title, message);
+    }
+    window.alert((title ? title + ': ' : '') + (message || ''));
+    return Promise.resolve();
+}
+
+function focusFirstInvalid(scopeSelector) {
+    const scope = scopeSelector ? document.querySelector(scopeSelector) : document;
+    const firstInvalid = scope?.querySelector('.is-invalid');
+    if (firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalid.focus({ preventScroll: true });
+    }
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function () {
@@ -477,12 +495,16 @@ function initWizard() {
 
     // Next Button
     document.getElementById('btn-next').addEventListener('click', async function () {
-        if (await validateStep(currentStep)) {
-            if (currentStep < totalSteps) {
-                currentStep++;
-                updateStepVisibility();
-                window.scrollTo(0, 0);
+        try {
+            if (await validateStep(currentStep)) {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateStepVisibility();
+                    window.scrollTo(0, 0);
+                }
             }
+        } catch (err) {
+            console.error('Step validation error:', err);
         }
     });
 
@@ -583,51 +605,102 @@ function updateStepVisibility() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function normalizeIndianMobile(value) {
+    if (!value) return '';
+    let digits = value.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+        digits = digits.slice(2);
+    } else if (digits.length === 11 && digits.startsWith('0')) {
+        digits = digits.slice(1);
+    }
+    return digits;
+}
+
+function isValidIndianMobile(value) {
+    return /^[6-9]\d{9}$/.test(normalizeIndianMobile(value));
+}
+
+function isValidPinCode(value) {
+    const digits = (value || '').replace(/\D/g, '');
+    return /^[1-9]\d{5}$/.test(digits);
+}
+
+function isValidName(value) {
+    return /^[A-Za-z\s.'-]{2,150}$/.test((value || '').trim());
+}
+
 async function validateStep(step) {
     if (step === 1) {
         const name = document.querySelector('input[name="Name"]');
         const email = document.querySelector('input[name="Email"]');
         const phone = document.querySelector('input[name="Phone"]');
         const pincode = document.querySelector('input[name="PinCode"]');
+        const address = document.querySelector('textarea[name="Address"]');
+        const stateSelect = document.getElementById('vendor-address-state');
+        const citySelect = document.getElementById('vendor-address-city');
 
         let isValid = true;
 
-        if (!name.value.trim()) {
-            name.classList.add('is-invalid');
+        if (!name || !isValidName(name.value)) {
+            if (name) name.classList.add('is-invalid');
             isValid = false;
-        } else {
+        } else if (name) {
             name.classList.remove('is-invalid');
         }
 
-        if (!email.value.trim() || !email.value.includes('@')) {
-            email.classList.add('is-invalid');
+        if (!email || !email.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
+            if (email) email.classList.add('is-invalid');
             isValid = false;
-        } else {
+        } else if (email) {
             email.classList.remove('is-invalid');
         }
 
-        if (!phone.value.trim() || phone.value.length < 10) {
-            phone.classList.add('is-invalid');
+        if (!phone || !isValidIndianMobile(phone.value)) {
+            if (phone) phone.classList.add('is-invalid');
             isValid = false;
-        } else {
+        } else if (phone) {
             phone.classList.remove('is-invalid');
+            phone.value = normalizeIndianMobile(phone.value);
         }
 
-        if (!pincode.value.trim()) {
-            pincode.classList.add('is-invalid');
+        if (!stateSelect || !stateSelect.value) {
+            if (stateSelect) stateSelect.classList.add('is-invalid');
             isValid = false;
-        } else {
+        } else if (stateSelect) {
+            stateSelect.classList.remove('is-invalid');
+        }
+
+        if (!citySelect || !citySelect.value || citySelect.disabled) {
+            if (citySelect) citySelect.classList.add('is-invalid');
+            isValid = false;
+        } else if (citySelect) {
+            citySelect.classList.remove('is-invalid');
+        }
+
+        if (!pincode || !isValidPinCode(pincode.value)) {
+            if (pincode) pincode.classList.add('is-invalid');
+            isValid = false;
+        } else if (pincode) {
             pincode.classList.remove('is-invalid');
+            pincode.value = pincode.value.replace(/\D/g, '').slice(0, 6);
+        }
+
+        if (!address || address.value.trim().length < 5) {
+            if (address) address.classList.add('is-invalid');
+            isValid = false;
+        } else if (address) {
+            address.classList.remove('is-invalid');
         }
 
         if (!isValid) {
-            SmartPop.error('Validation Error', 'Please fill in all required fields correctly.');
+            await notifyUser('error', 'Validation Error', 'Please fill in all required fields with valid values.');
+            focusFirstInvalid('#step-1');
             return false;
         }
     }
 
     if (step === 2 && !selectedCategory) {
-        SmartPop.warning('Missing Category', 'Please select a service category to proceed.');
+        await notifyUser('warning', 'Missing Category', 'Please select a service category to proceed.');
         return false;
     }
 
@@ -648,7 +721,7 @@ async function validateStep(step) {
             if (!festivalBase.value) { festivalBase.classList.add('is-invalid'); isValid = false; missing.push('Festival'); } else festivalBase.classList.remove('is-invalid');
 
             if (!isValid) {
-                SmartPop.error('Pricing Missing', errorMsg + missing.join(', '));
+                await notifyUser('error', 'Pricing Missing', errorMsg + missing.join(', '));
                 return false;
             }
 
@@ -663,29 +736,14 @@ async function validateStep(step) {
     }
 
     if (step === 5) {
-        const accountHolder = document.getElementById('account-holder');
-        const accountNumber = document.getElementById('account-number');
-        const ifscCode = document.getElementById('ifsc-code');
         const terms = document.getElementById('terms');
 
-        let isValid = true;
-
-        if (!accountHolder.value.trim()) { accountHolder.classList.add('is-invalid'); isValid = false; } else accountHolder.classList.remove('is-invalid');
-        if (!accountNumber.value.trim()) { accountNumber.classList.add('is-invalid'); isValid = false; } else accountNumber.classList.remove('is-invalid');
-        if (!ifscCode.value.trim()) { ifscCode.classList.add('is-invalid'); isValid = false; } else ifscCode.classList.remove('is-invalid');
-
         if (!terms.checked) {
-            SmartPop.warning('Terms Required', 'You must agree to the Terms of Service and Privacy Policy.');
+            await notifyUser('warning', 'Terms Required', 'You must agree to the Terms of Service and Privacy Policy.');
             return false;
         }
 
-        if (!isValid) {
-            SmartPop.error('Bank Details Missing', 'Please fill in all required bank details.');
-            return false;
-        }
-
-        // Don't call submitForm here, let the submit button handler do it
-        return true; // Allow validation to pass
+        return true;
     }
 
     return true;
@@ -698,6 +756,15 @@ function submitForm() {
         SmartPop.error('Form Error', 'Error: Registration form not found. Please refresh the page and try again.');
         return;
     }
+
+    if (form.dataset.submitting === 'true') {
+        return;
+    }
+    form.dataset.submitting = 'true';
+
+    form.querySelectorAll('input[name^="Services[0]."], input[name^="ServiceLocations["]').forEach(function (input) {
+        input.remove();
+    });
 
     // Debug: Log selected category
     console.log('Selected Category:', selectedCategory);
@@ -893,6 +960,7 @@ function submitForm() {
             if (submitButton.disabled) {
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
+                delete form.dataset.submitting;
             }
         }, 10000); // 10 second timeout
     }
@@ -938,6 +1006,7 @@ function submitForm() {
                 submitButton.disabled = false;
                 submitButton.innerHTML = 'Complete Registration 🎉';
             }
+            delete form.dataset.submitting;
         }
     }, 100);
 }
@@ -1272,7 +1341,7 @@ function initCityPinCodeAutoPopulate() {
     }
 
     // For the main address section
-    const mainCitySelect = document.querySelector('#step-1 select[data-cascade="city"]');
+    const mainCitySelect = document.getElementById('vendor-address-city');
     const mainPinCodeInput = document.getElementById('main-pincode-input') || document.querySelector('#step-1 input[name="PinCode"]');
 
     if (mainCitySelect && mainPinCodeInput) {
@@ -1313,13 +1382,13 @@ function initLocationAdder() {
 
             // Validate selection
             if (!selectedState || !selectedCity) {
-                SmartPop.warning('Location Incomplete', 'Please select both State and City before adding a location.');
+                notifyUser('warning', 'Location Incomplete', 'Please select both State and City before adding a location.');
                 return;
             }
 
             // Validate Pin Code if entered
             if (selectedPinCode && !/^\d{6}$/.test(selectedPinCode)) {
-                SmartPop.warning('Invalid Pin Code', 'Please enter a valid 6-digit Pin Code.');
+                notifyUser('warning', 'Invalid Pin Code', 'Please enter a valid 6-digit Pin Code.');
                 return;
             }
 
@@ -1329,7 +1398,7 @@ function initLocationAdder() {
                 : `${selectedCity}, ${selectedState}`;
 
             if (addedLocations.some(loc => loc.key === locationKey)) {
-                SmartPop.warning('Duplicate Location', 'This location has already been added.');
+                notifyUser('warning', 'Duplicate Location', 'This location has already been added.');
                 return;
             }
 
@@ -1346,26 +1415,23 @@ function initLocationAdder() {
 
             // Create badge element
             const badge = document.createElement('div');
-            badge.className = 'location-badge';
-            badge.style.cssText = 'background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;';
+            badge.className = 'location-chip';
 
-            // Store pin code in data attribute for easy retrieval
-            //const pinCodeToUse1 = selectedPinCode || cityPinCodeData[selectedCity] || '';
             if (pinCodeToUse) {
                 badge.setAttribute('data-pincode', pinCodeToUse);
             }
 
             const displayText = pinCodeToUse
-                ? `📍 ${selectedCity}, ${selectedState} (${pinCodeToUse})`
-                : `📍 ${selectedCity}, ${selectedState}`;
+                ? `${selectedCity}, ${selectedState} (${pinCodeToUse})`
+                : `${selectedCity}, ${selectedState}`;
 
             badge.innerHTML = `
+                <i class="fas fa-map-pin"></i>
                 <span>${displayText}</span>
-                <button type="button" class="btn-close btn-close-white" style="font-size: 10px; opacity: 0.8;" title="Remove"></button>
+                <button type="button" class="remove-location" title="Remove">&times;</button>
             `;
 
-            // Add remove functionality
-            badge.querySelector('.btn-close').addEventListener('click', function () {
+            badge.querySelector('.remove-location').addEventListener('click', function () {
                 addedLocations = addedLocations.filter(loc => loc.key !== locationKey);
                 badge.remove();
 
@@ -1388,10 +1454,12 @@ function initLocationAdder() {
             if (pinCodeInput) pinCodeInput.value = '';
 
             // Success feedback
-            const originalText = btnAdd.textContent;
-            btnAdd.textContent = '✓ Location Added!';
+            const originalHtml = btnAdd.innerHTML;
+            btnAdd.innerHTML = '<i class="fas fa-check me-2"></i>Location Added!';
+            btnAdd.disabled = true;
             setTimeout(() => {
-                btnAdd.textContent = originalText;
+                btnAdd.innerHTML = originalHtml;
+                btnAdd.disabled = false;
             }, 2000);
         });
     }

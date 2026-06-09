@@ -1,0 +1,1103 @@
+/* Vendor availability — market-standard calendar dashboard */
+
+.vendor-calendar-panel {
+    min-width: 0;
+}
+
+/* KPI stat cards */
+.vac-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1rem 1.15rem;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #f1eefb;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.06);
+    height: 100%;
+}
+
+.vac-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.vac-stat-open .vac-stat-icon { background: #ecfdf5; color: #059669; }
+.vac-stat-booked .vac-stat-icon { background: #fef2f2; color: #dc2626; }
+.vac-stat-pending .vac-stat-icon { background: #fff7ed; color: #ea580c; }
+.vac-stat-manual .vac-stat-icon { background: #f5f3ff; color: #7c3aed; }
+
+.vac-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #111827;
+}
+
+.vac-stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Calendar card */
+.vac-calendar-card {
+    background: #fff;
+    border: 1px solid #f1eefb;
+    border-radius: 20px;
+    box-shadow: 0 12px 32px rgba(124, 58, 237, 0.07);
+    overflow: hidden;
+}
+
+.vac-calendar-full {
+    width: 100%;
+}
+
+.vac-calendar-full .vtc-day {
+    min-height: 108px;
+}
+
+.vac-entry-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0;
+    max-height: none;
+}
+
+.vendor-teams-calendar {
+    background: #fff;
+}
+
+.vtc-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f3f4f6;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.04), rgba(236, 72, 153, 0.04));
+}
+
+.vtc-toolbar-left,
+.vtc-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vtc-nav-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.vtc-nav-btn:hover {
+    border-color: #c4b5fd;
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.vtc-today-btn {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+}
+
+.vtc-today-btn:hover {
+    border-color: #c4b5fd;
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.vtc-month-label {
+    font-size: 1.1rem;
+    color: #111827;
+    text-align: center;
+    flex: 1;
+    min-width: 140px;
+}
+
+.vtc-sync-hint {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+.vtc-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1rem 1.25rem 0.5rem;
+}
+
+.vtc-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    padding: 0 1.25rem 1rem;
+}
+
+.vtc-day {
+    min-height: 80px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+}
+
+.vtc-day:hover:not(.vtc-empty):not(.vtc-past) {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+    transform: translateY(-1px);
+}
+
+.vtc-day.vtc-empty {
+    visibility: hidden;
+    min-height: 0;
+    border: none;
+    padding: 0;
+    pointer-events: none;
+}
+
+.vtc-day.vtc-past {
+    background: #f9fafb;
+    border-color: #f3f4f6;
+    color: #d1d5db;
+    cursor: default;
+    opacity: 0.75;
+}
+
+.vtc-day.vtc-available {
+    background: #ecfdf5;
+    border-color: #86efac;
+}
+
+.vtc-day.vtc-under-process {
+    background: #fff7ed;
+    border-color: #fdba74;
+}
+
+.vtc-day.vtc-booked {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+
+.vtc-day.vtc-partyclap {
+    background: linear-gradient(180deg, #f5f3ff 0%, #faf5ff 100%);
+    border-color: #c4b5fd;
+}
+
+.vtc-day.vtc-today {
+    box-shadow: inset 0 0 0 2px #7c3aed;
+}
+
+.vtc-day.vtc-selected {
+    outline: 2px solid #7c3aed;
+    outline-offset: 2px;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.2);
+}
+
+.vtc-day-num {
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+    color: #374151;
+}
+
+.vtc-day.vtc-past .vtc-day-num { color: #d1d5db; }
+
+.vtc-chips-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: auto;
+    min-width: 0;
+}
+
+/* Market-standard calendar event chips (Google Calendar / Calendly style) */
+.vtc-event-chip {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 3px 5px 3px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    min-width: 0;
+    overflow: hidden;
+    line-height: 1.15;
+}
+
+.vtc-event-chip::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 6px 0 0 6px;
+}
+
+.vtc-event-chip-time {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.92;
+}
+
+.vtc-event-chip-title {
+    font-size: 0.6rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vtc-event-chip-partyclap {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.16), rgba(167, 139, 250, 0.12));
+    border-color: rgba(124, 58, 237, 0.22);
+    color: #5b21b6;
+}
+
+.vtc-event-chip-partyclap::before { background: linear-gradient(180deg, #7c3aed, #a78bfa); }
+
+.vtc-event-chip-booked,
+.vtc-event-chip-blocked {
+    background: rgba(220, 38, 38, 0.1);
+    border-color: rgba(220, 38, 38, 0.18);
+    color: #991b1b;
+}
+
+.vtc-event-chip-booked::before,
+.vtc-event-chip-blocked::before { background: #dc2626; }
+
+.vtc-event-chip-pending {
+    background: rgba(234, 88, 12, 0.11);
+    border-color: rgba(234, 88, 12, 0.2);
+    color: #9a3412;
+}
+
+.vtc-event-chip-pending::before { background: #ea580c; }
+
+.vtc-event-chip-available,
+.vtc-event-chip-open {
+    background: rgba(5, 150, 105, 0.11);
+    border-color: rgba(5, 150, 105, 0.2);
+    color: #047857;
+}
+
+.vtc-event-chip-available::before,
+.vtc-event-chip-open::before { background: #059669; }
+
+.vtc-event-chip-completed {
+    background: rgba(100, 116, 139, 0.12);
+    border-color: rgba(100, 116, 139, 0.18);
+    color: #475569;
+}
+
+.vtc-event-chip-completed::before { background: #94a3b8; }
+
+.vtc-chip {
+    display: block;
+    font-size: 0.58rem;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 2px 4px;
+    border-radius: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: rgba(0, 0, 0, 0.06);
+    color: #4b5563;
+}
+
+.vtc-chip-more {
+    background: rgba(124, 58, 237, 0.08);
+    color: #6d28d9;
+    text-align: center;
+    font-size: 0.55rem;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: 5px;
+}
+
+.vtc-modal-slots-section {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.vtc-modal-slots-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.vtc-slot-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #f1eefb;
+    border-radius: 12px;
+    background: #fafafa;
+    border-left: 3px solid #e5e7eb;
+}
+
+.vtc-slot-partyclap {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), #fafafa);
+    border-color: #e9d5ff;
+    border-left-color: #7c3aed;
+}
+
+.vtc-slot-booked,
+.vtc-slot-blocked {
+    border-left-color: #dc2626;
+}
+
+.vtc-slot-pending {
+    border-left-color: #ea580c;
+}
+
+.vtc-slot-available,
+.vtc-slot-open {
+    border-left-color: #059669;
+}
+
+.vtc-slot-time {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #374151;
+}
+
+.vtc-slot-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.vtc-slot-meta {
+    font-size: 0.72rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.vtc-slot-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.vtc-slot-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.vtc-slot-badge.available { background: #ecfdf5; color: #047857; }
+.vtc-slot-badge.partyclap {
+    background: linear-gradient(135deg, #ede9fe, #f5f3ff);
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+.vtc-slot-badge.blocked,
+.vtc-slot-badge.booked { background: #fef2f2; color: #b91c1c; }
+.vtc-slot-badge.pending { background: #fff7ed; color: #c2410c; }
+.vtc-slot-badge.completed { background: #f1f5f9; color: #64748b; }
+
+.vtc-slot-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.vtc-duration-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.vtc-duration-btn.active {
+    background: #7c3aed;
+    border-color: #7c3aed;
+    color: #fff;
+}
+
+.vtc-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.25rem;
+    padding: 0.85rem 1.25rem 1.15rem;
+    border-top: 1px solid #f3f4f6;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.vtc-legend-item {
+    display: inline-flex;
+    align-items: center;
+}
+
+.vtc-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.vtc-dot.vtc-available { background: #dcfce7; border: 1px solid #86efac; }
+.vtc-dot.vtc-under-process { background: #ffedd5; border: 1px solid #fdba74; }
+.vtc-dot.vtc-partyclap { background: #ede9fe; border: 1px solid #a78bfa; }
+.vtc-dot.vtc-booked { background: #fee2e2; border: 1px solid #fca5a5; }
+.vtc-dot.vtc-today-dot { background: #fff; border: 2px solid #7c3aed; }
+
+/* Sidebar cards */
+.vac-side-card {
+    background: #fff;
+    border: 1px solid #f1eefb;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.06);
+    overflow: hidden;
+}
+
+.vac-side-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.15rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fafafa;
+}
+
+.vac-side-card-header i { color: #7c3aed; font-size: 1rem; }
+
+.vac-entry-count {
+    background: rgba(124, 58, 237, 0.1) !important;
+    color: #7c3aed !important;
+    font-size: 0.7rem;
+}
+
+.vac-day-detail-body {
+    padding: 1.15rem;
+}
+
+.vac-day-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.vtc-day-summary.vac-day-title {
+    margin-bottom: 0.75rem;
+}
+
+.vtc-day-status-badge {
+    margin-bottom: 0.75rem;
+}
+
+.vtc-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.vtc-status-pill.open { background: #ecfdf5; color: #047857; }
+.vtc-status-pill.partyclap {
+    background: linear-gradient(135deg, #ede9fe, #f5f3ff);
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+.vtc-status-pill.booked { background: #fef2f2; color: #b91c1c; }
+.vtc-status-pill.pending { background: #fff7ed; color: #c2410c; }
+
+.vtc-event-row {
+    display: flex;
+    gap: 0.65rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.82rem;
+}
+
+.vtc-event-row:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.vtc-event-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+}
+
+.vtc-event-icon.time { background: #f5f3ff; color: #7c3aed; }
+.vtc-event-icon.user { background: #eff6ff; color: #2563eb; }
+.vtc-event-icon.label { background: #f9fafb; color: #6b7280; }
+.vtc-event-icon.source { background: #fff7ed; color: #ea580c; }
+
+.vtc-event-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #9ca3af;
+    margin-bottom: 0.1rem;
+}
+
+.vtc-event-value {
+    font-weight: 600;
+    color: #374151;
+}
+
+.vtc-day-empty-msg {
+    font-size: 0.85rem;
+    color: #059669;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    background: #ecfdf5;
+    border-radius: 10px;
+    border: 1px solid #bbf7d0;
+}
+
+/* Teams-style selected day */
+.vtc-teams-day-empty {
+    text-align: center;
+    padding: 1.5rem 0.5rem;
+    color: #9ca3af;
+}
+
+.vtc-teams-day-empty i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #c4b5fd;
+}
+
+.vtc-teams-day-empty p {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.vtc-teams-date-header {
+    margin-bottom: 0.85rem;
+}
+
+.vtc-teams-weekday {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7c3aed;
+    margin-bottom: 0.15rem;
+}
+
+.vtc-teams-date-line {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.25;
+}
+
+.vtc-teams-events {
+    margin-bottom: 0.85rem;
+}
+
+.vtc-meeting-card {
+    display: flex;
+    gap: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    margin-bottom: 0.65rem;
+}
+
+.vtc-meeting-accent {
+    width: 4px;
+    flex-shrink: 0;
+}
+
+.vtc-meeting-open .vtc-meeting-accent { background: #10b981; }
+.vtc-meeting-partyclap .vtc-meeting-accent { background: linear-gradient(180deg, #7c3aed, #a78bfa); }
+.vtc-meeting-partyclap {
+    border-color: #e9d5ff;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.04), #fff);
+}
+.vtc-meeting-partyclap .vtc-meeting-time { color: #7c3aed; }
+.vtc-meeting-booked .vtc-meeting-accent { background: #dc2626; }
+.vtc-meeting-pending .vtc-meeting-accent { background: #f97316; }
+.vtc-meeting-hours .vtc-meeting-accent { background: #059669; }
+.vtc-meeting-completed .vtc-meeting-accent { background: #94a3b8; }
+
+.vtc-meeting-body {
+    padding: 0.75rem 0.85rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.vtc-meeting-time {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6b7280;
+    margin-bottom: 0.2rem;
+}
+
+.vtc-meeting-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.vtc-meeting-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.2rem;
+}
+
+.vtc-teams-no-events {
+    font-size: 0.82rem;
+    color: #9ca3af;
+    margin: 0;
+    padding: 0.65rem 0.75rem;
+    background: #f9fafb;
+    border-radius: 10px;
+    border: 1px dashed #e5e7eb;
+}
+
+.vtc-manage-schedule-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    border: 1px solid #c4b5fd;
+    background: #f5f3ff;
+    color: #6d28d9;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.vtc-manage-schedule-btn:hover {
+    background: #ede9fe;
+    border-color: #a78bfa;
+    color: #5b21b6;
+}
+
+/* Schedule modal — Teams-like */
+.vtc-schedule-modal-dialog {
+    max-width: 480px;
+}
+
+.vtc-schedule-modal {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.vtc-schedule-modal .modal-header {
+    padding: 1.25rem 1.5rem 0;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), rgba(236, 72, 153, 0.04));
+}
+
+.vtc-schedule-modal .modal-body {
+    padding: 1rem 1.5rem 1.25rem;
+}
+
+.vtc-schedule-modal .vac-action-tabs {
+    padding: 0 0 0.75rem;
+}
+
+.vtc-schedule-modal .vac-tab-panel {
+    padding: 0;
+}
+
+.vtc-modal-booked-note {
+    font-size: 0.82rem;
+    margin-bottom: 1rem;
+    color: #6b7280;
+}
+
+.vtc-modal-booking-details {
+    margin-bottom: 1rem;
+}
+
+.vtc-booking-details-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+.vtc-booking-details-header {
+    display: flex;
+    gap: 0;
+    background: #fafafa;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.vtc-booking-details-accent {
+    width: 4px;
+    flex-shrink: 0;
+}
+
+.vtc-booking-details-booked .vtc-booking-details-accent { background: #dc2626; }
+.vtc-booking-details-pending .vtc-booking-details-accent { background: #f97316; }
+.vtc-booking-details-open .vtc-booking-details-accent { background: #10b981; }
+
+.vtc-booking-details-heading {
+    padding: 0.85rem 1rem;
+}
+
+.vtc-booking-details-time {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6b7280;
+    margin-bottom: 0.15rem;
+}
+
+.vtc-booking-details-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.vtc-booking-details-body {
+    padding: 0.35rem 1rem 0.75rem;
+}
+
+.vtc-booking-detail-row {
+    display: flex;
+    gap: 0.65rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.vtc-booking-detail-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0.25rem;
+}
+
+.vtc-booking-detail-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #f5f3ff;
+    color: #7c3aed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+}
+
+.vtc-booking-detail-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #9ca3af;
+    margin-bottom: 0.1rem;
+}
+
+.vtc-booking-detail-value {
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+/* Action tabs */
+.vac-action-tabs {
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.85rem 1.15rem 0;
+}
+
+.vac-action-tab {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.vac-action-tab:hover {
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.vac-action-tab.active {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.vac-tab-panel {
+    display: none;
+    padding: 1rem 1.15rem 1.15rem;
+}
+
+.vac-tab-panel.active { display: block; }
+
+.vac-tab-desc {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.vac-form-field {
+    margin-bottom: 0.85rem;
+}
+
+.vac-form-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.35rem;
+}
+
+.vac-input-wrap {
+    position: relative;
+}
+
+.vac-input-wrap > i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+    z-index: 2;
+    font-size: 0.9rem;
+}
+
+.vac-input-wrap .form-control {
+    padding-left: 2.25rem;
+}
+
+.vac-action-form .form-control {
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    min-height: 42px;
+    font-size: 0.875rem;
+}
+
+.vac-action-form .form-control:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.vac-btn-block {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-weight: 700;
+    padding: 0.55rem 1rem;
+}
+
+.vac-btn-block:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+.vac-btn-save {
+    background: linear-gradient(135deg, #059669, #10b981);
+    border: 0;
+    color: #fff;
+    font-weight: 700;
+    padding: 0.55rem 1rem;
+}
+
+.vac-btn-save:hover {
+    filter: brightness(1.05);
+    color: #fff;
+}
+
+/* Manual entry list */
+.vac-entry-list {
+    padding: 0.5rem 0;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.vac-entry-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.15rem;
+    border-bottom: 1px solid #f9fafb;
+    transition: background 0.12s ease;
+}
+
+.vac-entry-item:hover { background: #fafafa; }
+
+.vac-entry-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.vac-entry-available .vac-entry-icon { background: #ecfdf5; color: #059669; }
+.vac-entry-partyclap .vac-entry-icon {
+    background: linear-gradient(135deg, #ede9fe, #f5f3ff);
+    color: #7c3aed;
+    border: 1px solid #ddd6fe;
+}
+.vac-entry-partyclap {
+    border-left: 3px solid #7c3aed;
+    background: linear-gradient(90deg, rgba(124, 58, 237, 0.04), transparent);
+}
+.vac-entry-blocked .vac-entry-icon { background: #fef2f2; color: #dc2626; }
+
+.vac-entry-time {
+    font-weight: 700;
+    color: #374151;
+}
+
+.vac-entry-label-partyclap {
+    font-weight: 700;
+    color: #6d28d9;
+}
+
+.vac-entry-body { flex: 1; min-width: 0; }
+
+.vac-entry-date {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.vac-entry-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+}
+
+.vac-entry-remove .btn {
+    color: #9ca3af;
+    padding: 0.25rem;
+    border: 0;
+    background: transparent;
+}
+
+.vac-entry-remove .btn:hover {
+    color: #dc2626;
+    background: #fef2f2;
+    border-radius: 8px;
+}
+
+@media (max-width: 991px) {
+    .vtc-month-label {
+        order: -1;
+        width: 100%;
+        flex: none;
+    }
+
+    .vtc-toolbar {
+        justify-content: center;
+    }
+
+    .vtc-sync-hint { display: none; }
+
+    .vtc-day {
+        min-height: 64px;
+        padding: 6px;
+    }
+}
+
+@media (max-width: 575px) {
+    .vtc-grid,
+    .vtc-weekdays {
+        gap: 4px;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .vtc-day {
+        min-height: 52px;
+        border-radius: 8px;
+    }
+
+    .vtc-chips-wrap { display: none; }
+    .vtc-chip { display: none; }
+}

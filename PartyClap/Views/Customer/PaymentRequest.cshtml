@@ -1,0 +1,44 @@
+@model Dictionary<string, object>
+@{
+    ViewData["Title"] = "Complete Payment";
+    var canPay = (bool)ViewBag.CanPay;
+    var amountDue = (decimal)ViewBag.AmountDue;
+    var reqStart = (DateTime)Model["EventDate"];
+    var reqEnd = Model.ContainsKey("EventEndDate") && Model["EventEndDate"] != null
+        ? (DateTime?)Model["EventEndDate"] : null;
+    var dayCount = Model.ContainsKey("DayCount") ? Convert.ToInt32(Model["DayCount"]) : 1;
+    var dateRange = reqEnd.HasValue && reqEnd.Value.Date != reqStart.Date
+        ? $"{reqStart:MMM dd, yyyy} – {reqEnd.Value:MMM dd, yyyy}"
+        : reqStart.ToString("MMM dd, yyyy");
+    var timeRange = Model.ContainsKey("EventStartTime") && Model["EventStartTime"] != null
+        ? $"{Model["EventStartTime"]}{(Model.ContainsKey("EventEndTime") && Model["EventEndTime"] != null ? "–" + Model["EventEndTime"] : "")}"
+        : null;
+    var status = Model["Status"].ToString();
+    var isPaid = status == "Paid";
+
+    ViewData["PayBackUrl"] = Url.Action("ViewCart", "Customer");
+    ViewData["PayBackLabel"] = "Back to Accepted cart";
+    ViewData["PayVendorName"] = Model["VendorName"];
+    ViewData["PayServiceType"] = Model["ServiceType"];
+    ViewData["PayDateRange"] = dateRange;
+    ViewData["PayTimeRange"] = timeRange;
+    ViewData["PayDayCount"] = dayCount;
+    ViewData["PayEventType"] = Model["EventType"]?.ToString();
+    ViewData["PayAmountDue"] = amountDue;
+    ViewData["PayServiceTotal"] = amountDue;
+    ViewData["PayFormAction"] = "PayServiceRequest";
+    ViewData["PaySubmitLabel"] = $"Pay ₹{amountDue:N0} securely";
+    ViewData["PayHiddenFields"] = new[] { new KeyValuePair<string, string>("requestId", Model["Id"].ToString()) };
+    ViewData["PayIsSuccess"] = isPaid;
+    ViewData["PaySuccessTitle"] = "Payment Complete";
+    ViewData["PaySuccessMessage"] = $"Your service request with {Model["VendorName"]} is confirmed.";
+    ViewData["PaySuccessAmount"] = amountDue;
+    ViewData["PaySuccessPrimaryUrl"] = Url.Action("ViewCart", "Customer");
+    ViewData["PaySuccessPrimaryLabel"] = "Back to Cart";
+    ViewData["PayIsBlocked"] = !canPay && !isPaid;
+    ViewData["PayBlockedMessage"] = status == "UnderProcess" || status == "Pending"
+        ? "This request is still awaiting vendor approval. You can pay once it appears in your Accepted cart."
+        : "Payment is not available for this request right now.";
+}
+
+<partial name="_PaymentCheckoutLayout" />

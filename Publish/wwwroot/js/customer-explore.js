@@ -35,23 +35,58 @@ let currentFilters = {
     searchQuery: '',
     state: 'all-states',
     city: 'all-cities',
+    minPrice: null,
+    maxPrice: null,
+    minRating: null,
     sortBy: 'rating'
 };
 
 let expandedVendors = new Set();
 let viewMode = 'detailed';
 
+// Pagination state
+const PAGE_SIZE = 9;
+let currentPage = 1;
+let filteredCards = [];
+
 // Initialize on page load
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function () {
+    hydrateFiltersFromServer();
     initializeFilters();
     initializeLocationSearch();
     initializeViewToggle();
     initializeCategoryButtons();
 
-    // Force apply filters to ensure UI is in sync
     applyFilters();
 });
+
+function hydrateFiltersFromServer() {
+    const initial = window.exploreInitialFilters;
+    if (!initial) return;
+
+    currentFilters.category = initial.category || 'all';
+    currentFilters.searchQuery = (initial.searchQuery || '').toLowerCase();
+    currentFilters.sortBy = initial.sortBy || 'rating';
+    currentFilters.minPrice = initial.minPrice != null ? Number(initial.minPrice) : null;
+    currentFilters.maxPrice = initial.maxPrice != null ? Number(initial.maxPrice) : null;
+    currentFilters.minRating = initial.minRating != null ? Number(initial.minRating) : null;
+
+    const searchInput = document.getElementById('search-input');
+    if (searchInput && initial.searchQuery) {
+        searchInput.value = initial.searchQuery;
+    }
+
+    const sortSelect = document.getElementById('filter-sort');
+    if (sortSelect && initial.sortBy) {
+        sortSelect.value = initial.sortBy;
+    }
+
+    const hiddenCategory = document.getElementById('filter-category-hidden');
+    if (hiddenCategory) {
+        hiddenCategory.value = currentFilters.category;
+    }
+}
 
 // Initialize filter dropdowns
 function initializeFilters() {
@@ -60,6 +95,9 @@ function initializeFilters() {
     const categorySelect = document.getElementById('filter-category');
     const sortSelect = document.getElementById('filter-sort');
     const searchInput = document.getElementById('search-input');
+    const minPriceInput = document.getElementById('filter-min-price');
+    const maxPriceInput = document.getElementById('filter-max-price');
+    const minRatingSelect = document.getElementById('filter-min-rating');
 
     // State dropdown change
     if (stateSelect) {
@@ -73,7 +111,7 @@ function initializeFilters() {
     // City dropdown change
     if (citySelect) {
         citySelect.addEventListener('change', function () {
-            currentFilters.city = this.value;
+            currentFilters.city = this.value || 'all-cities';
             applyFilters();
         });
     }
@@ -100,6 +138,27 @@ function initializeFilters() {
     if (sortSelect) {
         sortSelect.addEventListener('change', function () {
             currentFilters.sortBy = this.value;
+            applyFilters();
+        });
+    }
+
+    if (minPriceInput) {
+        minPriceInput.addEventListener('change', function () {
+            currentFilters.minPrice = this.value ? Number(this.value) : null;
+            applyFilters();
+        });
+    }
+
+    if (maxPriceInput) {
+        maxPriceInput.addEventListener('change', function () {
+            currentFilters.maxPrice = this.value ? Number(this.value) : null;
+            applyFilters();
+        });
+    }
+
+    if (minRatingSelect) {
+        minRatingSelect.addEventListener('change', function () {
+            currentFilters.minRating = this.value ? Number(this.value) : null;
             applyFilters();
         });
     }
@@ -254,14 +313,18 @@ function initializeCategoryButtons() {
             const category = this.dataset.category;
             currentFilters.category = category;
 
-            // Update active state
             categoryButtons.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
 
-            // Update dropdown
-            const categorySelect = document.getElementById('filter-category-main');
-            if (categorySelect) {
-                categorySelect.value = category;
+            const hiddenCategory = document.getElementById('filter-category-hidden');
+            if (hiddenCategory) {
+                hiddenCategory.value = category;
+            }
+
+            const form = document.getElementById('explore-filter-form');
+            if (form) {
+                form.submit();
+                return;
             }
 
             applyFilters();
@@ -285,14 +348,45 @@ function updateCategoryPills() {
     });
 }
 
-// Apply all filters to vendor cards
+function cardMatchesCategory(card, category) {
+    if (category === 'all') return true;
+    const slugs = (card.dataset.categories || card.dataset.category || '')
+        .split(',')
+        .map(s => s.trim().toLowerCase())
+        .filter(Boolean);
+    return slugs.includes(category);
+}
+
+function sortFilteredCards(cards) {
+    const sortBy = currentFilters.sortBy || 'rating';
+    cards.sort((a, b) => {
+        const priceA = parseFloat(a.dataset.price) || 0;
+        const priceB = parseFloat(b.dataset.price) || 0;
+        const ratingA = parseFloat(a.dataset.rating) || 0;
+        const ratingB = parseFloat(b.dataset.rating) || 0;
+        const reviewsA = parseInt(a.dataset.reviews, 10) || 0;
+        const reviewsB = parseInt(b.dataset.reviews, 10) || 0;
+
+        switch (sortBy) {
+            case 'price-low':
+                return priceA - priceB;
+            case 'price-high':
+                return priceB - priceA;
+            case 'reviews':
+                return reviewsB - reviewsA;
+            default:
+                return ratingB - ratingA || reviewsB - reviewsA;
+        }
+    });
+}
+
+// Apply all filters to vendor cards, then paginate the matching set.
 function applyFilters() {
     const vendorCards = document.querySelectorAll('.vendor-card');
-    let visibleCount = 0;
+    filteredCards = [];
 
     vendorCards.forEach(card => {
-        const matchesCategory = currentFilters.category === 'all' ||
-            card.dataset.category === currentFilters.category;
+        const matchesCategory = cardMatchesCategory(card, currentFilters.category);
 
         const matchesSearch = !currentFilters.searchQuery ||
             card.dataset.searchText.includes(currentFilters.searchQuery);
@@ -303,19 +397,121 @@ function applyFilters() {
         const matchesCity = currentFilters.city === 'all-cities' ||
             card.dataset.city === currentFilters.city;
 
-        if (matchesCategory && matchesSearch && matchesState && matchesCity) {
-            card.style.display = '';
-            visibleCount++;
+        const price = parseFloat(card.dataset.price) || 0;
+        const matchesMinPrice = currentFilters.minPrice == null || price >= currentFilters.minPrice;
+        const matchesMaxPrice = currentFilters.maxPrice == null || price <= currentFilters.maxPrice;
+
+        const rating = parseFloat(card.dataset.rating) || 0;
+        const matchesRating = currentFilters.minRating == null || rating >= currentFilters.minRating;
+
+        if (matchesCategory && matchesSearch && matchesState && matchesCity &&
+            matchesMinPrice && matchesMaxPrice && matchesRating) {
+            filteredCards.push(card);
         } else {
             card.style.display = 'none';
         }
     });
 
-    // Update results count
-    updateResultsCount(visibleCount);
+    sortFilteredCards(filteredCards);
 
-    // Show/hide empty state
-    toggleEmptyState(visibleCount === 0);
+    // Filters changed -> reset to first page and render.
+    currentPage = 1;
+    renderPage();
+
+    // Results count reflects the full matching set, not just the current page.
+    updateResultsCount(filteredCards.length);
+    toggleEmptyState(filteredCards.length === 0);
+}
+
+// Show only the cards belonging to the current page; hide the rest.
+function renderPage() {
+    const totalPages = Math.max(1, Math.ceil(filteredCards.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+
+    filteredCards.forEach((card, idx) => {
+        card.style.display = (idx >= start && idx < end) ? '' : 'none';
+    });
+
+    renderPaginationControls(totalPages);
+    updatePaginationSummary(start, Math.min(end, filteredCards.length));
+}
+
+// Navigate to a page and smooth-scroll back to the results toolbar.
+function goToPage(page) {
+    const totalPages = Math.max(1, Math.ceil(filteredCards.length / PAGE_SIZE));
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    currentPage = page;
+    renderPage();
+
+    const toolbar = document.querySelector('.results-toolbar') || document.getElementById('vendor-list');
+    if (toolbar) toolbar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Build a Bootstrap pagination control with a windowed page range.
+function renderPaginationControls(totalPages) {
+    const container = document.getElementById('pagination-controls');
+    if (!container) return;
+
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const pages = [];
+    const window = 1; // pages shown on each side of the current page
+    pages.push(1);
+    for (let p = currentPage - window; p <= currentPage + window; p++) {
+        if (p > 1 && p < totalPages) pages.push(p);
+    }
+    if (totalPages > 1) pages.push(totalPages);
+
+    const unique = [...new Set(pages)].sort((a, b) => a - b);
+
+    let html = '';
+    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}" aria-label="Previous">&laquo;</a>
+             </li>`;
+
+    let prev = 0;
+    unique.forEach(p => {
+        if (prev && p - prev > 1) {
+            html += `<li class="page-item disabled"><span class="page-link">&hellip;</span></li>`;
+        }
+        html += `<li class="page-item ${p === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${p}">${p}</a>
+                 </li>`;
+        prev = p;
+    });
+
+    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}" aria-label="Next">&raquo;</a>
+             </li>`;
+
+    container.innerHTML = html;
+
+    container.querySelectorAll('a.page-link[data-page]').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = parseInt(this.dataset.page, 10);
+            if (!isNaN(target)) goToPage(target);
+        });
+    });
+}
+
+// "Showing 1–9 of 202 professionals"
+function updatePaginationSummary(startIndex, endIndex) {
+    const summary = document.getElementById('pagination-summary');
+    if (!summary) return;
+    const total = filteredCards.length;
+    if (total === 0) {
+        summary.textContent = '';
+        return;
+    }
+    summary.textContent = `Showing ${startIndex + 1}\u2013${endIndex} of ${total} professionals`;
 }
 
 // Update results count display
@@ -372,23 +568,8 @@ function updateVendorCards() {
 
 // Clear all filters
 function clearAllFilters() {
-    currentFilters = {
-        category: 'all',
-        searchQuery: '',
-        state: 'all-states',
-        city: 'all-cities',
-        sortBy: 'rating'
-    };
-
-    // Reset UI
-    document.getElementById('filter-state').value = 'all-states';
-    document.getElementById('filter-city').value = 'all-cities';
-    document.getElementById('filter-category').value = 'all';
-    document.getElementById('search-input').value = '';
-    document.getElementById('location-search').value = '';
-
-    updateCityDropdown();
-    applyFilters();
+    const basePath = window.basePath || '';
+    window.location.href = basePath + 'Customer/Explore';
 }
 
 // Pricing calculator for per-person vendors

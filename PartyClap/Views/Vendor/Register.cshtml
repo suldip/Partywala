@@ -11,11 +11,375 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="base-path" content="@Url.Content("~/")" />
-    <title>@ViewData["Title"] - PartyClap</title>
+    <title>@PageTitles.FormatBrowserTitle("Vendor Registration")</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/premium.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body.bg-light { background: linear-gradient(180deg, #FDF2F8 0%, #F8F7FF 240px, #f6f7fb 100%) !important; }
+
+        .vendor-registration-header .logo { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+        .vendor-registration-header .logo-text {
+            font-weight: 800; font-size: 1.15rem;
+            background: var(--gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .back-link {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: #f3f4f6; color: #374151 !important; transition: all 0.2s ease;
+        }
+        .back-link:hover { background: #ede9fe; color: var(--primary-color) !important; }
+
+        /* Intro */
+        .vendor-intro-badge {
+            display: inline-flex; align-items: center;
+            background: #fff; border: 1px solid #ecdcff; color: var(--primary-color);
+            padding: 0.45rem 1.1rem; border-radius: 999px; font-weight: 600; font-size: 0.85rem;
+            box-shadow: 0 4px 12px -4px rgba(139, 92, 246, 0.25);
+        }
+        .vendor-intro-title { font-size: 2.4rem; letter-spacing: -0.5px; }
+
+        /* Benefit cards */
+        .vendor-benefit-card {
+            background: #fff; border: 1px solid #f1eaff; border-radius: 18px;
+            padding: 1.75rem 1.25rem; text-align: center;
+            box-shadow: 0 6px 18px -10px rgba(139, 92, 246, 0.25);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .vendor-benefit-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 32px -14px rgba(139, 92, 246, 0.4);
+            border-color: #e9d5ff;
+        }
+        .vendor-benefit-icon {
+            width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 0.9rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.35rem; color: #fff; background: var(--gradient);
+        }
+
+        /* Wizard step icons: cleaner, larger, animated active state */
+        .wizard-step-icon {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .wizard-step.active .wizard-step-icon {
+            transform: scale(1.08);
+        }
+
+        /* Form card header accent */
+        #card-title {
+            position: relative; padding-left: 0.85rem;
+        }
+        #card-title::before {
+            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            width: 5px; height: 1.4rem; border-radius: 4px; background: var(--gradient);
+        }
+        .card-header #card-description { padding-left: 0.85rem; }
+
+        /* Section subheadings inside steps */
+        .step-content h5.fw-bold { position: relative; }
+
+        /* Inputs focus polish (kept compatible with existing .vendor-form-input) */
+        .vendor-form-input:focus, .form-select.vendor-form-input:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12) !important;
+        }
+
+        /* Navigation buttons */
+        #btn-next, #btn-submit { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        #btn-next:hover, #btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -8px rgba(0,0,0,0.25); }
+
+        /* ---- Two-column onboarding shell ---- */
+        .vendor-content-spacer { height: 84px; }
+        .vendor-reg-shell { max-width: 1200px; }
+
+        .vendor-reg-sidebar {
+            background: #fff;
+            border: 1px solid #f1eaff;
+            border-radius: 20px;
+            padding: 1.85rem 1.6rem;
+            box-shadow: 0 14px 36px -18px rgba(139, 92, 246, 0.45);
+        }
+        @@media (min-width: 992px) {
+            .vendor-reg-sidebar { position: sticky; top: 96px; }
+        }
+        .vendor-sidebar-title {
+            font-size: 1.55rem; font-weight: 800; color: var(--dark-color);
+            margin: 0.35rem 0 0.5rem; line-height: 1.25;
+        }
+        .vendor-sidebar-sub { color: #6b7280; font-size: 0.9rem; line-height: 1.55; margin-bottom: 1.5rem; }
+
+        .vendor-step-rail-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;
+        }
+        .vendor-step-counter {
+            font-size: 0.74rem; font-weight: 700; color: var(--primary-color);
+            background: #f5f3ff; padding: 0.25rem 0.65rem; border-radius: 999px;
+        }
+
+        /* Vertical step rail (overrides the horizontal premium.css defaults) */
+        .vendor-step-rail { position: relative; padding: 0.25rem 0; }
+        .vendor-step-rail .wizard-step {
+            display: flex; flex-direction: row; align-items: center; gap: 0.85rem;
+            padding: 0.5rem 0; position: relative; z-index: 1; flex: unset;
+        }
+        .vendor-step-rail .wizard-step-icon {
+            margin: 0; width: 40px; height: 40px; font-size: 1.05rem; flex-shrink: 0;
+        }
+        .vendor-step-rail .wizard-step-label {
+            font-size: 0.92rem; margin: 0; text-align: left; font-weight: 600;
+        }
+        .vendor-step-rail .wizard-step-connector {
+            position: absolute; left: 19px; top: 28px; bottom: 28px;
+            width: 2px; height: auto; background: #ece9f5; z-index: 0;
+        }
+        .vendor-step-rail .wizard-step-connector-fill { display: none; }
+
+        /* Trust list */
+        .vendor-trust { border-top: 1px solid #f1eaff; padding-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+        .vendor-trust-item { display: flex; gap: 0.75rem; align-items: flex-start; }
+        .vendor-trust-icon {
+            width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+            background: var(--gradient); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
+        }
+        .vendor-trust-item strong { display: block; font-size: 0.88rem; color: var(--dark-color); }
+        .vendor-trust-item span { font-size: 0.8rem; color: #6b7280; }
+
+        @@media (max-width: 991px) {
+            .vendor-reg-sidebar { margin-bottom: 1.5rem; padding: 1.25rem 1rem; }
+            .vendor-sidebar-title,
+            .vendor-sidebar-sub { display: none; }
+            .vendor-intro-badge { margin-bottom: 0.5rem; }
+
+            /* Horizontal stepper on tablet/mobile */
+            .vendor-step-rail {
+                display: flex;
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: flex-start;
+                gap: 0;
+                overflow-x: auto;
+                padding: 1.75rem 0.35rem 0.5rem;
+                margin: 0 -0.25rem;
+                scroll-snap-type: x proximity;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .vendor-step-rail::-webkit-scrollbar { display: none; }
+
+            .vendor-step-rail .wizard-step-connector {
+                display: block;
+                position: absolute;
+                left: 1.25rem;
+                right: 1.25rem;
+                top: 2.1rem;
+                bottom: auto;
+                width: auto;
+                height: 2px;
+                background: #ece9f5;
+            }
+            .vendor-step-rail .wizard-step-connector-fill {
+                display: block;
+                height: 100%;
+                background: linear-gradient(90deg, #10b981, #8b5cf6);
+                width: 0%;
+                transition: width 0.3s ease;
+            }
+
+            .vendor-step-rail .wizard-step {
+                flex: 1 0 0;
+                min-width: 4.5rem;
+                max-width: 5.5rem;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 0.4rem;
+                padding: 0 0.25rem;
+                scroll-snap-align: center;
+            }
+            .vendor-step-rail .wizard-step-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 0.95rem;
+                margin-bottom: 0;
+            }
+            .vendor-step-rail .wizard-step-label {
+                font-size: 0.62rem;
+                text-align: center;
+                line-height: 1.2;
+                max-width: 4.5rem;
+            }
+
+            .wizard-step-description {
+                margin-top: 0.75rem !important;
+                text-align: center;
+            }
+            .vendor-trust { display: none; }
+        }
+        @@media (max-width: 767px) {
+            .vendor-sidebar-title { font-size: 1.4rem; }
+            .vendor-step-rail .wizard-step { min-width: 3.75rem; }
+            .vendor-step-rail .wizard-step-label { font-size: 0.58rem; }
+        }
+
+        /* Servicing locations card */
+        .servicing-locations-card {
+            background: #fff;
+            border: 1px solid #ede9fe;
+            border-radius: 18px;
+            padding: 1.35rem;
+            box-shadow: 0 10px 28px -16px rgba(139, 92, 246, 0.25);
+        }
+        .servicing-locations-header {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            margin-bottom: 1.15rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .servicing-locations-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: #fff;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .btn-add-location {
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            color: #7c3aed;
+            background: #f5f3ff;
+            border: 1.5px dashed #c4b5fd;
+            transition: all 0.2s ease;
+        }
+        .btn-add-location:hover {
+            background: #ede9fe;
+            border-color: #8b5cf6;
+            color: #6d28d9;
+        }
+        .added-locations-panel {
+            background: #faf5ff;
+            border: 1px solid #e9d5ff;
+            border-radius: 14px;
+            padding: 1rem 1.15rem;
+        }
+        #locations-display .location-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #fff;
+            border: 1px solid #ddd6fe;
+            color: #5b21b6;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 0.4rem 0.75rem;
+            border-radius: 999px;
+        }
+        #locations-display .location-chip .remove-location {
+            border: none;
+            background: #fee2e2;
+            color: #dc2626;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .service-pincode-panel {
+            border: 1px solid #e9d5ff;
+            border-radius: 14px;
+            background: #faf5ff;
+            padding: 0.85rem 1rem;
+        }
+        .service-pincode-search {
+            border-radius: 10px !important;
+            border: 1px solid #ddd6fe !important;
+            font-size: 0.9rem;
+        }
+        .service-pincode-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.65rem 0 0.5rem;
+            gap: 0.5rem;
+        }
+        .service-pincode-select-all {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #5b21b6;
+            margin: 0;
+            cursor: pointer;
+        }
+        .service-pincode-list {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid #ede9fe;
+            border-radius: 12px;
+            background: #fff;
+        }
+        .service-pincode-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.55rem 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+        }
+        .service-pincode-item:last-child { border-bottom: none; }
+        .service-pincode-item:hover { background: #f5f3ff; }
+        .service-pincode-item input { margin-top: 0.2rem; flex-shrink: 0; accent-color: #8b5cf6; }
+        .service-pincode-item-label { line-height: 1.3; }
+        .service-pincode-item-label strong { color: #111827; font-size: 0.88rem; }
+        .service-pincode-item-label small { color: #6b7280; display: block; }
+        .service-pincode-empty {
+            padding: 1rem;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+
+        .vendor-contact-locked {
+            background-color: #f9fafb !important;
+            color: #374151;
+            cursor: not-allowed;
+        }
+        .vendor-contact-verify-banner {
+            background: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 100%);
+            border: 1px solid #e9d5ff;
+            border-radius: 14px;
+            padding: 1rem 1.15rem;
+        }
+        .vendor-contact-verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #059669;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            padding: 0.3rem 0.65rem;
+            border-radius: 999px;
+        }
+        .vendor-verify-popup .swal2-html-container { margin: 0.5rem 0 0; text-align: left; }
+        .vendor-verify-popup .form-label { font-size: 0.82rem; font-weight: 600; color: #374151; margin-bottom: 0.25rem; }
+        .vendor-verify-popup .form-control { border-radius: 10px; font-size: 0.92rem; }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -23,123 +387,80 @@
     <header class="vendor-registration-header">
         <div class="container">
             <div class="d-flex align-items-center gap-3">
-                <a href="@Url.Action("Index", "Home")" class="text-dark text-decoration-none">
+                <a href="@Url.Action("Index", "Home")" class="text-dark text-decoration-none back-link" title="Back to home">
                     <i class="fas fa-arrow-left"></i>
                 </a>
-                <a href="@Url.Action("Index", "Home")" class="logo">
-                    <span class="logo-icon">🎉</span>
-                    <span class="logo-text">privateparty wala</span>
-                </a>
+                <partial name="_BrandLogo" view-data='new ViewDataDictionary(ViewData) { { "LogoSize", 36 }, { "LogoClass", "brand-logo" } }' />
             </div>
             <div class="d-flex align-items-center gap-3">
-                <a href="@Url.Action("Login", "Account")" class="btn btn-sm btn-outline-dark-custom border-0">Already have an account?</a>
+                <span class="d-none d-md-inline text-muted small">Already a partner?</span>
+                <a href="@Url.Action("Login", "Account")" class="btn btn-sm btn-outline-dark-custom">Log In</a>
             </div>
         </div>
     </header>
 
-    <!-- Fixed Progress Indicator -->
-    <div class="wizard-progress-fixed">
-        <div class="wizard-progress-wrapper">
-            <div class="wizard-progress-header">
-                <h2 class="wizard-progress-title">Registration Progress</h2>
-                <span class="wizard-progress-counter">Step <span id="current-step-num">1</span> of 5</span>
-            </div>
+    <!-- Spacer for fixed header -->
+    <div class="vendor-content-spacer"></div>
 
-            <div class="wizard-progress-content">
-                <div class="wizard-steps-container">
-                    <!-- Connection Line -->
-                    <div class="wizard-step-connector">
-                        <div class="wizard-step-connector-fill" id="wizard-connector-fill"></div>
+    <!-- Main Content : two-column onboarding shell -->
+    <div class="container vendor-reg-shell py-4">
+        <div class="row g-4 g-lg-5">
+            <!-- LEFT: sticky progress + benefits sidebar -->
+            <aside class="col-lg-4">
+                <div class="vendor-reg-sidebar">
+                    <span class="vendor-intro-badge mb-3"><i class="fas fa-briefcase me-2"></i>Become a Partner</span>
+                    <h1 class="vendor-sidebar-title">Start your party business</h1>
+                    <p class="vendor-sidebar-sub">Free to join. Set your own prices and reach customers across 25+ cities.</p>
+
+                    <div class="vendor-step-rail-header">
+                        <span class="fw-semibold text-dark">Your progress</span>
+                        <span class="vendor-step-counter">Step <span id="current-step-num">1</span> of 5</span>
                     </div>
 
-                    <!-- Steps -->
-                    <div class="wizard-step active" data-step="1">
-                        <div class="wizard-step-icon">👤</div>
-                        <div class="wizard-step-label">
-                            <span class="d-sm-none">Info</span>
-                            <span class="d-none d-sm-inline">Personal Info</span>
+                    <!-- Vertical step tracker (state managed by vendor-registration.js) -->
+                    <div class="vendor-step-rail">
+                        <div class="wizard-step-connector">
+                            <div class="wizard-step-connector-fill" id="wizard-connector-fill"></div>
+                        </div>
+                        <div class="wizard-step active" data-step="1">
+                            <div class="wizard-step-icon">👤</div>
+                            <div class="wizard-step-label">Personal Info</div>
+                        </div>
+                        <div class="wizard-step" data-step="2">
+                            <div class="wizard-step-icon">🎯</div>
+                            <div class="wizard-step-label">Service Category</div>
+                        </div>
+                        <div class="wizard-step" data-step="3">
+                            <div class="wizard-step-icon">📁</div>
+                            <div class="wizard-step-label">Upload Portfolio</div>
+                        </div>
+                        <div class="wizard-step" data-step="4">
+                            <div class="wizard-step-icon">💰</div>
+                            <div class="wizard-step-label">Set Pricing</div>
+                        </div>
+                        <div class="wizard-step" data-step="5">
+                            <div class="wizard-step-icon">✅</div>
+                            <div class="wizard-step-label">Review & Submit</div>
                         </div>
                     </div>
-                    <div class="wizard-step" data-step="2">
-                        <div class="wizard-step-icon">🎯</div>
-                        <div class="wizard-step-label">
-                            <span class="d-sm-none">Category</span>
-                            <span class="d-none d-sm-inline">Service Category</span>
-                        </div>
+
+                    <div class="wizard-step-description mt-3">
+                        <p class="wizard-step-description-text mb-0" id="step-description">
+                            👤 Enter your personal details and address information
+                        </p>
                     </div>
-                    <div class="wizard-step" data-step="3">
-                        <div class="wizard-step-icon">📁</div>
-                        <div class="wizard-step-label">
-                            <span class="d-sm-none">Portfolio</span>
-                            <span class="d-none d-sm-inline">Upload Portfolio</span>
-                        </div>
-                    </div>
-                    <div class="wizard-step" data-step="4">
-                        <div class="wizard-step-icon">💰</div>
-                        <div class="wizard-step-label">
-                            <span class="d-sm-none">Pricing</span>
-                            <span class="d-none d-sm-inline">Set Pricing</span>
-                        </div>
-                    </div>
-                    <div class="wizard-step" data-step="5">
-                        <div class="wizard-step-icon">🏦</div>
-                        <div class="wizard-step-label">
-                            <span class="d-sm-none">Account</span>
-                            <span class="d-none d-sm-inline">Payment Setup</span>
-                        </div>
+
+                    <div class="vendor-trust mt-4">
+                        <div class="vendor-trust-item"><span class="vendor-trust-icon"><i class="fas fa-indian-rupee-sign"></i></span><div><strong>Flexible pricing</strong><span>Set your own rates</span></div></div>
+                        <div class="vendor-trust-item"><span class="vendor-trust-icon"><i class="fas fa-star"></i></span><div><strong>Build reputation</strong><span>Earn genuine reviews</span></div></div>
+                        <div class="vendor-trust-item"><span class="vendor-trust-icon"><i class="fas fa-shield-halved"></i></span><div><strong>Verified badge</strong><span>Win customer trust</span></div></div>
                     </div>
                 </div>
+            </aside>
 
-                <!-- Step Description -->
-                <div class="wizard-step-description">
-                    <p class="wizard-step-description-text mb-0" id="step-description">
-                        👤 Enter your personal details and address information
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Spacer for fixed elements -->
-    <div class="wizard-content-spacer"></div>
-
-    <!-- Main Content -->
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-10 col-xl-8">
+            <!-- RIGHT: form -->
+            <div class="col-lg-8">
                 
-                <!-- Header Section -->
-                <div class="text-center mb-5">
-                    <span class="badge bg-secondary mb-3">💼 Join as Party Professional</span>
-                    <h1 class="fw-bold mb-3">Start Your Party Business</h1>
-                    <p class="text-muted">Register for free and start earning from your party skills</p>
-                </div>
-
-                <!-- Benefits Cards -->
-                <div class="row g-3 mb-5">
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm text-center p-3">
-                            <div class="mb-2 text-warning display-6">₹</div>
-                            <div class="fw-bold">Flexible Pricing</div>
-                            <div class="small text-muted">Set your own rates</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm text-center p-3">
-                            <div class="mb-2 text-danger display-6">⭐</div>
-                            <div class="fw-bold">Build Reputation</div>
-                            <div class="small text-muted">Get customer reviews</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card h-100 border-0 shadow-sm text-center p-3">
-                            <div class="mb-2 text-success display-6">🛡️</div>
-                            <div class="fw-bold">Verified Badge</div>
-                            <div class="small text-muted">Trusted by customers</div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Registration Form Card -->
                 <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                     <div class="card-header bg-white border-bottom p-4">
@@ -148,28 +469,61 @@
                     </div>
                     <div class="card-body p-4 p-md-5">
                         <form asp-action="Register" method="post" id="vendor-registration-form" enctype="multipart/form-data">
+                            <input type="hidden" id="vendor-id" name="VendorId" value="" />
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div asp-validation-summary="All" class="alert alert-danger border-0 rounded-4" role="alert"></div>
+                            }
                             
                             <!-- STEP 1: Personal Information -->
                             <div id="step-1" class="step-content active">
                                 <!-- Personal Info -->
                                 <div class="mb-5">
-                                    <h5 class="fw-bold mb-3">Personal Information</h5>
-                                    <div class="row g-3">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                        <h5 class="fw-bold mb-0">Personal Information</h5>
+                                        <span id="contact-verified-badge" class="vendor-contact-verified-badge" style="display: none;">
+                                            <i class="fas fa-check-circle"></i> Contact verified
+                                        </span>
+                                    </div>
+
+                                    <div id="contact-verify-banner" class="vendor-contact-verify-banner mb-4">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                            <div>
+                                                <div class="fw-semibold text-dark small">Verify your contact details first</div>
+                                                <div class="text-muted small">We will send an OTP to your mobile number and save your details securely.</div>
+                                            </div>
+                                            <button type="button" class="btn btn-primary-gradient text-white fw-semibold px-3" id="btn-verify-contact" style="border-radius: 10px; white-space: nowrap;">
+                                                <i class="fas fa-mobile-alt me-1"></i> Verify Contact
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3" id="vendor-contact-fields">
                                         <div class="col-md-6">
-                                            <label class="vendor-form-label">First Name</label>
-                                            <input asp-for="Name" class="form-control vendor-form-input" placeholder="Enter your first name" required>
+                                            <label class="vendor-form-label" for="vendor-name">First Name</label>
+                                            <input asp-for="Name" id="vendor-name" class="form-control vendor-form-input" placeholder="Enter your first name"
+                                                   required minlength="2" maxlength="150" pattern="[A-Za-z\s.'-]{2,150}" autocomplete="given-name">
+                                            <div class="invalid-feedback">Enter a valid name (2–150 letters).</div>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="vendor-form-label">Last Name</label>
-                                            <input type="text" class="form-control vendor-form-input" placeholder="Enter your last name">
+                                            <label class="vendor-form-label" for="vendor-last-name">Last Name</label>
+                                            <input type="text" id="vendor-last-name" name="LastName" class="form-control vendor-form-input" placeholder="Enter your last name"
+                                                   required minlength="2" maxlength="150" pattern="[A-Za-z\s.'-]{2,150}" autocomplete="family-name">
+                                            <div class="invalid-feedback">Enter a valid last name (2–150 letters).</div>
                                         </div>
                                         <div class="col-12">
-                                            <label class="vendor-form-label">Email</label>
-                                            <input asp-for="Email" type="email" class="form-control vendor-form-input" placeholder="you@example.com" required>
+                                            <label class="vendor-form-label" for="vendor-email">Email</label>
+                                            <input asp-for="Email" id="vendor-email" type="email" class="form-control vendor-form-input" placeholder="you@example.com"
+                                                   required maxlength="254" autocomplete="email">
+                                            <div class="invalid-feedback">Enter a valid business email address.</div>
                                         </div>
                                         <div class="col-12">
-                                            <label class="vendor-form-label">Phone Number</label>
-                                            <input asp-for="Phone" class="form-control vendor-form-input" placeholder="+91 98765-43210" required>
+                                            <label class="vendor-form-label" for="vendor-phone">Phone Number</label>
+                                            <input asp-for="Phone" id="vendor-phone" class="form-control vendor-form-input" placeholder="9876543210"
+                                                   required inputmode="tel" autocomplete="tel" maxlength="14"
+                                                   pattern="^(\+91[\s-]?)?[6-9]\d{9}$" title="10-digit Indian mobile number starting with 6, 7, 8, or 9">
+                                            <div class="form-text small text-muted">10-digit Indian mobile number (starts with 6–9). +91 prefix optional.</div>
+                                            <div class="invalid-feedback">Enter a valid 10-digit Indian mobile number.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -179,8 +533,8 @@
                                     <h5 class="fw-bold mb-3">Your Address</h5>
                                     <div class="row g-3">
                                         <div class="col-md-6">
-                                            <label class="vendor-form-label">State</label>
-                                            <select class="form-select vendor-form-input" data-cascade="state">
+                                            <label class="vendor-form-label" for="vendor-address-state">State</label>
+                                            <select id="vendor-address-state" class="form-select vendor-form-input" data-cascade="state" required>
                                                 <option value="">Select your state</option>
                                                 <option value="Maharashtra">Maharashtra</option>
                                                 <option value="Delhi">Delhi</option>
@@ -198,24 +552,31 @@
                                                 <option value="Haryana">Haryana</option>
                                                 <option value="Bihar">Bihar</option>
                                             </select>
+                                            <div class="invalid-feedback">Please select your state.</div>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="vendor-form-label">City</label>
-                                            <select class="form-select vendor-form-input" data-cascade="city" disabled>
+                                            <label class="vendor-form-label" for="vendor-address-city">City</label>
+                                            <select id="vendor-address-city" class="form-select vendor-form-input" data-cascade="city" disabled required>
                                                 <option value="">Select your city</option>
                                             </select>
+                                            <div class="invalid-feedback">Please select your city.</div>
                                         </div>
                                         <div class="col-12">
-                                            <label class="vendor-form-label">Pin Code</label>
+                                            <label class="vendor-form-label" for="main-pincode-input">Pin Code</label>
                                             <div class="position-relative">
-                                                <input asp-for="PinCode" id="main-pincode-input" class="form-control vendor-form-input" placeholder="Search pin code or area (e.g., 110001)" autocomplete="off" required>
+                                                <input asp-for="PinCode" id="main-pincode-input" class="form-control vendor-form-input" placeholder="Search pin code or area (e.g., 110001)"
+                                                       autocomplete="postal-code" inputmode="numeric" required maxlength="6"
+                                                       pattern="[1-9][0-9]{5}" title="6-digit Indian pin code">
                                                 <div id="pincode-autocomplete" class="pincode-autocomplete-dropdown" style="display: none;"></div>
-                                                <small class="text-muted mt-1 d-block">Start typing to search from 1000+ pin codes across India or enter 6-digit pin code directly</small>
+                                                <small class="text-muted mt-1 d-block">Enter a valid 6-digit Indian pin code.</small>
+                                                <div class="invalid-feedback">Pin code must be exactly 6 digits and cannot start with 0.</div>
                                             </div>
                                         </div>
                                         <div class="col-12">
-                                            <label class="vendor-form-label">Street Address</label>
-                                            <textarea asp-for="Address" class="form-control vendor-form-input" rows="2" placeholder="Enter your street address"></textarea>
+                                            <label class="vendor-form-label" for="vendor-address">Street Address</label>
+                                            <textarea asp-for="Address" id="vendor-address" class="form-control vendor-form-input" rows="2" placeholder="Enter your street address"
+                                                      required minlength="5" maxlength="500"></textarea>
+                                            <div class="invalid-feedback">Street address must be at least 5 characters.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -243,18 +604,23 @@
 
                                 <!-- Servicing Locations -->
                                 <div class="mb-5">
-                                    <h5 class="fw-bold mb-3">Servicing Locations</h5>
-                                    <p class="small text-muted mb-3">Select the cities where you provide your services.</p>
-                                    
-                                    <div class="card border bg-light">
-                                        <div class="card-body p-4">
-                                            <h6 class="fw-semibold mb-3">Add Servicing City</h6>
-                                            <div id="locations-container">
-                                                <div class="row g-3 location-row">
-                                                    <div class="col-md-4">
-                                                        <label class="vendor-form-label">State</label>
-                                                        <select class="form-select vendor-form-input" data-cascade="state">
-                                                            <option value="">Select state</option>
+                                    <h5 class="fw-bold mb-2">Servicing Locations</h5>
+                                    <p class="small text-muted mb-3">Add cities where you provide services so customers can find you nearby.</p>
+
+                                    <div class="servicing-locations-card">
+                                        <div class="servicing-locations-header">
+                                            <span class="servicing-locations-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">Add Servicing City</h6>
+                                                <p class="small text-muted mb-0">Select state and city, choose pin codes, then click add</p>
+                                            </div>
+                                        </div>
+                                        <div id="locations-container">
+                                            <div class="row g-3 location-row">
+                                                <div class="col-md-4">
+                                                    <label class="vendor-form-label" for="service-location-state">State</label>
+                                                    <select id="service-location-state" class="form-select vendor-form-input" data-cascade="state">
+                                                        <option value="">Select state</option>
                                                             <option value="Maharashtra">Maharashtra</option>
                                                             <option value="Delhi">Delhi</option>
                                                             <option value="Karnataka">Karnataka</option>
@@ -272,34 +638,38 @@
                                                             <option value="Bihar">Bihar</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-4">
-                                                        <label class="vendor-form-label">City</label>
-                                                        <select class="form-select vendor-form-input" data-cascade="city" disabled>
+                                                    <div class="col-md-8">
+                                                        <label class="vendor-form-label" for="service-location-city">City</label>
+                                                        <select id="service-location-city" class="form-select vendor-form-input" data-cascade="city" disabled>
                                                             <option value="">Select city</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-4">
-                                                        <label class="vendor-form-label">Pin Code <span class="text-muted fw-normal">(Optional)</span></label>
-                                                        <div class="position-relative">
-                                                            <input type="text" class="form-control vendor-form-input" id="location-pincode" placeholder="Search pin code..." autocomplete="off">
-                                                            <div id="location-pincode-autocomplete" class="pincode-autocomplete-dropdown" style="display: none;"></div>
+                                                    <div class="col-12">
+                                                        <label class="vendor-form-label">Pin Codes <span class="text-muted fw-normal">(select one or more)</span></label>
+                                                        <p id="service-pincode-hint" class="small text-muted mb-2">Select a city to load available pin codes.</p>
+                                                        <div id="service-pincode-panel" class="service-pincode-panel" style="display: none;">
+                                                            <input type="text" id="service-pincode-search" class="form-control service-pincode-search" placeholder="Search pin code or area..." autocomplete="off">
+                                                            <div class="service-pincode-toolbar">
+                                                                <label class="service-pincode-select-all mb-0">
+                                                                    <input type="checkbox" id="service-pincode-select-all">
+                                                                    Select all visible
+                                                                </label>
+                                                                <span id="service-pincode-count" class="small text-muted">0 selected</span>
+                                                            </div>
+                                                            <div id="service-pincode-list" class="service-pincode-list"></div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <button type="button" id="btn-add-location" class="btn btn-outline-primary w-100 mt-3 rounded-3">
-                                                + Add Servicing Location
+                                            <button type="button" id="btn-add-location" class="btn btn-add-location w-100 mt-3">
+                                                <i class="fas fa-plus me-2"></i>Add Servicing Location
                                             </button>
-                                            
-                                            <!-- Added Locations Display -->
-                                            <div id="added-locations-list" class="mt-4" style="display: none;">
-                                                <h6 class="fw-semibold mb-3">📍 Your Servicing Areas:</h6>
-                                                <div id="locations-display" class="d-flex flex-wrap gap-2">
-                                                    <!-- Location badges will be added here -->
-                                                </div>
-                                                <p class="small text-muted mt-2">Customers in these areas will be able to find and book your services</p>
+
+                                            <div id="added-locations-list" class="added-locations-panel mt-4" style="display: none;">
+                                                <h6 class="fw-semibold mb-3"><i class="fas fa-location-dot text-primary me-2"></i>Your Servicing Areas</h6>
+                                                <div id="locations-display" class="d-flex flex-wrap gap-2"></div>
+                                                <p class="small text-muted mt-2 mb-0">Customers in these areas will be able to find and book your services.</p>
                                             </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -325,18 +695,15 @@
                                 </div>
                                 
                                 <div class="row g-3 g-md-4" id="category-grid">
-                                    <!-- Categories rendered by JS -->
                                 </div>
 
                                 <div id="subcategory-wrapper" style="display: none;" class="mt-5">
                                     <h5 class="fw-bold mb-3">Your Specializations</h5>
                                     <p class="text-muted small mb-3">Select the specific areas you specialize in</p>
                                     <div class="row g-3" id="subcategory-container">
-                                        <!-- Subcategories rendered by JS -->
                                     </div>
                                     
                                     <div class="mt-4" id="custom-fields-container">
-                                        <!-- Custom fields rendered by JS -->
                                     </div>
                                 </div>
                             </div>
@@ -403,17 +770,16 @@
 
                                 <h5 class="fw-bold mb-3">Pricing Model</h5>
                                 <div class="row g-3 mb-4" id="pricing-model-container">
-                                    <!-- Pricing models rendered by JS -->
                                 </div>
 
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
                                         <label class="vendor-form-label">Base Price (₹)</label>
-                                        <input type="number" class="form-control vendor-form-input" id="base-price" name="BasePrice" placeholder="Enter amount">
+                                        <input type="number" class="form-control vendor-form-input" id="base-price" name="BasePrice" min="1" step="0.01" placeholder="Enter amount">
                                     </div>
                                     <div class="col-md-6">
                                         <label class="vendor-form-label">Discounted Price (Optional)</label>
-                                        <input type="number" class="form-control vendor-form-input" id="discount-price" name="DiscountPrice" placeholder="Special offer price">
+                                        <input type="number" class="form-control vendor-form-input" id="discount-price" name="DiscountPrice" min="1" step="0.01" placeholder="Special offer price">
                                     </div>
                                 </div>
 
@@ -445,11 +811,11 @@
                                                         <div class="row g-3">
                                                             <div class="col-md-6">
                                                                 <label class="vendor-form-label">Base Rate (₹) <span class="text-danger">*</span></label>
-                                                                <input type="number" class="form-control vendor-form-input" id="weekday-base" name="WeekdayBase">
+                                                                <input type="number" class="form-control vendor-form-input" id="weekday-base" name="WeekdayBase" min="1" step="0.01">
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <label class="vendor-form-label">Discounted Rate (₹)</label>
-                                                                <input type="number" class="form-control vendor-form-input" id="weekday-discount" name="WeekdayDiscount">
+                                                                <input type="number" class="form-control vendor-form-input" id="weekday-discount" name="WeekdayDiscount" min="1" step="0.01">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -464,11 +830,11 @@
                                                         <div class="row g-3">
                                                             <div class="col-md-6">
                                                                 <label class="vendor-form-label">Base Rate (₹) <span class="text-danger">*</span></label>
-                                                                <input type="number" class="form-control vendor-form-input" id="weekend-base" name="WeekendBase">
+                                                                <input type="number" class="form-control vendor-form-input" id="weekend-base" name="WeekendBase" min="1" step="0.01">
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <label class="vendor-form-label">Discounted Rate (₹)</label>
-                                                                <input type="number" class="form-control vendor-form-input" id="weekend-discount" name="WeekendDiscount">
+                                                                <input type="number" class="form-control vendor-form-input" id="weekend-discount" name="WeekendDiscount" min="1" step="0.01">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -483,11 +849,11 @@
                                                         <div class="row g-3 mb-3">
                                                             <div class="col-md-6">
                                                                 <label class="vendor-form-label">Base Rate (₹) <span class="text-danger">*</span></label>
-                                                                <input type="number" class="form-control vendor-form-input" id="festival-base" name="FestivalBase">
+                                                                <input type="number" class="form-control vendor-form-input" id="festival-base" name="FestivalBase" min="1" step="0.01">
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <label class="vendor-form-label">Discounted Rate (₹)</label>
-                                                                <input type="number" class="form-control vendor-form-input" id="festival-discount" name="FestivalDiscount">
+                                                                <input type="number" class="form-control vendor-form-input" id="festival-discount" name="FestivalDiscount" min="1" step="0.01">
                                                             </div>
                                                         </div>
                                                         
@@ -523,43 +889,42 @@
                                 </div>
                             </div>
 
-                            <!-- STEP 5: Account Setup -->
+                            <!-- STEP 5: Review & Submit -->
                             <div id="step-5" class="step-content">
                                 <div class="text-center mb-4">
-                                    <h5 class="fw-bold">Payment Account Setup</h5>
-                                    <p class="text-muted small">Add your bank accounts and UPI details for receiving payments</p>
+                                    <h5 class="fw-bold">Review & Submit</h5>
+                                    <p class="text-muted small">Confirm your details and complete registration</p>
                                 </div>
 
-                                <div class="mb-4">
-                                    <h5 class="fw-bold mb-3">Bank Details</h5>
-                                    <div class="row g-3">
-                                        <div class="col-12">
-                                            <label class="vendor-form-label">Account Holder Name</label>
-                                            <input type="text" class="form-control vendor-form-input" id="account-holder" name="AccountHolderName" placeholder="As per bank records">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="vendor-form-label">Account Number</label>
-                                            <input type="text" class="form-control vendor-form-input" id="account-number" name="AccountNumber" placeholder="Enter account number">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="vendor-form-label">IFSC Code</label>
-                                            <input type="text" class="form-control vendor-form-input" id="ifsc-code" name="IfscCode" placeholder="e.g., HDFC0001234">
+                                <div class="alert alert-info border-0 bg-primary bg-opacity-10 rounded-4 mb-4">
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="text-primary fs-4"><i class="bi bi-shield-lock-fill"></i></div>
+                                        <div>
+                                            <h6 class="fw-bold text-primary mb-1">Payment details added after sign-in</h6>
+                                            <p class="small text-muted mb-0">
+                                                For your security, bank account and UPI information is <strong>not</strong> collected on this public form.
+                                                After registration, add payout details from your authenticated vendor dashboard under
+                                                <strong>Profile → Bank &amp; Payment Details</strong>.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="mb-4">
-                                    <h5 class="fw-bold mb-3">UPI Details</h5>
-                                    <div class="col-12">
-                                        <label class="vendor-form-label">UPI ID (Optional)</label>
-                                        <input type="text" class="form-control vendor-form-input" id="upi-id" name="UpiId" placeholder="e.g., mobile@upi">
+                                <div class="card bg-light border-0 rounded-4 mb-4">
+                                    <div class="card-body p-4">
+                                        <h6 class="fw-bold mb-3">Before you submit</h6>
+                                        <ul class="small text-muted mb-0 ps-3">
+                                            <li class="mb-2">Your contact and service information will be saved to create your vendor profile.</li>
+                                            <li class="mb-2">You will be signed in automatically after successful registration.</li>
+                                            <li>Payout setup can be completed securely from your dashboard at any time.</li>
+                                        </ul>
                                     </div>
                                 </div>
 
                                 <div class="form-check mb-4">
                                     <input class="form-check-input" type="checkbox" id="terms" required>
                                     <label class="form-check-label small text-muted" for="terms">
-                                        I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a>.
+                                        I agree to the <a href="@Url.Action("TrustCenter", "Home")" target="_blank" class="text-primary">Terms of Service</a> and <a href="@Url.Action("Privacy", "Home")" target="_blank" class="text-primary">Privacy Policy</a>.
                                     </label>
                                 </div>
                             </div>
@@ -586,6 +951,8 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         // Photo Upload Handler
         document.getElementById('photo-upload').addEventListener('change', function(e) {
@@ -718,6 +1085,14 @@
             console.log('Base path initialized to:', window.basePath);
         })();
     </script>
-    <script src="~/js/vendor-registration.js"></script>
+    <script>
+        // Standalone layout: clear stale service workers that can break fetch/API calls
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                registrations.forEach(function (registration) { registration.unregister(); });
+            });
+        }
+    </script>
+    <script src="~/js/vendor-registration.js" asp-append-version="true"></script>
 </body>
 </html>

@@ -1,0 +1,35 @@
+@using System.Text.Json
+@{
+    var vendorId = ViewData["CalendarVendorId"] as string ?? "";
+    var initialDate = ViewData["CalendarInitialDate"] as string ?? "";
+    var schedule = ViewData["CalendarSchedule"] as List<PartyClap.Models.VendorScheduleEntry> ?? new List<PartyClap.Models.VendorScheduleEntry>();
+    var schedulePayload = schedule.Select(e => new
+    {
+        date = e.Date.ToString("yyyy-MM-dd"),
+        booked = e.IsBooked,
+        underProcess = e.IsUnderProcess,
+        label = e.Label
+    });
+    var scheduleJson = JsonSerializer.Serialize(schedulePayload);
+}
+<div class="vendor-availability-calendar"
+     data-vendor-id="@vendorId"
+     data-initial-date="@initialDate">
+    <script type="application/json" class="vac-schedule-json">@Html.Raw(scheduleJson)</script>
+    <div class="vac-header d-flex justify-content-between align-items-center mb-2">
+        <span class="small fw-bold text-muted">Availability</span>
+        <div class="vac-nav d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm btn-light vac-prev" aria-label="Previous month"><i class="bi bi-chevron-left"></i></button>
+            <span class="vac-month-label small fw-semibold"></span>
+            <button type="button" class="btn btn-sm btn-light vac-next" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>
+        </div>
+    </div>
+    <div class="vac-weekdays small text-muted"></div>
+    <div class="vac-grid"></div>
+    <div class="vac-legend d-flex flex-wrap gap-3 mt-2 small">
+        <span><span class="vac-legend-dot vac-available"></span> Available</span>
+        <span><span class="vac-legend-dot vac-under-process"></span> Under Process</span>
+        <span><span class="vac-legend-dot vac-booked"></span> Booked</span>
+    </div>
+    <p class="vac-selected-label small text-primary fw-semibold mt-2 mb-0" style="display:none;"></p>
+</div>

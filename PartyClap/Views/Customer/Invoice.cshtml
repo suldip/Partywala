@@ -1,0 +1,123 @@
+@model PartyClap.Models.Booking
+@{
+    Layout = null;
+    var vendor = ViewBag.Vendor as PartyClap.Models.Vendor;
+    var service = ViewBag.Service as PartyClap.Models.ServiceListing;
+    var customer = ViewBag.Customer as PartyClap.Models.Customer;
+    var invoiceNo = "INV-" + Model.Id.Substring(0, 8).ToUpper();
+    var statusText = Model.BalancePaidOnApp ? "PAID" : (Model.Status == "Confirmed" ? "PAID" : "ADVANCE PAID");
+    var timeRange = (!string.IsNullOrEmpty(Model.EventStartTime) || !string.IsNullOrEmpty(Model.EventEndTime))
+        ? $"{Model.EventStartTime}–{Model.EventEndTime}" : "—";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invoice @invoiceNo · PartyClap</title>
+    <style>
+        :root { --brand1:#7c3aed; --brand2:#ec4899; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; }
+        * { box-sizing: border-box; }
+        body { margin:0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: var(--ink); background:#f3f4f6; }
+        .toolbar { max-width: 800px; margin: 24px auto 0; display:flex; justify-content:flex-end; gap:12px; padding:0 16px; }
+        .btn { border:0; border-radius:999px; padding:10px 22px; font-size:14px; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+        .btn-primary { background:linear-gradient(135deg,var(--brand1),var(--brand2)); color:#fff; }
+        .btn-ghost { background:#fff; color:var(--ink); border:1px solid var(--line); }
+        .sheet { max-width:800px; margin:16px auto 48px; background:#fff; padding:48px; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.08); }
+        .head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--line); padding-bottom:24px; }
+        .brand { font-size:26px; font-weight:800; background:linear-gradient(135deg,var(--brand1),var(--brand2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .brand small { display:block; font-size:12px; font-weight:500; color:var(--muted); -webkit-text-fill-color: var(--muted); }
+        .inv-meta { text-align:right; font-size:13px; color:var(--muted); }
+        .inv-meta .no { font-size:18px; font-weight:700; color:var(--ink); }
+        .badge { display:inline-block; margin-top:8px; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700; background:#dcfce7; color:#166534; letter-spacing:.5px; }
+        .parties { display:flex; justify-content:space-between; gap:24px; margin:28px 0; }
+        .party { font-size:13px; line-height:1.7; }
+        .party h4 { margin:0 0 6px; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+        .party .name { font-size:15px; font-weight:700; }
+        table { width:100%; border-collapse:collapse; margin-top:8px; }
+        thead th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); border-bottom:1px solid var(--line); padding:10px 8px; }
+        tbody td { padding:14px 8px; border-bottom:1px solid var(--line); font-size:14px; vertical-align:top; }
+        .text-right { text-align:right; }
+        .totals { margin-left:auto; width:300px; margin-top:18px; font-size:14px; }
+        .totals .row { display:flex; justify-content:space-between; padding:8px 0; }
+        .totals .grand { border-top:2px solid var(--line); margin-top:6px; padding-top:12px; font-size:18px; font-weight:800; }
+        .totals .muted { color:var(--muted); }
+        .footer { margin-top:40px; padding-top:20px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); text-align:center; }
+        @@media print {
+            body { background:#fff; }
+            .toolbar { display:none; }
+            .sheet { box-shadow:none; margin:0; max-width:100%; padding:24px; border-radius:0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-ghost">&larr; Back</a>
+        <button class="btn btn-primary" onclick="window.print()">Download / Print PDF</button>
+    </div>
+
+    <div class="sheet">
+        <div class="head">
+            <div>
+                <div class="brand">PartyClap<small>Your celebration, sorted.</small></div>
+            </div>
+            <div class="inv-meta">
+                <div class="no">@invoiceNo</div>
+                <div>Issued: @Model.BookingDate.ToString("MMM dd, yyyy")</div>
+                <div><span class="badge">@statusText</span></div>
+            </div>
+        </div>
+
+        <div class="parties">
+            <div class="party">
+                <h4>Billed To</h4>
+                <div class="name">@(customer?.Name ?? "Customer")</div>
+                @if (!string.IsNullOrEmpty(customer?.Email)) { <div>@customer.Email</div> }
+                @if (!string.IsNullOrEmpty(customer?.Phone)) { <div>@customer.Phone</div> }
+            </div>
+            <div class="party text-right">
+                <h4>Service Provider</h4>
+                <div class="name">@(vendor?.Name ?? "Vendor")</div>
+                @if (!string.IsNullOrEmpty(vendor?.Phone)) { <div>@vendor.Phone</div> }
+                @if (!string.IsNullOrEmpty(vendor?.Email)) { <div>@vendor.Email</div> }
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Event Date</th>
+                    <th>Time</th>
+                    <th class="text-right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <strong>@(service?.ServiceType ?? "Event Service")</strong>
+                        @if (!string.IsNullOrEmpty(service?.Description))
+                        {
+                            <div style="color:var(--muted);font-size:12px;margin-top:4px;">@service.Description</div>
+                        }
+                    </td>
+                    <td>@Model.EventDate.ToString("MMM dd, yyyy")</td>
+                    <td>@timeRange</td>
+                    <td class="text-right">₹@Model.VendorCost.ToString("N0")</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <div class="row grand"><span>Total</span><span>₹@Model.CustomerTotalCost.ToString("N0")</span></div>
+            <div class="row" style="margin-top:8px;"><span class="muted">Advance Paid</span><span>₹@Model.AdvancePaid.ToString("N0")</span></div>
+            <div class="row"><span class="muted">Balance @(Model.BalancePaidOnApp ? "(Paid)" : "Due")</span><span>₹@Model.BalanceAmount.ToString("N0")</span></div>
+        </div>
+
+        <div class="footer">
+            This is a computer-generated invoice and does not require a signature.<br />
+            Booking reference: @Model.Id · Thank you for choosing PartyClap.
+        </div>
+    </div>
+</body>
+</html>

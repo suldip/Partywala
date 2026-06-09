@@ -1,47 +1,238 @@
-@model List<PartyClap.Models.CartItem>
+@model PartyClap.Models.CartPageViewModel
 
 @{
     ViewData["Title"] = "Your Cart";
+    var cartItems = Model?.Items ?? new List<PartyClap.Models.CartItem>();
+    var pendingRequests = Model?.PendingRequests ?? new List<PartyClap.Models.CartRequestItem>();
+    var acceptedRequests = Model?.AcceptedRequests ?? new List<PartyClap.Models.CartRequestItem>();
+    var cartBadgeTotal = cartItems.Count + pendingRequests.Count + acceptedRequests.Count;
 }
 
-<div class="container py-5">
+<div class="container py-5 cart-page @(Model != null && Model.HasContent ? "has-items" : "")">
     <div class="row mb-4">
         <div class="col-12">
             <h1 class="fw-bold mb-2">Your Cart</h1>
-            <p class="text-muted">Review your selected services and proceed to checkout.</p>
+            <p class="text-muted">Send new requests, track pending vendor responses, and pay for accepted bookings — all in one place.</p>
         </div>
     </div>
 
-    @if (Model != null && Model.Count > 0)
+    @if (Model?.ExpiredVendorNotices?.Any() == true)
+    {
+        <div class="alert alert-warning border-0 shadow-sm rounded-4 mb-4 cart-expired-notice" role="alert">
+            <div class="d-flex gap-3">
+                <div class="cart-expired-icon flex-shrink-0">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h5 class="fw-bold mb-2">Vendor did not respond in time</h5>
+                    @foreach (var notice in Model.ExpiredVendorNotices)
+                    {
+                        <p class="mb-2 small">@notice</p>
+                    }
+                    <a href="@Url.Action("Explore", "Customer")" class="btn btn-sm btn-warning rounded-pill px-3 fw-semibold">
+                        <i class="bi bi-search me-1"></i> Choose another vendor
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (pendingRequests.Any() || acceptedRequests.Any())
+    {
+        <link rel="stylesheet" href="~/css/payment-checkout.css" asp-append-version="true" />
+    }
+
+    @if (pendingRequests.Any())
+    {
+        <div class="cart-request-section mb-4">
+            <div class="pay-accepted-checkout pay-pending-checkout">
+                <div class="pay-accepted-header d-flex flex-wrap justify-content-between align-items-start gap-2">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="bi bi-hourglass-split text-warning me-2"></i>Pending cart</h4>
+                        <p class="text-muted small mb-0">Vendors have 2 hours to accept or decline. Requests are removed automatically if there is no response.</p>
+                    </div>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-2">@pendingRequests.Count item@(pendingRequests.Count == 1 ? "" : "s")</span>
+                </div>
+                @foreach (var req in pendingRequests)
+                {
+                    var statusLabel = req.Status == "Rejected" ? "Declined" : (req.Status == "Pending" ? "Pending approval" : req.Status);
+                    var statusClass = req.Status == "Rejected" ? "cart-status-rejected" : "cart-status-pending";
+                    <div class="pay-accepted-item pay-pending-item">
+                        <div class="pay-accepted-item-info">
+                            <div class="pay-accepted-item-title">@req.ServiceType</div>
+                            <div class="pay-accepted-item-vendor"><i class="bi bi-shop me-1"></i>@req.VendorName</div>
+                            <div class="pay-accepted-item-date">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                @req.EventDate.ToString("MMM dd, yyyy")@(req.EventEndDate.HasValue && req.EventEndDate.Value.Date != req.EventDate.Date ? " – " + req.EventEndDate.Value.ToString("MMM dd, yyyy") : "")
+                                · @req.DayCount day@(req.DayCount == 1 ? "" : "s")
+                                @if (!string.IsNullOrEmpty(req.EventStartTime))
+                                {
+                                    <span> · @req.EventStartTime@(string.IsNullOrEmpty(req.EventEndTime) ? "" : "–" + req.EventEndTime)</span>
+                                }
+                            </div>
+                            <span class="cart-request-status @statusClass">@statusLabel</span>
+                        </div>
+                        <div class="pay-accepted-item-side">
+                            <div class="pay-accepted-price">₹@req.TotalCost.ToString("N0")</div>
+                            <form asp-action="RemoveCartRequest" method="post" class="cart-request-delete-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@req.Id" />
+                                <input type="hidden" name="source" value="@req.Source" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill cart-request-delete-btn"
+                                        data-confirm="Remove this pending request from your cart?"
+                                        data-confirm-title="Remove request">
+                                    <i class="bi bi-trash3 me-1"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @if (acceptedRequests.Any())
+    {
+        var acceptedSubtotal = Model.AcceptedSubtotal;
+        var acceptedGst = Model.AcceptedGstAmount;
+        var acceptedGrandTotal = Model.AcceptedGrandTotal;
+        var gstPercent = Model.GstPercent;
+        <div class="cart-request-section mb-4">
+            <div class="pay-accepted-checkout">
+                <div class="pay-accepted-header d-flex flex-wrap justify-content-between align-items-start gap-2">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="bi bi-check-circle-fill text-success me-2"></i>Accepted cart</h4>
+                        <p class="text-muted small mb-0">Vendor approved these bookings. Pay all in one secure checkout.</p>
+                    </div>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">@acceptedRequests.Count item@(acceptedRequests.Count == 1 ? "" : "s")</span>
+                </div>
+                @foreach (var req in acceptedRequests)
+                {
+                    <div class="pay-accepted-item">
+                        <div class="pay-accepted-item-info">
+                            <div class="pay-accepted-item-title">@req.ServiceType</div>
+                            <div class="pay-accepted-item-vendor"><i class="bi bi-shop me-1"></i>@req.VendorName</div>
+                            <div class="pay-accepted-item-date">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                @req.EventDate.ToString("MMM dd, yyyy")@(req.EventEndDate.HasValue && req.EventEndDate.Value.Date != req.EventDate.Date ? " – " + req.EventEndDate.Value.ToString("MMM dd, yyyy") : "")
+                                · @req.DayCount day@(req.DayCount == 1 ? "" : "s")
+                                @if (!string.IsNullOrEmpty(req.EventStartTime))
+                                {
+                                    <span> · @req.EventStartTime@(string.IsNullOrEmpty(req.EventEndTime) ? "" : "–" + req.EventEndTime)</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="pay-accepted-item-side">
+                            <div class="pay-accepted-item-pricing">
+                                <div class="pay-accepted-item-line">
+                                    <span class="label">Subtotal</span>
+                                    <span class="amount">₹@req.TotalCost.ToString("N0")</span>
+                                </div>
+                                <div class="pay-accepted-item-line">
+                                    <span class="label">GST (@gstPercent.ToString("0.##")%)</span>
+                                    <span class="amount">₹@req.GstAmount.ToString("N0")</span>
+                                </div>
+                                <div class="pay-accepted-item-line pay-accepted-item-total">
+                                    <span class="label">Total</span>
+                                    <span class="amount">₹@req.GrandTotal.ToString("N0")</span>
+                                </div>
+                            </div>
+                            <form asp-action="RemoveCartRequest" method="post" class="cart-request-delete-form">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@req.Id" />
+                                <input type="hidden" name="source" value="@req.Source" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill cart-request-delete-btn"
+                                        data-confirm="Remove this approved item? You can send a new request later."
+                                        data-confirm-title="Remove item">
+                                    <i class="bi bi-trash3 me-1"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+                <div class="pay-accepted-summary-bar">
+                    <div>
+                        <div class="pay-summary-line mb-1">
+                            <span class="label text-muted small">Subtotal</span>
+                            <span class="amount small">₹@acceptedSubtotal.ToString("N0")</span>
+                        </div>
+                        <div class="pay-summary-line mb-2">
+                            <span class="label text-muted small">GST (@gstPercent%)</span>
+                            <span class="amount small">₹@acceptedGst.ToString("N0")</span>
+                        </div>
+                        <div class="pay-accepted-total-label">Total payable</div>
+                        <div class="pay-accepted-total-value">₹@acceptedGrandTotal.ToString("N0")</div>
+                    </div>
+                    <div class="d-flex flex-column align-items-end gap-2">
+                        <a href="@Url.Action("PaymentCheckout", "Customer")" class="pay-btn-primary text-decoration-none" style="width:auto;min-width:220px;">
+                            <i class="bi bi-shield-lock"></i> Pay ₹@acceptedGrandTotal.ToString("N0")
+                        </a>
+                        <div class="pay-trust-row mb-0 border-0 pt-0">
+                            <span class="pay-trust-item"><i class="bi bi-shield-check"></i> Secure</span>
+                            <span class="pay-trust-item"><i class="bi bi-receipt"></i> GST invoice</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (cartItems.Any())
     {
         <div class="row g-4">
-            <!-- Cart Items List -->
+            <div class="col-12 mb-2">
+                <h4 class="fw-bold mb-1"><i class="bi bi-cart3 text-primary me-2"></i>New request cart</h4>
+                <p class="text-muted small mb-0">Add services here, then send the request to the vendor.</p>
+            </div>
+            <!-- Cart Items List (grouped by vendor) -->
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <div class="card-body p-0">
-                        @foreach (var item in Model)
+                @{
+                    var vendorGroups = cartItems
+                        .GroupBy(x => new { x.VendorId, x.VendorName })
+                        .ToList();
+                }
+                @foreach (var group in vendorGroups)
+                {
+                    var vendorSubtotal = group.Sum(x => x.LineTotal > 0 ? x.LineTotal : x.Cost);
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                        <div class="d-flex justify-content-between align-items-center px-4 py-3 cart-vendor-header"
+                             style="background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(236,72,153,0.08));">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="rounded-circle d-flex align-items-center justify-content-center"
+                                      style="width:34px;height:34px;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;">
+                                    <i class="bi bi-shop"></i>
+                                </span>
+                                <div>
+                                    <div class="fw-bold">@group.Key.VendorName</div>
+                                    <small class="text-muted">@group.Count() item(s)</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">Vendor subtotal</small>
+                                <span class="fw-bold text-primary">₹@vendorSubtotal.ToString("N0")</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                        @foreach (var item in group)
                         {
-                            <div class="p-4 border-bottom last-border-0">
-                                <div class="row align-items-center">
-                                    <div class="col-md-2 mb-3 mb-md-0">
-                                        <div class="ratio ratio-1x1 rounded-3 bg-light d-flex align-items-center justify-content-center overflow-hidden">
+                            <div class="p-4 border-bottom last-border-0 cart-line-item">
+                                <div class="row g-3 align-items-start cart-line-top">
+                                    <div class="col-auto">
+                                        <div class="cart-line-thumb-img">
                                             @if (!string.IsNullOrEmpty(item.MediaUrl))
                                             {
-                                                <img src="@item.MediaUrl" alt="@item.ServiceType" class="object-fit-cover w-100 h-100">
+                                                <img src="@item.MediaUrl" alt="@item.ServiceType">
                                             }
                                             else
                                             {
-                                                <span class="fs-1">🎉</span>
+                                                <span class="fs-4">🎉</span>
                                             }
                                         </div>
                                     </div>
-                                    <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="col min-w-0 cart-item-details">
                                         <h5 class="fw-bold mb-1">@item.ServiceType</h5>
-                                        <p class="text-muted mb-1 small">Provided by <strong class="text-dark">@item.VendorName</strong></p>
-                                        <div class="d-flex align-items-center gap-2 mb-2">
-                                            <span class="badge bg-light text-dark border">
-                                                <i class="bi bi-geo-alt-fill text-danger me-1"></i> Mumbai
-                                            </span>
+                                        <p class="text-muted mb-2 small">Provided by <strong class="text-dark">@item.VendorName</strong></p>
+                                        <div class="d-flex align-items-center flex-wrap gap-2 mb-0">
                                             @if (item.EventDate.HasValue)
                                             {
                                                 <span class="badge bg-primary text-white border-0" id="event-date-badge-@item.Id">
@@ -55,43 +246,91 @@
                                                 </span>
                                             }
                                         </div>
-                                        <div class="event-date-picker" data-cart-item-id="@item.Id">
-                                            <label class="form-label small fw-semibold text-muted mb-1">
-                                                <i class="bi bi-calendar3 me-1"></i> Select Event Date
-                                            </label>
-                                            <input type="date" 
-                                                   class="form-control form-control-sm event-date-input" 
-                                                   data-cart-item-id="@item.Id"
-                                                   value="@(item.EventDate?.ToString("yyyy-MM-dd") ?? "")"
-                                                   min="@DateTime.Now.ToString("yyyy-MM-dd")"
-                                                   required
-                                                   style="max-width: 200px; border-radius: 6px;">
-                                            <small class="text-muted d-block mt-1" style="font-size: 0.75rem;">
-                                                @if (item.WeekendCost.HasValue)
-                                                {
-                                                    <span class="text-info">
-                                                        <i class="bi bi-info-circle me-1"></i> Weekend pricing: ₹@item.WeekendCost.Value.ToString("N0")
-                                                    </span>
-                                                }
-                                            </small>
-                                        </div>
                                     </div>
-                                    <div class="col-md-4 text-md-end">
-                                        <div class="h4 fw-bold text-primary mb-0">₹@item.Cost.ToString("N0")</div>
-                                        <p class="text-muted small mb-3">per @item.Unit</p>
-                                        
-                                        <form asp-action="RemoveFromCart" method="post" class="d-inline">
+                                    <div class="col-12 col-sm-auto ms-sm-auto text-sm-end cart-line-price-col">
+                                        <div class="cart-price-block">
+                                            <div class="h4 fw-bold text-primary mb-0 line-total-value" data-cart-item-id="@item.Id">₹@((item.LineTotal > 0 ? item.LineTotal : item.Cost).ToString("N0"))</div>
+                                            <p class="text-muted small mb-0">₹@item.Cost.ToString("N0") per day · @item.Unit</p>
+                                            <p class="text-muted small mb-2 day-count-summary" data-cart-item-id="@item.Id">@item.EventDayCount day@(item.EventDayCount == 1 ? "" : "s")</p>
+                                        </div>
+                                        <form asp-action="RemoveFromCart" method="post" class="d-inline-block">
                                             <input type="hidden" name="cartItemId" value="@item.Id" />
-                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" style="pointer-events: auto; cursor: pointer;" data-confirm="Are you sure you want to remove this item from your cart?" data-confirm-title="Remove Item">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill" data-confirm="Are you sure you want to remove this item from your cart?" data-confirm-title="Remove Item">
                                                 <i class="bi bi-trash me-1"></i> Remove
                                             </button>
                                         </form>
                                     </div>
                                 </div>
+                                <div class="cart-item-body mt-3">
+                                        @{
+                                            var defaultStartTime = string.IsNullOrEmpty(item.EventStartTime) ? "10:00" : item.EventStartTime;
+                                            var defaultEndTime = string.IsNullOrEmpty(item.EventEndTime) ? "18:00" : item.EventEndTime;
+                                        }
+                                        <div class="cart-schedule-panel event-date-picker" data-cart-item-id="@item.Id"
+                                             data-daily-cost="@item.Cost"
+                                             data-weekend-cost="@(item.WeekendCost?.ToString() ?? "")">
+                                            <div class="cart-schedule-title">
+                                                <i class="bi bi-calendar-event"></i> Event schedule
+                                            </div>
+                                            <div class="cart-schedule-fields">
+                                                <div class="cart-schedule-field">
+                                                    <label class="cart-field-label">Start date</label>
+                                                    <input type="date"
+                                                           class="form-control cart-field-input event-date-input"
+                                                           data-cart-item-id="@item.Id"
+                                                           value="@(item.EventDate?.ToString("yyyy-MM-dd") ?? "")"
+                                                           min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                                           required>
+                                                </div>
+                                                <div class="cart-schedule-field">
+                                                    <label class="cart-field-label">End date</label>
+                                                    <input type="date"
+                                                           class="form-control cart-field-input event-end-date-input"
+                                                           data-cart-item-id="@item.Id"
+                                                           value="@(item.EventEndDate?.ToString("yyyy-MM-dd") ?? item.EventDate?.ToString("yyyy-MM-dd") ?? "")"
+                                                           min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                                           required>
+                                                </div>
+                                                <div class="cart-schedule-field">
+                                                    <label class="cart-field-label">Start time</label>
+                                                    <input type="time"
+                                                           class="form-control cart-field-input event-start-input"
+                                                           data-cart-item-id="@item.Id"
+                                                           value="@defaultStartTime"
+                                                           required>
+                                                </div>
+                                                <div class="cart-schedule-field">
+                                                    <label class="cart-field-label">End time</label>
+                                                    <input type="time"
+                                                           class="form-control cart-field-input event-end-input"
+                                                           data-cart-item-id="@item.Id"
+                                                           value="@defaultEndTime"
+                                                           required>
+                                                </div>
+                                            </div>
+                                            @if (item.WeekendCost.HasValue)
+                                            {
+                                                <div class="cart-weekend-hint">
+                                                    <i class="bi bi-info-circle me-1"></i> Weekend rate: ₹@item.WeekendCost.Value.ToString("N0")/day
+                                                </div>
+                                            }
+                                            <div class="date-range-error text-danger small mt-2" data-cart-item-id="@item.Id" style="display: none;">
+                                                <i class="bi bi-exclamation-circle me-1"></i> End date cannot be before start date.
+                                            </div>
+                                            <div class="time-error text-danger small mt-2" data-cart-item-id="@item.Id" style="display: none;">
+                                                <i class="bi bi-exclamation-circle me-1"></i> End time must be after start time (same-day events).
+                                            </div>
+                                            <div class="cart-day-pill day-count-label" data-cart-item-id="@item.Id">
+                                                <i class="bi bi-calendar-range me-1"></i>
+                                                <span class="day-count-value">@item.EventDayCount</span> day@(item.EventDayCount == 1 ? "" : "s")
+                                            </div>
+                                        </div>
+                                </div>
                             </div>
                         }
+                        </div>
                     </div>
-                </div>
+                }
                 
                 <div class="mt-4">
                     <a href="@Url.Action("Explore")" class="btn btn-outline-secondary rounded-pill px-4">
@@ -102,64 +341,59 @@
 
             <!-- Order Summary -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 bg-light-subtle">
-                    <div class="card-body p-4">
-                        <h4 class="fw-bold mb-4">Order Summary</h4>
-                        
-                        @{
-                            decimal totalVendorCost = Model.Sum(x => x.Cost);
-                            decimal platformFee = totalVendorCost * 0.10m; // 10% platform fee
-                            decimal totalCustomerCost = totalVendorCost + platformFee;
-                            decimal advancePayment = totalVendorCost * 0.20m; // 20% advance
-                        }
-                        
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Subtotal (@Model.Count items)</span>
-                            <span class="fw-semibold">₹@totalVendorCost.ToString("N0")</span>
+                @{
+                    decimal totalCustomerCost = cartItems.Sum(x => x.LineTotal > 0 ? x.LineTotal : x.Cost);
+                    int totalDays = cartItems.Sum(x => x.EventDayCount);
+                }
+                <div class="cart-summary-card">
+                    <div class="cart-summary-header">
+                        <h4 class="fw-bold mb-0">Order Summary</h4>
+                        <span class="cart-summary-badge">@cartItems.Count item@(cartItems.Count == 1 ? "" : "s")</span>
+                    </div>
+                    <div class="cart-summary-body">
+                        <div class="cart-summary-row">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="fw-semibold order-subtotal-value">₹@totalCustomerCost.ToString("N0")</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-3">
-                            <span class="text-muted">Platform Fee (10%)</span>
-                            <span class="fw-semibold">₹@platformFee.ToString("N0")</span>
+                        <div class="cart-summary-row">
+                            <span class="text-muted">Event days</span>
+                            <span class="fw-medium order-days-value">@totalDays day@(totalDays == 1 ? "" : "s")</span>
                         </div>
-                        
-                        <hr class="my-3 text-muted opacity-25">
-                        
-                        <div class="d-flex justify-content-between mb-4">
-                            <span class="h5 fw-bold mb-0">Total Value</span>
-                            <span class="h5 fw-bold mb-0">₹@totalCustomerCost.ToString("N0")</span>
+                        <div class="cart-summary-divider"></div>
+                        <div class="cart-summary-total">
+                            <span>Total</span>
+                            <span class="order-total-value">₹@totalCustomerCost.ToString("N0")</span>
                         </div>
-                        
-                        <div class="alert alert-success border-0 bg-success-subtle mb-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <small class="d-block text-success-emphasis fw-semibold">Pay 20% Advance Now</small>
-                                    <small class="text-muted" style="font-size: 0.75rem;">To confirm booking & get contacts</small>
-                                </div>
-                                <div class="h4 fw-bold text-success mb-0">₹@advancePayment.ToString("N0")</div>
-                            </div>
-                        </div>
-                        
-                        <form asp-action="Checkout" method="post" id="checkout-form">
-                            <div id="date-validation-error" class="alert alert-warning border-0 bg-warning-subtle mb-3" style="display: none;">
+                        <p class="cart-summary-note mb-0">No payment until vendor accepts your request.</p>
+                    </div>
+                    <div class="cart-summary-footer">
+                        <form asp-controller="Customer" asp-action="Checkout" method="post" id="checkout-form" class="checkout-form">
+                            @Html.AntiForgeryToken()
+                            <div id="date-validation-error" class="cart-validation-alert" style="display: none;">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
-                                <small>Please select event date for all items before proceeding.</small>
+                                Complete event dates and times for all items.
                             </div>
-                            <button type="submit" id="checkout-btn" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm hover-shadow transition-all">
-                                Proceed to Pay ₹@advancePayment.ToString("N0")
+                            <button type="submit" id="checkout-btn" class="btn cart-checkout-btn w-100"
+                                    data-total="@totalCustomerCost.ToString("N0")">
+                                <i class="bi bi-send me-2"></i> Send Request to Vendor
                             </button>
                         </form>
-                        
-                        <div class="text-center mt-3">
-                            <small class="text-muted">
-                                <i class="bi bi-shield-lock-fill me-1"></i> Secure Payment
-                            </small>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="cart-mobile-checkout" id="cart-mobile-checkout">
+            <div class="cart-mobile-checkout-total">
+                <div class="label">Total</div>
+                <div class="amount order-total-value">₹@cartItems.Sum(x => x.LineTotal > 0 ? x.LineTotal : x.Cost).ToString("N0")</div>
+            </div>
+            <button type="submit" form="checkout-form" class="btn" id="cart-mobile-checkout-btn">
+                <i class="bi bi-send me-1"></i> Send Request
+            </button>
+        </div>
     }
-    else
+    else if (Model == null || !Model.HasContent)
     {
         <div class="text-center py-5">
             <div class="mb-4">
@@ -179,215 +413,252 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/cart-checkout.js" asp-append-version="true"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ensure all buttons are enabled and clickable
-            const allButtons = document.querySelectorAll('button, input[type="submit"], input[type="button"]');
-            allButtons.forEach(btn => {
-                if (btn.id !== 'checkout-btn' || !btn.hasAttribute('disabled')) {
-                    btn.style.pointerEvents = 'auto';
-                    btn.style.cursor = 'pointer';
-                }
-            });
-            
-            const dateInputs = document.querySelectorAll('.event-date-input');
-            const checkoutForm = document.getElementById('checkout-form');
-            const dateValidationError = document.getElementById('date-validation-error');
-            const checkoutBtn = document.getElementById('checkout-btn');
-            
-            // Ensure checkout button is enabled
-            if (checkoutBtn) {
-                checkoutBtn.disabled = false;
-                checkoutBtn.style.pointerEvents = 'auto';
-                checkoutBtn.style.cursor = 'pointer';
-            }
-            
-            // Handle date input changes
-            if (dateInputs && dateInputs.length > 0) {
-                dateInputs.forEach(input => {
-                    const cartItemId = input.dataset.cartItemId;
-                    
-                    // Make sure input is not disabled
-                    input.disabled = false;
-                    input.style.pointerEvents = 'auto';
-                    input.style.cursor = 'pointer';
-                    
-                    // Update badge when date is selected
-                    input.addEventListener('change', function() {
-                    const selectedDate = this.value;
-                    const badge = document.getElementById(`event-date-badge-${cartItemId}`);
-                    const badgeText = document.getElementById(`event-date-text-${cartItemId}`);
-                    
-                    if (selectedDate) {
-                        const date = new Date(selectedDate);
-                        const formattedDate = date.toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric', 
-                            year: 'numeric' 
-                        });
-                        
-                        if (badge) {
-                            badge.style.display = 'inline-block';
-                            badge.classList.remove('bg-warning', 'text-dark');
-                            badge.classList.add('bg-primary', 'text-white');
-                            if (badgeText) {
-                                badgeText.textContent = formattedDate;
-                            }
-                        }
-                        
-                        // Update cart item on server
-                        updateCartItemDate(cartItemId, selectedDate);
-                    } else {
-                        if (badge) {
-                            badge.style.display = 'none';
-                        }
-                    }
-                    
-                        validateAllDates();
-                    });
-                });
-            }
-            
-            // Validate all dates before checkout
-            if (checkoutForm) {
-                checkoutForm.addEventListener('submit', function(e) {
-                    if (!validateAllDates()) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (dateValidationError) {
-                            dateValidationError.style.display = 'block';
-                        }
-                        checkoutForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        return false;
-                    }
-                });
-            }
-            
-            function validateAllDates() {
-                if (!dateInputs || dateInputs.length === 0) {
-                    return true; // No date inputs, allow checkout
-                }
-                
-                let allValid = true;
-                dateInputs.forEach(input => {
-                    if (!input.value || input.value.trim() === '') {
-                        allValid = false;
-                        input.classList.add('is-invalid');
-                    } else {
-                        input.classList.remove('is-invalid');
-                    }
-                });
-                
-                if (allValid && dateValidationError) {
-                    dateValidationError.style.display = 'none';
-                }
-                
-                return allValid;
-            }
-            
-            // Flag to prevent multiple simultaneous updates
-            let isUpdatingDate = false;
-            
-            function updateCartItemDate(cartItemId, eventDate) {
-                // Prevent multiple simultaneous updates
-                if (isUpdatingDate) {
-                    console.log('Date update already in progress, skipping...');
-                    return;
-                }
-                
-                isUpdatingDate = true;
-                
-                // Update cart item date on server via AJAX
-                fetch('@Url.Action("UpdateCartItemDate", "Customer")', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        cartItemId: parseInt(cartItemId),
-                        eventDate: eventDate
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    isUpdatingDate = false;
-                    
-                    if (data.success) {
-                        console.log('Cart item date updated successfully');
-                        // Only reload if weekend pricing actually changed
-                        // Use a small delay to prevent rapid reloads
-                        if (data.recalculate) {
-                            // Check if we already reloaded recently
-                            const lastReload = sessionStorage.getItem('lastCartReload');
-                            const now = Date.now();
-                            
-                            if (!lastReload || (now - parseInt(lastReload)) > 2000) {
-                                sessionStorage.setItem('lastCartReload', now.toString());
-                                setTimeout(() => {
-                                    location.reload();
-                                }, 500);
-                            }
-                        }
-                    } else {
-                        console.error('Failed to update cart item date:', data.message);
-                    }
-                })
-                .catch(error => {
-                    isUpdatingDate = false;
-                    console.error('Error updating cart item date:', error);
-                });
+        document.addEventListener('DOMContentLoaded', function () {
+            var total = @cartBadgeTotal;
+            if (window.cartManager && typeof window.cartManager.setBadgeCount === 'function') {
+                window.cartManager.setBadgeCount(total);
             }
         });
     </script>
 }
 
 <style>
-    .last-border-0:last-child {
-        border-bottom: 0 !important;
+    .pay-pending-checkout .pay-accepted-header {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.05));
     }
-    
-    .hover-shadow:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    .cart-request-status {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding: 0.2rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
     }
-    
-    .transition-all {
-        transition: all 0.3s ease;
+    .cart-status-pending {
+        background: #fff7ed;
+        color: #c2410c;
+        border: 1px solid #fed7aa;
     }
-    
-    .event-date-input.is-invalid {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    .cart-status-rejected {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
     }
-    
-    .event-date-picker {
+    .cart-request-delete-form {
         margin-top: 0.5rem;
     }
-    
-    /* Ensure all buttons and inputs are clickable */
-    button, input, select, textarea, a {
-        pointer-events: auto !important;
-        cursor: pointer !important;
+    .cart-request-delete-btn {
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.3rem 0.85rem;
     }
-    
-    button:disabled {
-        cursor: not-allowed !important;
-        opacity: 0.6;
+    .cart-request-section + .cart-request-section { margin-top: 0.5rem; }
+
+    .cart-expired-notice {
+        background: linear-gradient(135deg, #fffbeb, #fff7ed);
+        border: 1px solid #fde68a !important;
     }
-    
-    button:not(:disabled):hover {
-        cursor: pointer !important;
+    .cart-expired-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #fef3c7;
+        color: #d97706;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
     }
-    
-    input[type="date"] {
-        cursor: pointer !important;
-        pointer-events: auto !important;
+
+    .last-border-0:last-child { border-bottom: 0 !important; }
+
+    .cart-line-thumb-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
-    
-    /* Ensure no overlays are blocking clicks */
-    .card, .card-body, .btn-action-stack {
-        pointer-events: auto !important;
-        position: relative;
-        z-index: 1;
+
+    .cart-line-thumb-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cart-item-details {
+        min-width: 0;
+    }
+
+    .cart-line-price-col .cart-price-block {
+        margin-bottom: 0.5rem;
+    }
+
+    .cart-item-body {
+        min-width: 0;
+    }
+
+    .cart-schedule-panel {
+        padding: 1rem 1.1rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    .cart-schedule-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #374151;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .cart-schedule-title i { color: #7c3aed; }
+    .cart-schedule-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem 0.85rem;
+    }
+    @@media (max-width: 479px) {
+        .cart-schedule-fields {
+            grid-template-columns: 1fr;
+        }
+    }
+    .cart-schedule-field {
+        min-width: 0;
+        overflow: hidden;
+    }
+    .cart-field-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 0.3rem;
+    }
+    .cart-field-input {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        min-height: 42px;
+        font-size: 0.875rem;
+        box-sizing: border-box;
+    }
+    .cart-field-input:focus {
+        border-color: #7c3aed;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+    }
+    .cart-field-input.is-invalid {
+        border-color: #dc3545;
+    }
+    .cart-weekend-hint {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.65rem;
+    }
+    .cart-day-pill {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 0.65rem;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        background: rgba(124, 58, 237, 0.08);
+        color: #7c3aed;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .cart-summary-card {
+        position: sticky;
+        top: 1.5rem;
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+    .cart-summary-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .cart-summary-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #7c3aed;
+        background: rgba(124, 58, 237, 0.08);
+        padding: 0.2rem 0.65rem;
+        border-radius: 999px;
+    }
+    .cart-summary-body { padding: 1.25rem 1.5rem; }
+    .cart-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.65rem;
+        font-size: 0.95rem;
+    }
+    .cart-summary-divider {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 1rem 0;
+    }
+    .cart-summary-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 0.5rem;
+    }
+    .cart-summary-total .order-total-value { color: #7c3aed; font-size: 1.35rem; }
+    .cart-summary-note {
+        font-size: 0.8rem;
+        color: #6b7280;
+    }
+    .cart-summary-footer {
+        padding: 1rem 1.5rem 1.5rem;
+        background: #f9fafb;
+        border-top: 1px solid #f3f4f6;
+    }
+    .cart-checkout-btn {
+        background: linear-gradient(135deg, #7c3aed, #ec4899);
+        border: 0;
+        color: #fff;
+        font-weight: 700;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        transition: filter 0.2s ease, transform 0.2s ease;
+    }
+    .cart-checkout-btn:hover {
+        filter: brightness(1.05);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    .cart-checkout-btn:disabled { opacity: 0.65; transform: none; }
+    .cart-validation-alert {
+        font-size: 0.8rem;
+        color: #92400e;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+        margin-bottom: 0.75rem;
     }
 </style>

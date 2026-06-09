@@ -9,7 +9,7 @@ namespace PartyClap.DAL
         {
             for (int i = 0; i < reader.FieldCount; i++)
             {
-                if (reader.GetName(i).Equals(columnName, StringComparison.InvariantCultureIgnoreCase))
+                if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

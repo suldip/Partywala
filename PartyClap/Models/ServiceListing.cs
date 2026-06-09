@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace PartyClap.Models
 {
@@ -8,6 +9,8 @@ namespace PartyClap.Models
         public string VendorId { get; set; }
         public string ServiceType { get; set; } // e.g., Singer, Magician
         public string Description { get; set; }
+
+        [Range(typeof(decimal), "1", "79228162514264337593543950335", ErrorMessage = "Price must be at least ₹1.")]
         public decimal Cost { get; set; }
         public string Unit { get; set; } // Hour, Event, Person
         public string MediaUrl { get; set; }

@@ -3,19 +3,27 @@ using System.Collections.Generic;
 using System.Data;
 using MySql.Data.MySqlClient;
 using PartyClap.Models;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using PartyClap.Services;
 
 namespace PartyClap.DAL
 {
     public class CustomerDAL
     {
         private readonly DBHelper _dbHelper;
+        private readonly IMemoryCache _cache;
+        private readonly ILogger<CustomerDAL> _logger;
+        private const string LocationsCacheKey = "CustomerDAL_Locations";
 
-        public CustomerDAL(DBHelper dbHelper)
+        public CustomerDAL(DBHelper dbHelper, IMemoryCache cache, ILogger<CustomerDAL> logger)
         {
             _dbHelper = dbHelper;
+            _cache = cache;
+            _logger = logger;
         }
 
-        public List<ServiceListing> SearchServices(string searchTerm, string pinCode, decimal? minPrice, decimal? maxPrice, int? minRating, DateTime? eventDate)
+        public List<ServiceListing> SearchServices(string searchTerm, string pinCode, decimal? minPrice, decimal? maxPrice, int? minRating, DateTime? eventDate, string category = null)
         {
             var services = new List<ServiceListing>();
             using (var connection = _dbHelper.CreateConnection())
@@ -28,11 +36,25 @@ namespace PartyClap.DAL
                                v.Name as VendorName, v.PinCode, v.Address
                         FROM Services s
                         JOIN Vendors v ON s.VendorId = v.Id
-                        WHERE 1=1";
+                        WHERE s.Cost > 0
+                          AND v.PinCode IS NOT NULL
+                          AND TRIM(v.PinCode) <> ''
+                          AND (
+                              v.PinCode IN (SELECT PinCode FROM AllowedPinCodes)
+                              OR v.PinCode IN (SELECT DISTINCT PinCode FROM Locations WHERE PinCode IS NOT NULL)
+                              OR EXISTS (
+                                  SELECT 1 FROM VendorServiceLocations vsl
+                                  WHERE vsl.VendorId = v.Id
+                                    AND (
+                                        vsl.PinCode IN (SELECT PinCode FROM AllowedPinCodes)
+                                        OR vsl.PinCode IN (SELECT DISTINCT PinCode FROM Locations WHERE PinCode IS NOT NULL)
+                                    )
+                              )
+                          )";
 
                     if (!string.IsNullOrEmpty(searchTerm))
                     {
-                        sql += " AND (v.Name LIKE @SearchTerm OR s.ServiceType LIKE @SearchTerm OR s.Description LIKE @SearchTerm)";
+                        sql += " AND (v.Name LIKE @SearchTerm OR s.ServiceType LIKE @SearchTerm OR s.Description LIKE @SearchTerm OR v.Address LIKE @SearchTerm)";
                         command.Parameters.AddWithValue("@SearchTerm", $"%{searchTerm}%");
                     }
 
@@ -54,9 +76,36 @@ namespace PartyClap.DAL
                         command.Parameters.AddWithValue("@MaxPrice", maxPrice.Value);
                     }
 
-                    // Note: Rating filtering would require parsing JSON attributes or a separate Rating column
-                    // For now, we'll skip rating filter in SQL and could do it in memory if needed, 
-                    // or assume the Attributes JSON contains it.
+                    var normalizedCategory = ExploreFilterHelper.NormalizeCategory(category);
+                    if (!string.IsNullOrEmpty(normalizedCategory) && normalizedCategory != "all")
+                    {
+                        var patterns = ExploreFilterHelper.GetCategorySqlPatterns(normalizedCategory);
+                        var categoryClauses = new List<string>();
+                        for (var i = 0; i < patterns.Count; i++)
+                        {
+                            var paramName = $"@CategoryPattern{i}";
+                            categoryClauses.Add($"LOWER(s.ServiceType) LIKE {paramName}");
+                            command.Parameters.AddWithValue(paramName, patterns[i]);
+                        }
+
+                        sql += $" AND ({string.Join(" OR ", categoryClauses)})";
+                    }
+
+                    if (eventDate.HasValue)
+                    {
+                        sql += @" AND v.Id NOT IN (
+                            SELECT b.VendorId FROM Bookings b
+                            WHERE b.EventDate IS NOT NULL
+                              AND DATE(b.EventDate) = DATE(@EventDate)
+                              AND b.Status NOT IN ('Cancelled', 'Rejected', 'Completed')
+                            UNION
+                            SELECT sr.VendorId FROM ServiceRequests sr
+                            WHERE sr.EventDate IS NOT NULL
+                              AND DATE(sr.EventDate) = DATE(@EventDate)
+                              AND sr.Status NOT IN ('Rejected', 'Cancelled', 'Paid', 'Expired')
+                        )";
+                        command.Parameters.AddWithValue("@EventDate", eventDate.Value.Date);
+                    }
                     
                     command.CommandText = sql;
                     
@@ -82,7 +131,7 @@ namespace PartyClap.DAL
                     }
                 }
             }
-            return services;
+            return ServiceDedupHelper.Deduplicate(services);
         }
         
         public void CreateServiceRequest(ServiceRequest request)
@@ -95,16 +144,25 @@ namespace PartyClap.DAL
                     using (var command = (MySqlCommand)connection.CreateCommand())
                     {
                         command.CommandText = @"
-                            INSERT INTO ServiceRequests (Id, CustomerId, VendorId, ServiceId, EventDate, EventType, GuestCount, AdditionalDetails, Status, CreatedDate)
-                            VALUES (@Id, @CustomerId, @VendorId, @ServiceId, @EventDate, @EventType, @GuestCount, @AdditionalDetails, @Status, @CreatedDate)";
+                            INSERT INTO ServiceRequests (Id, CustomerId, VendorId, ServiceId, EventDate, EventEndDate, EventStartTime, EventEndTime, DayCount, TotalCost, EventType, GuestCount, AdditionalDetails, PartyLocation, PartyPinCode, PartyLatitude, PartyLongitude, Status, CreatedDate)
+                            VALUES (@Id, @CustomerId, @VendorId, @ServiceId, @EventDate, @EventEndDate, @EventStartTime, @EventEndTime, @DayCount, @TotalCost, @EventType, @GuestCount, @AdditionalDetails, @PartyLocation, @PartyPinCode, @PartyLatitude, @PartyLongitude, @Status, @CreatedDate)";
                         command.Parameters.AddWithValue("@Id", request.Id);
                         command.Parameters.AddWithValue("@CustomerId", request.CustomerId);
                         command.Parameters.AddWithValue("@VendorId", request.VendorId);
                         command.Parameters.AddWithValue("@ServiceId", request.ServiceId);
                         command.Parameters.AddWithValue("@EventDate", request.EventDate);
+                        command.Parameters.AddWithValue("@EventEndDate", request.EventEndDate ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@EventStartTime", string.IsNullOrWhiteSpace(request.EventStartTime) ? (object)DBNull.Value : request.EventStartTime);
+                        command.Parameters.AddWithValue("@EventEndTime", string.IsNullOrWhiteSpace(request.EventEndTime) ? (object)DBNull.Value : request.EventEndTime);
+                        command.Parameters.AddWithValue("@DayCount", request.DayCount);
+                        command.Parameters.AddWithValue("@TotalCost", request.TotalCost);
                         command.Parameters.AddWithValue("@EventType", request.EventType);
                         command.Parameters.AddWithValue("@GuestCount", request.GuestCount);
                         command.Parameters.AddWithValue("@AdditionalDetails", (object)request.AdditionalDetails ?? DBNull.Value);
+                        command.Parameters.AddWithValue("@PartyLocation", string.IsNullOrWhiteSpace(request.PartyLocation) ? (object)DBNull.Value : request.PartyLocation.Trim());
+                        command.Parameters.AddWithValue("@PartyPinCode", string.IsNullOrWhiteSpace(request.PartyPinCode) ? (object)DBNull.Value : request.PartyPinCode.Trim());
+                        command.Parameters.AddWithValue("@PartyLatitude", request.PartyLatitude ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@PartyLongitude", request.PartyLongitude ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@Status", request.Status);
                         command.Parameters.AddWithValue("@CreatedDate", request.CreatedDate);
                         command.ExecuteNonQuery();
@@ -113,8 +171,7 @@ namespace PartyClap.DAL
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error creating service request: {ex.Message}");
-                Console.WriteLine($"Error creating service request: {ex.Message}");
+                _logger.LogError(ex, "Error creating service request {RequestId}", request?.Id);
                 throw;
             }
         }
@@ -152,9 +209,18 @@ namespace PartyClap.DAL
                                     VendorId = reader["VendorId"].ToString(),
                                     ServiceId = reader["ServiceId"].ToString(),
                                     EventDate = Convert.ToDateTime(reader["EventDate"]),
+                                    EventEndDate = reader["EventEndDate"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["EventEndDate"]) : null,
+                                    EventStartTime = reader["EventStartTime"] != DBNull.Value ? FormatBookingTime(reader["EventStartTime"]) : null,
+                                    EventEndTime = reader["EventEndTime"] != DBNull.Value ? FormatBookingTime(reader["EventEndTime"]) : null,
+                                    DayCount = reader["DayCount"] != DBNull.Value ? Convert.ToInt32(reader["DayCount"]) : 1,
+                                    TotalCost = reader["TotalCost"] != DBNull.Value ? Convert.ToDecimal(reader["TotalCost"]) : 0m,
                                     EventType = reader["EventType"]?.ToString() ?? "",
                                     GuestCount = Convert.ToInt32(reader["GuestCount"]),
                                     AdditionalDetails = reader["AdditionalDetails"]?.ToString(),
+                                    PartyLocation = TryGetString(reader, "PartyLocation"),
+                                    PartyPinCode = TryGetString(reader, "PartyPinCode"),
+                                    PartyLatitude = TryGetDecimal(reader, "PartyLatitude"),
+                                    PartyLongitude = TryGetDecimal(reader, "PartyLongitude"),
                                     Status = reader["Status"].ToString(),
                                     CreatedDate = Convert.ToDateTime(reader["CreatedDate"]),
                                     ResponseDate = reader["ResponseDate"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["ResponseDate"]) : null
@@ -166,8 +232,7 @@ namespace PartyClap.DAL
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in GetVendorServiceRequests: {ex.Message}");
-                Console.WriteLine($"Error in GetVendorServiceRequests: {ex.Message}");
+                _logger.LogError(ex, "Error loading service requests for vendor {VendorId}", vendorId);
             }
             return requests;
         }
@@ -188,7 +253,9 @@ namespace PartyClap.DAL
                                    v.Email as VendorEmail, 
                                    v.Phone as VendorPhone,
                                    s.ServiceType,
-                                   s.Cost as ServiceCost
+                                   s.Cost as DailyCost,
+                                   COALESCE(NULLIF(sr.TotalCost, 0), s.Cost * COALESCE(sr.DayCount, 1)) as ServiceCost,
+                                   sr.EventEndDate, sr.DayCount, sr.TotalCost
                             FROM ServiceRequests sr
                             LEFT JOIN Vendors v ON sr.VendorId = v.Id
                             LEFT JOIN Services s ON sr.ServiceId = s.Id
@@ -206,9 +273,17 @@ namespace PartyClap.DAL
                                     ["VendorId"] = reader["VendorId"].ToString(),
                                     ["ServiceId"] = reader["ServiceId"].ToString(),
                                     ["EventDate"] = Convert.ToDateTime(reader["EventDate"]),
+                                    ["EventEndDate"] = reader["EventEndDate"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["EventEndDate"]) : null,
+                                    ["EventStartTime"] = reader["EventStartTime"] != DBNull.Value ? FormatBookingTime(reader["EventStartTime"]) : null,
+                                    ["EventEndTime"] = reader["EventEndTime"] != DBNull.Value ? FormatBookingTime(reader["EventEndTime"]) : null,
+                                    ["DayCount"] = reader["DayCount"] != DBNull.Value ? Convert.ToInt32(reader["DayCount"]) : 1,
                                     ["EventType"] = reader["EventType"]?.ToString() ?? "",
                                     ["GuestCount"] = Convert.ToInt32(reader["GuestCount"]),
                                     ["AdditionalDetails"] = reader["AdditionalDetails"]?.ToString() ?? "",
+                                    ["PartyLocation"] = TryGetString(reader, "PartyLocation"),
+                                    ["PartyPinCode"] = TryGetString(reader, "PartyPinCode"),
+                                    ["PartyLatitude"] = TryGetDecimal(reader, "PartyLatitude"),
+                                    ["PartyLongitude"] = TryGetDecimal(reader, "PartyLongitude"),
                                     ["Status"] = reader["Status"].ToString(),
                                     ["CreatedDate"] = Convert.ToDateTime(reader["CreatedDate"]),
                                     ["ResponseDate"] = reader["ResponseDate"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["ResponseDate"]) : null,
@@ -216,7 +291,8 @@ namespace PartyClap.DAL
                                     ["VendorEmail"] = reader["VendorEmail"]?.ToString() ?? "",
                                     ["VendorPhone"] = reader["VendorPhone"]?.ToString() ?? "",
                                     ["ServiceType"] = reader["ServiceType"]?.ToString() ?? "",
-                                    ["ServiceCost"] = reader["ServiceCost"] != DBNull.Value ? Convert.ToDecimal(reader["ServiceCost"]) : 0m
+                                    ["ServiceCost"] = reader["ServiceCost"] != DBNull.Value ? Convert.ToDecimal(reader["ServiceCost"]) : 0m,
+                                    ["TotalCost"] = reader["TotalCost"] != DBNull.Value ? Convert.ToDecimal(reader["TotalCost"]) : 0m
                                 };
                                 requests.Add(requestDict);
                             }
@@ -226,8 +302,7 @@ namespace PartyClap.DAL
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in GetCustomerServiceRequestsWithDetails: {ex.Message}");
-                Console.WriteLine($"Error in GetCustomerServiceRequestsWithDetails: {ex.Message}");
+                _logger.LogError(ex, "Error loading service requests for customer {CustomerId}", customerId);
             }
             return requests;
         }
@@ -247,7 +322,8 @@ namespace PartyClap.DAL
                                c.Email as CustomerEmail, 
                                c.Phone as CustomerPhone,
                                s.ServiceType,
-                               s.Cost as ServiceCost
+                               COALESCE(NULLIF(sr.TotalCost, 0), s.Cost * COALESCE(sr.DayCount, 1)) as ServiceCost,
+                               sr.EventEndDate, sr.DayCount, sr.TotalCost
                         FROM ServiceRequests sr
                         LEFT JOIN Customers c ON sr.CustomerId = c.Id
                         LEFT JOIN Services s ON sr.ServiceId = s.Id
@@ -265,9 +341,17 @@ namespace PartyClap.DAL
                                 ["VendorId"] = reader["VendorId"].ToString(),
                                 ["ServiceId"] = reader["ServiceId"].ToString(),
                                 ["EventDate"] = Convert.ToDateTime(reader["EventDate"]),
+                                ["EventEndDate"] = reader["EventEndDate"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["EventEndDate"]) : null,
+                                ["EventStartTime"] = reader["EventStartTime"] != DBNull.Value ? FormatBookingTime(reader["EventStartTime"]) : null,
+                                ["EventEndTime"] = reader["EventEndTime"] != DBNull.Value ? FormatBookingTime(reader["EventEndTime"]) : null,
+                                ["DayCount"] = reader["DayCount"] != DBNull.Value ? Convert.ToInt32(reader["DayCount"]) : 1,
                                 ["EventType"] = reader["EventType"]?.ToString() ?? "",
                                 ["GuestCount"] = Convert.ToInt32(reader["GuestCount"]),
                                 ["AdditionalDetails"] = reader["AdditionalDetails"]?.ToString() ?? "",
+                                ["PartyLocation"] = TryGetString(reader, "PartyLocation"),
+                                ["PartyPinCode"] = TryGetString(reader, "PartyPinCode"),
+                                ["PartyLatitude"] = TryGetDecimal(reader, "PartyLatitude"),
+                                ["PartyLongitude"] = TryGetDecimal(reader, "PartyLongitude"),
                                 ["Status"] = reader["Status"].ToString(),
                                 ["CreatedDate"] = Convert.ToDateTime(reader["CreatedDate"]),
                                 ["ResponseDate"] = reader["ResponseDate"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["ResponseDate"]) : null,
@@ -275,7 +359,8 @@ namespace PartyClap.DAL
                                 ["CustomerEmail"] = reader["CustomerEmail"]?.ToString() ?? "",
                                 ["CustomerPhone"] = reader["CustomerPhone"]?.ToString() ?? "",
                                 ["ServiceType"] = reader["ServiceType"]?.ToString() ?? "",
-                                ["ServiceCost"] = reader["ServiceCost"] != DBNull.Value ? Convert.ToDecimal(reader["ServiceCost"]) : 0m
+                                ["ServiceCost"] = reader["ServiceCost"] != DBNull.Value ? Convert.ToDecimal(reader["ServiceCost"]) : 0m,
+                                ["TotalCost"] = reader["TotalCost"] != DBNull.Value ? Convert.ToDecimal(reader["TotalCost"]) : 0m
                             };
                             requests.Add(requestDict);
                         }
@@ -313,7 +398,8 @@ namespace PartyClap.DAL
                 using (var command = (MySqlCommand)connection.CreateCommand())
                 {
                     command.CommandText = @"
-                        SELECT Id, CustomerId, VendorId, ServiceId, BookingDate, EventDate, 
+                        SELECT Id, CustomerId, VendorId, ServiceId, BookingDate, EventDate, EventEndDate,
+                               EventStartTime, EventEndTime,
                                VendorCost, CustomerTotalCost, AdvancePaid, BalanceAmount, 
                                Status, BalancePaidOnApp
                         FROM Bookings
@@ -334,6 +420,9 @@ namespace PartyClap.DAL
                                 ServiceId = reader["ServiceId"].ToString(),
                                 BookingDate = Convert.ToDateTime(reader["BookingDate"]),
                                 EventDate = Convert.ToDateTime(reader["EventDate"]),
+                                EventEndDate = reader["EventEndDate"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["EventEndDate"]) : null,
+                                EventStartTime = reader["EventStartTime"] != DBNull.Value ? FormatBookingTime(reader["EventStartTime"]) : null,
+                                EventEndTime = reader["EventEndTime"] != DBNull.Value ? FormatBookingTime(reader["EventEndTime"]) : null,
                                 VendorCost = Convert.ToDecimal(reader["VendorCost"]),
                                 CustomerTotalCost = Convert.ToDecimal(reader["CustomerTotalCost"]),
                                 AdvancePaid = Convert.ToDecimal(reader["AdvancePaid"]),
@@ -380,7 +469,7 @@ namespace PartyClap.DAL
                 using (var command = (MySqlCommand)connection.CreateCommand())
                 {
                     command.CommandText = @"
-                        SELECT Id, Name, Email, Phone, PasswordHash, WalletBalance
+                        SELECT Id, Name, Email, Phone, PasswordHash, WalletBalance, ProfilePicture, SecondaryPhone, DateOfBirth, Gender, JoinedDate
                         FROM Customers
                         WHERE Email = @Email
                         LIMIT 1";
@@ -398,7 +487,12 @@ namespace PartyClap.DAL
                                 Email = reader["Email"].ToString(),
                                 Phone = reader["Phone"].ToString(),
                                 Password = reader["PasswordHash"].ToString(),
-                                WalletBalance = reader["WalletBalance"] != DBNull.Value ? Convert.ToDecimal(reader["WalletBalance"]) : 0m
+                                WalletBalance = reader["WalletBalance"] != DBNull.Value ? Convert.ToDecimal(reader["WalletBalance"]) : 0m,
+                                ProfilePicture = reader["ProfilePicture"]?.ToString(),
+                                SecondaryPhone = reader["SecondaryPhone"]?.ToString(),
+                                DateOfBirth = reader["DateOfBirth"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["DateOfBirth"]) : null,
+                                Gender = reader["Gender"]?.ToString(),
+                                JoinedDate = reader["JoinedDate"] != DBNull.Value ? Convert.ToDateTime(reader["JoinedDate"]) : DateTime.Now
                             };
                         }
                     }
@@ -416,7 +510,7 @@ namespace PartyClap.DAL
                 using (var command = (MySqlCommand)connection.CreateCommand())
                 {
                     command.CommandText = @"
-                        SELECT Id, Name, Email, Phone, PasswordHash, WalletBalance
+                        SELECT Id, Name, Email, Phone, PasswordHash, WalletBalance, ProfilePicture, SecondaryPhone, DateOfBirth, Gender, JoinedDate
                         FROM Customers
                         WHERE Phone = @Phone
                         LIMIT 1";
@@ -434,7 +528,12 @@ namespace PartyClap.DAL
                                 Email = reader["Email"].ToString(),
                                 Phone = reader["Phone"].ToString(),
                                 Password = reader["PasswordHash"].ToString(),
-                                WalletBalance = reader["WalletBalance"] != DBNull.Value ? Convert.ToDecimal(reader["WalletBalance"]) : 0m
+                                WalletBalance = reader["WalletBalance"] != DBNull.Value ? Convert.ToDecimal(reader["WalletBalance"]) : 0m,
+                                ProfilePicture = reader["ProfilePicture"]?.ToString(),
+                                SecondaryPhone = reader["SecondaryPhone"]?.ToString(),
+                                DateOfBirth = reader["DateOfBirth"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["DateOfBirth"]) : null,
+                                Gender = reader["Gender"]?.ToString(),
+                                JoinedDate = reader["JoinedDate"] != DBNull.Value ? Convert.ToDateTime(reader["JoinedDate"]) : DateTime.Now
                             };
                         }
                     }
@@ -445,6 +544,12 @@ namespace PartyClap.DAL
         
         public List<Location> GetLocations()
         {
+            // Try cache first
+            if (_cache != null && _cache.TryGetValue(LocationsCacheKey, out List<Location> cachedLocations))
+            {
+                return cachedLocations;
+            }
+
             var locations = new List<Location>();
             using (var connection = _dbHelper.CreateConnection())
             {
@@ -469,6 +574,16 @@ namespace PartyClap.DAL
                     }
                 }
             }
+
+            // Cache result for 30 minutes to reduce DB load
+            if (_cache != null)
+            {
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetAbsoluteExpiration(TimeSpan.FromMinutes(30));
+
+                _cache.Set(LocationsCacheKey, locations, cacheOptions);
+            }
+
             return locations;
         }
         
@@ -481,7 +596,7 @@ namespace PartyClap.DAL
                 using (var command = (MySqlCommand)connection.CreateCommand())
                 {
                     command.CommandText = @"
-                        SELECT Id, Name, Email, Phone, PasswordHash, WalletBalance
+                        SELECT Id, Name, Email, Phone, PasswordHash, WalletBalance, ProfilePicture, SecondaryPhone, DateOfBirth, Gender, JoinedDate
                         FROM Customers
                         WHERE Id = @Id
                         LIMIT 1";
@@ -499,7 +614,12 @@ namespace PartyClap.DAL
                                 Email = reader["Email"].ToString(),
                                 Phone = reader["Phone"].ToString(),
                                 Password = reader["PasswordHash"].ToString(),
-                                WalletBalance = reader["WalletBalance"] != DBNull.Value ? Convert.ToDecimal(reader["WalletBalance"]) : 0m
+                                WalletBalance = reader["WalletBalance"] != DBNull.Value ? Convert.ToDecimal(reader["WalletBalance"]) : 0m,
+                                ProfilePicture = reader["ProfilePicture"]?.ToString(),
+                                SecondaryPhone = reader["SecondaryPhone"]?.ToString(),
+                                DateOfBirth = reader["DateOfBirth"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(reader["DateOfBirth"]) : null,
+                                Gender = reader["Gender"]?.ToString(),
+                                JoinedDate = reader["JoinedDate"] != DBNull.Value ? Convert.ToDateTime(reader["JoinedDate"]) : DateTime.Now
                             };
                         }
                     }
@@ -556,7 +676,7 @@ namespace PartyClap.DAL
             }
         }
         
-        public List<WalletTransaction> GetWalletTransactions(string customerId, int limit = 10)
+        public List<WalletTransaction> GetWalletTransactions(string ownerId, string ownerType = "Customer", int limit = 10)
         {
             var transactions = new List<WalletTransaction>();
             using (var connection = _dbHelper.CreateConnection())
@@ -564,14 +684,15 @@ namespace PartyClap.DAL
                 connection.Open();
                 using (var command = (MySqlCommand)connection.CreateCommand())
                 {
-                    command.CommandText = @"
-                        SELECT Id, CustomerId, TransactionType, Amount, Description, TransactionDate, BookingId
+                    string idColumn = ownerType == "Vendor" ? "VendorId" : "CustomerId";
+                    command.CommandText = $@"
+                        SELECT Id, CustomerId, VendorId, TransactionType, Amount, Description, TransactionDate, BookingId
                         FROM WalletTransactions
-                        WHERE CustomerId = @CustomerId
+                        WHERE {idColumn} = @OwnerId
                         ORDER BY TransactionDate DESC
                         LIMIT @Limit";
                     
-                    command.Parameters.AddWithValue("@CustomerId", customerId);
+                    command.Parameters.AddWithValue("@OwnerId", ownerId);
                     command.Parameters.AddWithValue("@Limit", limit);
                     
                     using (var reader = command.ExecuteReader())
@@ -581,7 +702,8 @@ namespace PartyClap.DAL
                             transactions.Add(new WalletTransaction
                             {
                                 Id = reader["Id"].ToString(),
-                                CustomerId = reader["CustomerId"].ToString(),
+                                CustomerId = reader["CustomerId"] != DBNull.Value ? reader["CustomerId"].ToString() : null,
+                                VendorId = reader.HasColumn("VendorId") && reader["VendorId"] != DBNull.Value ? reader["VendorId"].ToString() : null,
                                 TransactionType = reader["TransactionType"].ToString(),
                                 Amount = Convert.ToDecimal(reader["Amount"]),
                                 Description = reader["Description"]?.ToString(),
@@ -593,6 +715,174 @@ namespace PartyClap.DAL
                 }
             }
             return transactions;
+        }
+        public void UpdateCustomerProfile(Customer customer)
+        {
+            using (var connection = _dbHelper.CreateConnection())
+            {
+                connection.Open();
+                using (var command = (MySqlCommand)connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        UPDATE Customers 
+                        SET Name = @Name, 
+                            Phone = @Phone, 
+                            SecondaryPhone = @SecondaryPhone, 
+                            DateOfBirth = @DateOfBirth, 
+                            Gender = @Gender,
+                            ProfilePicture = @ProfilePicture
+                        WHERE Id = @Id";
+                    
+                    command.Parameters.AddWithValue("@Name", customer.Name);
+                    command.Parameters.AddWithValue("@Phone", customer.Phone);
+                    command.Parameters.AddWithValue("@SecondaryPhone", (object)customer.SecondaryPhone ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@DateOfBirth", (object)customer.DateOfBirth ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Gender", (object)customer.Gender ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@ProfilePicture", (object)customer.ProfilePicture ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Id", customer.Id);
+                    
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public List<Address> GetCustomerAddresses(string customerId)
+        {
+            var addresses = new List<Address>();
+            using (var connection = _dbHelper.CreateConnection())
+            {
+                connection.Open();
+                using (var command = (MySqlCommand)connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT * FROM CustomerAddresses WHERE CustomerId = @CustomerId ORDER BY IsDefault DESC, CreatedDate DESC";
+                    command.Parameters.AddWithValue("@CustomerId", customerId);
+                    
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            addresses.Add(new Address
+                            {
+                                Id = reader["Id"].ToString(),
+                                CustomerId = reader["CustomerId"].ToString(),
+                                Label = reader["Label"].ToString(),
+                                RecipientName = reader["RecipientName"].ToString(),
+                                Phone = reader["Phone"].ToString(),
+                                AddressLine1 = reader["AddressLine1"].ToString(),
+                                AddressLine2 = reader["AddressLine2"]?.ToString(),
+                                City = reader["City"].ToString(),
+                                State = reader["State"].ToString(),
+                                PinCode = reader["PinCode"].ToString(),
+                                IsDefault = Convert.ToBoolean(reader["IsDefault"]),
+                                CreatedDate = Convert.ToDateTime(reader["CreatedDate"])
+                            });
+                        }
+                    }
+                }
+            }
+            return addresses;
+        }
+
+        public void AddAddress(Address address)
+        {
+            using (var connection = _dbHelper.CreateConnection())
+            {
+                connection.Open();
+                using (var transaction = (MySqlTransaction)connection.BeginTransaction())
+                {
+                    try
+                    {
+                        if (address.IsDefault)
+                        {
+                            using (var cmd = (MySqlCommand)connection.CreateCommand())
+                            {
+                                cmd.Transaction = transaction;
+                                cmd.CommandText = "UPDATE CustomerAddresses SET IsDefault = 0 WHERE CustomerId = @CustomerId";
+                                cmd.Parameters.AddWithValue("@CustomerId", address.CustomerId);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        using (var cmd = (MySqlCommand)connection.CreateCommand())
+                        {
+                            cmd.Transaction = transaction;
+                            cmd.CommandText = @"
+                                INSERT INTO CustomerAddresses (Id, CustomerId, Label, RecipientName, Phone, AddressLine1, AddressLine2, City, State, PinCode, IsDefault, CreatedDate)
+                                VALUES (@Id, @CustomerId, @Label, @RecipientName, @Phone, @AddressLine1, @AddressLine2, @City, @State, @PinCode, @IsDefault, NOW())";
+                            
+                            cmd.Parameters.AddWithValue("@Id", address.Id);
+                            cmd.Parameters.AddWithValue("@CustomerId", address.CustomerId);
+                            cmd.Parameters.AddWithValue("@Label", address.Label);
+                            cmd.Parameters.AddWithValue("@RecipientName", address.RecipientName);
+                            cmd.Parameters.AddWithValue("@Phone", address.Phone);
+                            cmd.Parameters.AddWithValue("@AddressLine1", address.AddressLine1);
+                            cmd.Parameters.AddWithValue("@AddressLine2", (object)address.AddressLine2 ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@City", address.City);
+                            cmd.Parameters.AddWithValue("@State", address.State);
+                            cmd.Parameters.AddWithValue("@PinCode", address.PinCode);
+                            cmd.Parameters.AddWithValue("@IsDefault", address.IsDefault);
+                            
+                            cmd.ExecuteNonQuery();
+                        }
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public void DeleteAddress(string addressId, string customerId)
+        {
+            using (var connection = _dbHelper.CreateConnection())
+            {
+                connection.Open();
+                using (var command = (MySqlCommand)connection.CreateCommand())
+                {
+                    // Scope the delete to the owning customer to prevent IDOR.
+                    command.CommandText = "DELETE FROM CustomerAddresses WHERE Id = @Id AND CustomerId = @CustomerId";
+                    command.Parameters.AddWithValue("@Id", addressId);
+                    command.Parameters.AddWithValue("@CustomerId", customerId);
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        private static string FormatBookingTime(object value)
+        {
+            if (value is TimeSpan ts) return ts.ToString(@"hh\:mm");
+            var s = value.ToString();
+            if (s.Length >= 5) return s.Substring(0, 5);
+            return s;
+        }
+
+        private static string TryGetString(IDataReader reader, string column)
+        {
+            try
+            {
+                var ordinal = reader.GetOrdinal(column);
+                return reader.IsDBNull(ordinal) ? "" : reader.GetString(ordinal);
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return "";
+            }
+        }
+
+        private static decimal? TryGetDecimal(IDataReader reader, string column)
+        {
+            try
+            {
+                var ordinal = reader.GetOrdinal(column);
+                return reader.IsDBNull(ordinal) ? (decimal?)null : Convert.ToDecimal(reader.GetValue(ordinal));
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return null;
+            }
         }
     }
 }

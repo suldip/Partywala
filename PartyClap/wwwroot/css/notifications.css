@@ -55,11 +55,26 @@
     border-left: 3px solid transparent;
     transition: all 0.2s;
     border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    white-space: normal;
 }
 
 .notification-item:hover {
     background-color: #f8f9fa;
     text-decoration: none;
+    color: #333;
+}
+
+.notification-item .min-w-0 {
+    min-width: 0;
+}
+
+.notification-message {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
 }
 
 .notification-item.unread {
